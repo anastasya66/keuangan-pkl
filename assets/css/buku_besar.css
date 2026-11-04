@@ -1,0 +1,1257 @@
+/* ==========================================================================
+   BUKU_BESAR.CSS — FINTOKO ENTERPRISE-GRADE GENERAL LEDGER STYLESHEET
+   ==========================================================================
+   Tema     : Icy Azure · Light-Blue Aesthetic · Modern SaaS · Accounting Sheet
+   Versi    : v5.0 — Siklus Akuntansi & Buku Besar (General Ledger 4-Kolom)
+   Fitur    : 1. Hero Banner Siklus Buku Besar & Identitas FinToko
+              2. 4 Metric Cards Ringkasan Akun (Saldo Awal, Debit, Kredit, Saldo Akhir)
+              3. Smart Toolbar (Pilih Akun, Pilih Bulan, Filter, Cetak & Export Excel)
+              4. Professional Ledger Sheet Container (Lembar Kerja Putih Bergaris Halus)
+              5. Account Specification Header (Nama Akun, Kode, Saldo Normal)
+              6. Clean Ledger Table Structure (Sub-kolom Saldo Debit & Kredit)
+              7. Validasi Saldo Awal, Running Balance & Saldo Akhir Berjalan
+              8. Blok Tanda Tangan Pengesahan (Pimpinan & Administrator)
+              9. Standar Cetak Kertas A4 Otomatis (@media print)
+   ========================================================================== */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   0. ANIMASI & KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes bkbFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. HERO BANNER SIKLUS BUKU BESAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bkb-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 45%, #e0f2fe 80%, rgba(186, 230, 253, 0.4) 100%);
+    border: 1px solid rgba(186, 230, 253, 0.7);
+    border-radius: var(--r-md, 16px);
+    padding: 24px 30px;
+    margin-bottom: 22px;
+    box-shadow:
+        0 4px 16px rgba(14, 165, 233, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    position: relative;
+    overflow: hidden;
+    animation: bkbFadeInUp 0.45s ease-out;
+}
+
+.bkb-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -5%;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.bkb-hero__left {
+    position: relative;
+    z-index: 1;
+}
+
+.bkb-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--az-600, #0284c7);
+    background: rgba(224, 242, 254, 0.75);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(186, 230, 253, 0.6);
+}
+
+.bkb-hero__title {
+    font-size: 23px;
+    font-weight: 800;
+    color: var(--sl-900, #0f172a);
+    margin: 0 0 6px 0;
+    letter-spacing: -0.3px;
+}
+
+.bkb-hero__sub {
+    font-size: 13.5px;
+    color: var(--sl-600, #475569);
+    margin: 0;
+    line-height: 1.5;
+    max-width: 640px;
+}
+
+.bkb-hero__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. 4 METRIC CARDS RINGKASAN BUKU BESAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bkb-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.bkb-metric-card {
+    background: #ffffff;
+    border: 1px solid rgba(224, 242, 254, 0.9);
+    border-radius: var(--r-md, 16px);
+    padding: 18px 20px;
+    box-shadow:
+        0 2px 8px rgba(14, 165, 233, 0.05),
+        0 1px 2px rgba(0, 0, 0, 0.02);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    animation: bkbFadeInUp 0.5s ease-out;
+}
+
+.bkb-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 20px rgba(14, 165, 233, 0.1),
+        0 2px 6px rgba(0, 0, 0, 0.03);
+    border-color: rgba(186, 230, 253, 0.9);
+}
+
+.bkb-metric-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+}
+
+.bkb-metric-card--initial::after {
+    background: linear-gradient(90deg, #64748b, #94a3b8);
+}
+
+.bkb-metric-card--debit::after {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.bkb-metric-card--kredit::after {
+    background: linear-gradient(90deg, #0284c7, #38bdf8);
+}
+
+.bkb-metric-card--final::after {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.bkb-metric-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.bkb-metric-card--initial .bkb-metric-icon {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.bkb-metric-card--debit .bkb-metric-icon {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.bkb-metric-card--kredit .bkb-metric-icon {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.bkb-metric-card--final .bkb-metric-icon {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.bkb-metric-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.bkb-metric-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--sl-500, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.bkb-metric-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--sl-900, #0f172a);
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+}
+
+.bkb-metric-note {
+    font-size: 11px;
+    color: var(--sl-400, #94a3b8);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.bkb-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+}
+
+.bkb-badge-pill--normal {
+    background: #f0f9ff;
+    color: #0284c7;
+    border: 1px solid #bae6fd;
+}
+
+.bkb-badge-pill--success {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.bkb-badge-pill--accent {
+    background: #f5f3ff;
+    color: #7c3aed;
+    border: 1px solid #ddd6fe;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. TOOLBAR ATAS (FILTER AKUN & BULAN + ACTION BUTTONS)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bkb-toolbar {
+    background: #ffffff;
+    border: 1px solid rgba(186, 230, 253, 0.7);
+    border-radius: var(--r-md, 16px);
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow:
+        0 2px 8px rgba(14, 165, 233, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.bkb-toolbar__left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.bkb-filter-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    flex-wrap: wrap;
+}
+
+.bkb-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 6px 12px;
+    transition: all 0.2s ease;
+}
+
+.bkb-input-group:focus-within {
+    border-color: var(--az-500, #0ea5e9);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.bkb-input-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--sl-600, #475569);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin: 0;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.bkb-select-account,
+.bkb-input-month {
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--sl-800, #1e293b);
+    outline: none;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+.bkb-select-account {
+    min-width: 170px;
+}
+
+/* Quick Month Shortcuts */
+.bkb-quick-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.bkb-btn-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--sl-700, #334155);
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.18s ease;
+    cursor: pointer;
+}
+
+.bkb-btn-nav:hover {
+    background: #e0f2fe;
+    color: var(--az-700, #0369a1);
+    border-color: #bae6fd;
+}
+
+.bkb-btn-nav--active {
+    background: #e0f2fe;
+    color: var(--az-700, #0369a1);
+    border-color: #7dd3fc;
+    font-weight: 700;
+}
+
+.bkb-toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Action Buttons */
+.bkb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.bkb-btn--primary {
+    background: linear-gradient(135deg, var(--az-500, #0ea5e9) 0%, var(--az-600, #0284c7) 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(14, 165, 233, 0.28);
+}
+
+.bkb-btn--primary:hover {
+    background: linear-gradient(135deg, var(--az-600, #0284c7) 0%, var(--az-700, #0369a1) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35);
+    color: #ffffff;
+}
+
+.bkb-btn--outline {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: var(--sl-700, #334155);
+}
+
+.bkb-btn--outline:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: var(--sl-900, #0f172a);
+}
+
+.bkb-btn--excel {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.bkb-btn--excel:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #14532d;
+    transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. LEMBAR KERJA BUKU BESAR (PROFESSIONAL LEDGER SHEET CONTAINER)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bkb-sheet-container {
+    background: #ffffff;
+    border: 1px solid rgba(186, 230, 253, 0.85);
+    border-radius: var(--r-md, 18px);
+    padding: 38px 44px;
+    margin-bottom: 30px;
+    box-shadow:
+        0 12px 35px rgba(14, 165, 233, 0.08),
+        0 2px 8px rgba(15, 23, 42, 0.03),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    position: relative;
+    animation: bkbFadeInUp 0.5s ease-out;
+}
+
+/* KOP PERUSAHAAN TERSTRUKTUR & RESMI */
+.bkb-letterhead {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 22px;
+}
+
+.bkb-letterhead__brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.bkb-brand-logo {
+    width: 58px;
+    height: 58px;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 60%, #7dd3fc 100%);
+    border: 1px solid #bae6fd;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0369a1;
+    font-size: 26px;
+    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.15);
+    flex-shrink: 0;
+}
+
+.bkb-brand-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.bkb-company-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--sl-900, #0f172a);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.bkb-company-tagline {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--az-600, #0284c7);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 3px;
+}
+
+.bkb-company-address {
+    font-size: 12.5px;
+    color: var(--sl-600, #475569);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+/* Dokumen Meta Box Kanan */
+.bkb-doc-meta {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 18px;
+    min-width: 230px;
+    text-align: right;
+}
+
+.bkb-doc-ref {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--sl-400, #94a3b8);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.bkb-doc-ref-code {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--az-900, #0c4a6e);
+    font-family: monospace;
+    letter-spacing: 0.5px;
+}
+
+.bkb-doc-date {
+    font-size: 11.5px;
+    color: var(--sl-500, #64748b);
+    margin-top: 6px;
+}
+
+/* Double Divider Kop Surat Akuntansi */
+.bkb-kop-divider {
+    position: relative;
+    margin: 0 0 24px 0;
+}
+
+.bkb-kop-divider__thick {
+    height: 3px;
+    background: linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #bae6fd 100%);
+    border-radius: 2px;
+}
+
+.bkb-kop-divider__thin {
+    height: 1px;
+    background: #cbd5e1;
+    margin-top: 2px;
+}
+
+/* Judul & Spesifikasi Akun Buku Besar */
+.bkb-title-banner {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.bkb-title-main {
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--sl-900, #0f172a);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.bkb-title-en {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--az-600, #0284c7);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.bkb-title-period {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--sl-700, #334155);
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 999px;
+    padding: 4px 16px;
+    margin-top: 8px;
+}
+
+/* Box Spesifikasi Akun yang Aktif */
+.bkb-account-spec {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 24px;
+}
+
+.bkb-spec-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.bkb-spec-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--sl-500, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+}
+
+.bkb-spec-value {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--sl-900, #0f172a);
+}
+
+.bkb-spec-badge {
+    display: inline-block;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 700;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid #bae6fd;
+    width: fit-content;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. TABEL BUKU BESAR BERKOLOM RANGKAP (CLEAN DOUBLE-BALANCE LEDGER)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bkb-table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    margin-bottom: 22px;
+}
+
+.bkb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+/* Dua Tingkat Table Header (thead) */
+.bkb-table thead tr:first-child th {
+    background: #f8fafc;
+    color: #0c4a6e;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #cbd5e1;
+    border-right: 1px solid #f1f5f9;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.bkb-table thead tr:last-child th {
+    background: #f1f5f9;
+    color: #0369a1;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 7px 12px;
+    text-align: right;
+    border-bottom: 2px solid #cbd5e1;
+    border-right: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.bkb-table thead th:last-child {
+    border-right: none;
+}
+
+/* Lebar Kolom */
+.bkb-col-date {
+    width: 105px;
+    text-align: center !important;
+}
+
+.bkb-col-desc {
+    min-width: 250px;
+}
+
+.bkb-col-ref {
+    width: 95px;
+    text-align: center !important;
+}
+
+.bkb-col-debit {
+    width: 140px;
+    text-align: right !important;
+}
+
+.bkb-col-kredit {
+    width: 140px;
+    text-align: right !important;
+}
+
+.bkb-col-saldo-h {
+    width: 280px;
+    text-align: center !important;
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
+    border-bottom: 1px solid #bae6fd !important;
+}
+
+.bkb-col-sdebit {
+    width: 140px;
+    text-align: right !important;
+}
+
+.bkb-col-skredit {
+    width: 140px;
+    text-align: right !important;
+}
+
+/* Table Body Rows */
+.bkb-table tbody tr {
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.bkb-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.bkb-table tbody td {
+    padding: 9px 14px;
+    border-right: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.bkb-table tbody td:last-child {
+    border-right: none;
+}
+
+/* Baris Saldo Awal */
+.bkb-row-saldo-awal {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.bkb-row-saldo-awal td {
+    font-weight: 600;
+    color: #1e293b;
+    padding: 10px 14px;
+}
+
+.bkb-tag-saldo-awal {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: #0c4a6e;
+}
+
+/* Ref Badge */
+.bkb-ref-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0284c7;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 6px;
+    padding: 2px 6px;
+    display: inline-block;
+    font-family: monospace;
+    text-align: center;
+}
+
+/* Nilai Moneter */
+.bkb-amount {
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.bkb-amount--debit {
+    color: #047857;
+}
+
+.bkb-amount--kredit {
+    color: #0369a1;
+}
+
+.bkb-amount--saldo-debit {
+    color: #047857;
+}
+
+.bkb-amount--saldo-kredit {
+    color: #0369a1;
+}
+
+.bkb-amount--dash {
+    color: #cbd5e1;
+    font-weight: 400;
+    text-align: center;
+    display: block;
+}
+
+/* Empty State */
+.bkb-empty-state {
+    padding: 48px 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+.bkb-empty-state i {
+    font-size: 42px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.bkb-empty-state p {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    margin: 0 0 6px 0;
+}
+
+.bkb-empty-state span {
+    font-size: 12.5px;
+    color: #94a3b8;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   6. FOOTER TABEL (TOTAL MUTASI & SALDO AKHIR)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bkb-table tfoot tr.bkb-foot-mutasi td {
+    background: #f8fafc;
+    padding: 10px 14px;
+    border-top: 2px solid #cbd5e1;
+    border-bottom: 1px solid #cbd5e1;
+    border-right: 1px solid #e2e8f0;
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.bkb-table tfoot tr.bkb-foot-final td {
+    background: #f0f9ff;
+    padding: 12px 14px;
+    border-bottom: 3px double #0284c7;
+    border-right: 1px solid rgba(186, 230, 253, 0.7);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.bkb-table tfoot td:last-child {
+    border-right: none;
+}
+
+.bkb-total-label {
+    text-align: right;
+    font-size: 12px;
+    font-weight: 800;
+    color: #0c4a6e;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.bkb-total-value {
+    font-size: 14px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Banner Status Penutupan Buku */
+.bkb-audit-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    margin-bottom: 28px;
+    font-size: 13px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+.bkb-audit-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+}
+
+.bkb-audit-status i {
+    font-size: 16px;
+}
+
+.bkb-audit-desc {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7. TANDA TANGAN PENGESAHAN (SIGNATURE BLOCK)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bkb-signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 36px;
+    padding-top: 24px;
+    border-top: 1px dashed #cbd5e1;
+}
+
+.bkb-sign-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.bkb-sign-date {
+    font-size: 12.5px;
+    color: #475569;
+    margin-bottom: 4px;
+}
+
+.bkb-sign-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 60px;
+}
+
+.bkb-sign-name {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0f172a;
+    border-bottom: 1.5px solid #0f172a;
+    padding-bottom: 2px;
+    min-width: 180px;
+    display: inline-block;
+}
+
+.bkb-sign-role {
+    font-size: 11.5px;
+    color: #64748b;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* Catatan Kaki Lembar Kerja */
+.bkb-sheet-footer {
+    margin-top: 28px;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   8. RESPONSIVE BREAKPOINTS (TABLET & MOBILE — SCREEN ONLY)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media screen and (max-width: 1024px) {
+    .bkb-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bkb-account-spec {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+
+    .bkb-sheet-container {
+        padding: 28px 24px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .bkb-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    .bkb-hero__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .bkb-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .bkb-toolbar__left,
+    .bkb-toolbar__right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .bkb-letterhead {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .bkb-doc-meta {
+        text-align: left;
+        width: 100%;
+    }
+
+    .bkb-signatures {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .bkb-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .bkb-account-spec {
+        grid-template-columns: 1fr;
+    }
+
+    .bkb-sheet-container {
+        padding: 20px 14px;
+        border-radius: 12px;
+    }
+
+    .bkb-filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bkb-input-group {
+        width: 100%;
+    }
+
+    .bkb-btn {
+        justify-content: center;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   9. PRINT STYLESHEET STANDAR KERTAS A4 (@media print)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media print {
+
+    /* Sembunyikan navigasi web, sidebar, topbar, toolbar, ikon */
+    .sidebar,
+    .topbar,
+    .burger,
+    .bkb-hero,
+    .bkb-metrics,
+    .bkb-toolbar,
+    .btn-print,
+    .bkb-btn,
+    .app-layout>aside,
+    .top-user-profile,
+    i.fa-solid,
+    i.fa-regular {
+        display: none !important;
+    }
+
+    * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    /* Reset background */
+    body,
+    html {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .app-layout,
+    .main,
+    .page-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+    }
+
+    .bkb-sheet-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+    }
+
+    .bkb-kop-divider__thick {
+        background: #000000 !important;
+        height: 2px !important;
+    }
+
+    .bkb-kop-divider__thin {
+        background: #000000 !important;
+    }
+
+    .bkb-brand-logo {
+        border: 1px solid #333333 !important;
+        color: #000000 !important;
+        background: #f1f5f9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .bkb-doc-meta {
+        background: transparent !important;
+        border: 1px solid #666666 !important;
+    }
+
+    .bkb-account-spec {
+        background: #ffffff !important;
+        border: 1px solid #000000 !important;
+    }
+
+    .bkb-spec-badge {
+        background: transparent !important;
+        border: 1px solid #333333 !important;
+        color: #000000 !important;
+    }
+
+    .bkb-table-container {
+        border: 1px solid #000000 !important;
+        border-radius: 0 !important;
+        overflow: visible !important;
+    }
+
+    .bkb-table {
+        font-size: 9.5pt !important;
+    }
+
+    .bkb-table thead tr:first-child th,
+    .bkb-table thead tr:last-child th {
+        background: #f1f5f9 !important;
+        color: #000000 !important;
+        border-bottom: 1.5px solid #000000 !important;
+        border-right: 1px solid #cccccc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .bkb-col-saldo-h {
+        background: #f1f5f9 !important;
+        color: #000000 !important;
+    }
+
+    .bkb-table tbody td {
+        border-right: 1px solid #cccccc !important;
+        color: #000000 !important;
+        padding: 6px 8px !important;
+    }
+
+    .bkb-row-saldo-awal {
+        background: #f8fafc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .bkb-table tfoot td {
+        background: #f8fafc !important;
+        color: #000000 !important;
+        border-top: 1.5px solid #000000 !important;
+        border-bottom: 2px solid #000000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .bkb-amount--debit,
+    .bkb-amount--kredit,
+    .bkb-amount--saldo-debit,
+    .bkb-amount--saldo-kredit,
+    .bkb-total-value {
+        color: #000000 !important;
+    }
+
+    .bkb-ref-badge {
+        border: 1px solid #666666 !important;
+        background: transparent !important;
+        color: #000000 !important;
+    }
+
+    .bkb-signatures {
+        page-break-inside: avoid;
+        margin-top: 24pt !important;
+        border-top: 1px solid #000000 !important;
+    }
+
+    .bkb-sign-title {
+        margin-bottom: 50pt !important;
+    }
+
+    .bkb-audit-banner {
+        border: 1px solid #666666 !important;
+        background: transparent !important;
+        color: #000000 !important;
+    }
+
+    @page {
+        size: A4 landscape;
+        margin: 1.2cm 1cm;
+    }
+}

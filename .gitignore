@@ -1,0 +1,28 @@
+# ============================================================
+# FinToko — .gitignore
+# ============================================================
+
+# Environment variables (JANGAN PERNAH commit!)
+.env
+
+# Upload files
+uploads/bukti/*
+!uploads/bukti/.gitkeep
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS
+desktop.ini
+
+# Docker volumes
+db_data/
+
+# Logs
+*.log

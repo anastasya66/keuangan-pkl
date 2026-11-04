@@ -1,0 +1,21 @@
+# ============================================================
+# FinToko — uploads/.htaccess
+# ⛔ CEGAH EKSEKUSI SCRIPT PHP DALAM SELURUH DIREKTORI UPLOAD
+# ============================================================
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+<FilesMatch "(?i)\.(php|php[0-9]|phtml|pl|py|jsp|asp|htm|html|shtml|sh|cgi|phar|exe)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+Options -Indexes -ExecCGI
