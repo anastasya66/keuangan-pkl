@@ -17,3 +17,4 @@ export function StatusBadge({ isActive }) {
 }
 
 export default StatusBadge;
+

@@ -158,3 +158,4 @@ class CategoryController extends Controller
         ], Response::HTTP_OK);
     }
 }
+

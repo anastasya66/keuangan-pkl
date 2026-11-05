@@ -75,4 +75,12 @@ class User extends Authenticatable
     {
         return (bool) $this->is_active;
     }
+
+    /**
+     * Relasi ke transaksi keuangan yang dibuat oleh pengguna ini.
+     */
+    public function financialTransactions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(FinancialTransaction::class, 'created_by');
+    }
 }

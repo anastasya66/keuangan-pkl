@@ -39,3 +39,4 @@ class UpdateCategoryRequest extends BaseApiRequest
         ];
     }
 }
+

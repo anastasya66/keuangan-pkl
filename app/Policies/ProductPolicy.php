@@ -52,3 +52,4 @@ class ProductPolicy
         return $user->isAdmin();
     }
 }
+

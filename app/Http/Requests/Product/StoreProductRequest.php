@@ -84,3 +84,4 @@ class StoreProductRequest extends BaseApiRequest
         ];
     }
 }
+

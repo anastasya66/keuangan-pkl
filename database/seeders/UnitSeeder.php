@@ -80,3 +80,4 @@ class UnitSeeder extends Seeder
         }
     }
 }
+

@@ -4,9 +4,11 @@ use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\FinancialTransactionController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\TransactionCategoryController;
 use App\Http\Controllers\Api\UnitController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,6 +58,24 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     // Master Data: Products
     Route::apiResource('products', ProductController::class);
     Route::patch('products/{product}/status', [ProductController::class, 'updateStatus']);
+
+    // Financial Management: Transaction Categories
+    Route::apiResource('transaction-categories', TransactionCategoryController::class);
+    Route::patch('transaction-categories/{transaction_category}/status', [TransactionCategoryController::class, 'updateStatus']);
+
+    // Financial Management: Transactions
+    Route::get('transactions', [FinancialTransactionController::class, 'index']);
+    Route::post('transactions', [FinancialTransactionController::class, 'store']);
+    Route::get('transactions/{transaction}', [FinancialTransactionController::class, 'show']);
+    Route::put('transactions/{transaction}', [FinancialTransactionController::class, 'update']);
+    Route::patch('transactions/{transaction}/cancel', [FinancialTransactionController::class, 'cancel']);
+    Route::delete('transactions/{transaction}', [FinancialTransactionController::class, 'destroy']);
+
+    // Dedicated Income & Expense aliases
+    Route::get('incomes', [FinancialTransactionController::class, 'index'])->name('incomes.index');
+    Route::post('incomes', [FinancialTransactionController::class, 'store'])->name('incomes.store');
+    Route::get('expenses', [FinancialTransactionController::class, 'index'])->name('expenses.index');
+    Route::post('expenses', [FinancialTransactionController::class, 'store'])->name('expenses.store');
 });
 
 // Admin-Only Routes (Role-based access protection)

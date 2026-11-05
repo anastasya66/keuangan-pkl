@@ -325,3 +325,4 @@ export function CategoryPage() {
 }
 
 export default CategoryPage;
+

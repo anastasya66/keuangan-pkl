@@ -26,3 +26,4 @@ class UnitResource extends JsonResource
         ];
     }
 }
+

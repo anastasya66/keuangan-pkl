@@ -26,3 +26,4 @@ class UpdateUnitStatusRequest extends BaseApiRequest
         ];
     }
 }
+

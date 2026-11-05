@@ -36,3 +36,4 @@ class StoreCategoryRequest extends BaseApiRequest
         ];
     }
 }
+

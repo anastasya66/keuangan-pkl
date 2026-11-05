@@ -87,3 +87,4 @@ class UpdateProductRequest extends BaseApiRequest
         ];
     }
 }
+

@@ -483,3 +483,4 @@ class MasterDataTest extends TestCase
         $this->assertEquals('PRD-ACTIVE', $data[0]['sku']);
     }
 }
+

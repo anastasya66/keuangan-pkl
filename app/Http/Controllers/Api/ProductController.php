@@ -186,3 +186,4 @@ class ProductController extends Controller
         ], Response::HTTP_OK);
     }
 }
+

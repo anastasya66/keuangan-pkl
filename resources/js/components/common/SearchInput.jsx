@@ -32,3 +32,4 @@ export function SearchInput({ value, onChange, placeholder = 'Cari data...', onC
 }
 
 export default SearchInput;
+

@@ -26,3 +26,4 @@ class UpdateProductStatusRequest extends BaseApiRequest
         ];
     }
 }
+
