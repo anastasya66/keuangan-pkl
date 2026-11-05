@@ -71,3 +71,4 @@ class AccountingIntegrationController extends Controller
         ]);
     }
 }
+

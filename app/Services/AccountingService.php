@@ -285,3 +285,4 @@ class AccountingService
         return $this->journalPostingService->reverseJournal($postedJournal, $userId, $reason);
     }
 }
+

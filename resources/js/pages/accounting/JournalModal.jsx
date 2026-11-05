@@ -341,3 +341,4 @@ export default function JournalModal({ isOpen, onClose, onSubmit, journal, isSub
     </div>
   );
 }
+

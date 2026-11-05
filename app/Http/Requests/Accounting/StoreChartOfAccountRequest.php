@@ -45,3 +45,4 @@ class StoreChartOfAccountRequest extends FormRequest
         }
     }
 }
+

@@ -55,3 +55,4 @@ class ChartOfAccountPolicy
         return $user->isActive() && $user->isAdmin();
     }
 }
+

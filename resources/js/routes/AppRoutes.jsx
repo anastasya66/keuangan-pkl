@@ -16,6 +16,10 @@ import CategoryPage from '../pages/categories/CategoryPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import ProductPage from '../pages/products/ProductPage';
 import ProfilePage from '../pages/profile/ProfilePage';
+import BalanceSheetPage from '../pages/reports/BalanceSheetPage';
+import IncomeStatementPage from '../pages/reports/IncomeStatementPage';
+import InventoryReportPage from '../pages/reports/InventoryReportPage';
+import StockMovementReportPage from '../pages/reports/StockMovementReportPage';
 import StaffDashboardPage from '../pages/staff/StaffDashboardPage';
 import UnitPage from '../pages/units/UnitPage';
 
@@ -86,6 +90,11 @@ export function AppRoutes() {
         <Route path="accounting/journals/:id" element={<JournalDetailPage />} />
         <Route path="accounting/ledger" element={<GeneralLedgerPage />} />
         <Route path="accounting/trial-balance" element={<TrialBalancePage />} />
+        {/* Reports Routes (Admin) */}
+        <Route path="reports/income-statement" element={<IncomeStatementPage />} />
+        <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
+        <Route path="reports/inventory" element={<InventoryReportPage />} />
+        <Route path="reports/stock-movements" element={<StockMovementReportPage />} />
       </Route>
 
       {/* Staff Protected Routes */}
@@ -108,6 +117,11 @@ export function AppRoutes() {
         <Route path="accounting/journals/:id" element={<JournalDetailPage />} />
         <Route path="accounting/ledger" element={<GeneralLedgerPage />} />
         <Route path="accounting/trial-balance" element={<TrialBalancePage />} />
+        {/* Reports Routes (Staff) */}
+        <Route path="reports/income-statement" element={<IncomeStatementPage />} />
+        <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
+        <Route path="reports/inventory" element={<InventoryReportPage />} />
+        <Route path="reports/stock-movements" element={<StockMovementReportPage />} />
       </Route>
 
       {/* Profile Route (Shared by both roles) */}

@@ -421,3 +421,4 @@ export function JournalDetailPage() {
 }
 
 export default JournalDetailPage;
+

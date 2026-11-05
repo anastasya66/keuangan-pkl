@@ -33,3 +33,4 @@ class TrialBalanceController extends Controller
         ]);
     }
 }
+

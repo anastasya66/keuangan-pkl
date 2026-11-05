@@ -440,3 +440,4 @@ export function GeneralJournalPage() {
 }
 
 export default GeneralJournalPage;
+

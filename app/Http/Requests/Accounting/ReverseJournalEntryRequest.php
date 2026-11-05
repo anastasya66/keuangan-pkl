@@ -27,3 +27,4 @@ class ReverseJournalEntryRequest extends FormRequest
         ];
     }
 }
+

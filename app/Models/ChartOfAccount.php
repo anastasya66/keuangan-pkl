@@ -96,3 +96,4 @@ class ChartOfAccount extends Model
         return $query->where('account_type', $type);
     }
 }
+

@@ -73,3 +73,4 @@ class JournalEntryPolicy
         return $user->isActive() && $user->isAdmin() && $journalEntry->status === 'posted';
     }
 }
+

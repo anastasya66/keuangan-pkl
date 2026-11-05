@@ -71,3 +71,4 @@ class JournalEntryResource extends JsonResource
         ];
     }
 }
+

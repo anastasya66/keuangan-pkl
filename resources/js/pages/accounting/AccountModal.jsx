@@ -232,3 +232,4 @@ export default function AccountModal({ isOpen, onClose, onSubmit, account, isSub
     </div>
   );
 }
+

@@ -38,3 +38,4 @@ class ChartOfAccountResource extends JsonResource
         ];
     }
 }
+

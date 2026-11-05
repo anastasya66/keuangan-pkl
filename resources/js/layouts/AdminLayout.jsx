@@ -60,6 +60,18 @@ export function AdminLayout({ children }) {
               <NavLink to="/admin/accounting/trial-balance" className={navClass}>
                 Neraca Saldo
               </NavLink>
+              <NavLink to="/admin/reports/income-statement" className={navClass}>
+                Laba Rugi
+              </NavLink>
+              <NavLink to="/admin/reports/balance-sheet" className={navClass}>
+                Neraca
+              </NavLink>
+              <NavLink to="/admin/reports/inventory" className={navClass}>
+                Laporan Stok
+              </NavLink>
+              <NavLink to="/admin/reports/stock-movements" className={navClass}>
+                Mutasi
+              </NavLink>
               <NavLink to="/profile" className={navClass}>
                 Profil
               </NavLink>
@@ -109,6 +121,18 @@ export function AdminLayout({ children }) {
           </NavLink>
           <NavLink to="/admin/accounting/trial-balance" className={navClass}>
             Neraca Saldo
+          </NavLink>
+          <NavLink to="/admin/reports/income-statement" className={navClass}>
+            Laba Rugi
+          </NavLink>
+          <NavLink to="/admin/reports/balance-sheet" className={navClass}>
+            Neraca
+          </NavLink>
+          <NavLink to="/admin/reports/inventory" className={navClass}>
+            Laporan Stok
+          </NavLink>
+          <NavLink to="/admin/reports/stock-movements" className={navClass}>
+            Mutasi
           </NavLink>
           <NavLink to="/profile" className={navClass}>
             Profil

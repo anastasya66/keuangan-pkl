@@ -69,3 +69,4 @@ class AccountingMappingSeeder extends Seeder
         }
     }
 }
+

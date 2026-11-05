@@ -168,3 +168,4 @@ class ChartOfAccountSeeder extends Seeder
         }
     }
 }
+

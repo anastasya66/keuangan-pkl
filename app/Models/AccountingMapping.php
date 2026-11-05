@@ -45,3 +45,4 @@ class AccountingMapping extends Model
         return static::where('mapping_code', $code)->value('account_id');
     }
 }
+

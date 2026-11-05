@@ -341,3 +341,4 @@ export function ChartOfAccountsPage() {
 }
 
 export default ChartOfAccountsPage;
+

@@ -59,3 +59,4 @@ class JournalEntryDetail extends Model
         return $this->belongsTo(ChartOfAccount::class, 'account_id');
     }
 }
+

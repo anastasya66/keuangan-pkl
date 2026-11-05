@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ChartOfAccountController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FinancialTransactionController;
 use App\Http\Controllers\Api\GeneralLedgerController;
 use App\Http\Controllers\Api\HealthController;
@@ -14,6 +15,9 @@ use App\Http\Controllers\Api\InventoryMovementController;
 use App\Http\Controllers\Api\JournalEntryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\Reports\BalanceSheetController;
+use App\Http\Controllers\Api\Reports\IncomeStatementController;
+use App\Http\Controllers\Api\Reports\InventoryReportController;
 use App\Http\Controllers\Api\TransactionCategoryController;
 use App\Http\Controllers\Api\TrialBalanceController;
 use App\Http\Controllers\Api\UnitController;
@@ -133,6 +137,40 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::post('sync-transaction/{transaction}', [AccountingIntegrationController::class, 'syncTransaction']);
         Route::post('sync-inventory/{movement}', [AccountingIntegrationController::class, 'syncInventory']);
         Route::get('mappings', [AccountingIntegrationController::class, 'mappings']);
+    });
+
+    // 6. Dashboard Endpoints
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardController::class, 'index']);
+        Route::get('financial-summary', [DashboardController::class, 'financialSummary']);
+        Route::get('financial-chart', [DashboardController::class, 'financialChart']);
+        Route::get('expense-distribution', [DashboardController::class, 'expenseDistribution']);
+        Route::get('recent-activities', [DashboardController::class, 'recentActivities']);
+        Route::get('inventory-summary', [DashboardController::class, 'inventorySummary']);
+        Route::get('low-stock', [DashboardController::class, 'lowStock']);
+    });
+
+    // 7. Reports Endpoints (Income Statement, Balance Sheet, Inventory & Movements)
+    Route::prefix('reports')->group(function () {
+        // Income Statement
+        Route::get('income-statement', [IncomeStatementController::class, 'index']);
+        Route::get('income-statement/export/pdf', [IncomeStatementController::class, 'exportPdf']);
+        Route::get('income-statement/export/excel', [IncomeStatementController::class, 'exportExcel']);
+
+        // Balance Sheet
+        Route::get('balance-sheet', [BalanceSheetController::class, 'index']);
+        Route::get('balance-sheet/export/pdf', [BalanceSheetController::class, 'exportPdf']);
+        Route::get('balance-sheet/export/excel', [BalanceSheetController::class, 'exportExcel']);
+
+        // Inventory Report
+        Route::get('inventory', [InventoryReportController::class, 'index']);
+        Route::get('inventory/export/pdf', [InventoryReportController::class, 'exportPdf']);
+        Route::get('inventory/export/excel', [InventoryReportController::class, 'exportExcel']);
+
+        // Stock Movements Report
+        Route::get('stock-movements', [InventoryReportController::class, 'stockMovements']);
+        Route::get('stock-movements/export/pdf', [InventoryReportController::class, 'stockMovementsExportPdf']);
+        Route::get('stock-movements/export/excel', [InventoryReportController::class, 'stockMovementsExportExcel']);
     });
 });
 
