@@ -7,9 +7,12 @@ import StaffLayout from '../layouts/StaffLayout';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import UserManagementPage from '../pages/admin/UserManagementPage';
 import LoginPage from '../pages/auth/LoginPage';
+import CategoryPage from '../pages/categories/CategoryPage';
 import NotFoundPage from '../pages/NotFoundPage';
+import ProductPage from '../pages/products/ProductPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import StaffDashboardPage from '../pages/staff/StaffDashboardPage';
+import UnitPage from '../pages/units/UnitPage';
 
 // Wrapper for Profile page to render with the user's role layout
 function ProfileWrapper() {
@@ -33,7 +36,7 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      {/* Root redirect */}
+      {/* Root redirect based on role */}
       <Route
         path="/"
         element={
@@ -68,6 +71,9 @@ export function AppRoutes() {
       >
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
+        <Route path="products" element={<ProductPage />} />
+        <Route path="categories" element={<CategoryPage />} />
+        <Route path="units" element={<UnitPage />} />
         <Route path="users" element={<UserManagementPage />} />
       </Route>
 
@@ -82,6 +88,9 @@ export function AppRoutes() {
       >
         <Route index element={<Navigate to="/staff/dashboard" replace />} />
         <Route path="dashboard" element={<StaffDashboardPage />} />
+        <Route path="products" element={<ProductPage />} />
+        <Route path="categories" element={<CategoryPage />} />
+        <Route path="units" element={<UnitPage />} />
       </Route>
 
       {/* Profile Route (Shared by both roles) */}
@@ -101,4 +110,3 @@ export function AppRoutes() {
 }
 
 export default AppRoutes;
-

@@ -3,8 +3,11 @@
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\UnitController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -33,11 +36,26 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-// Authenticated User Profile Routes (accessible by both Admin & Staff)
-Route::middleware(['auth:sanctum', 'active'])->prefix('user')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'show']);
-    Route::put('/profile', [ProfileController::class, 'update']);
-    Route::put('/change-password', [ProfileController::class, 'changePassword']);
+// Authenticated Routes (Accessible by both Admin & Staff according to Policies)
+Route::middleware(['auth:sanctum', 'active'])->group(function () {
+    // User Profile Routes
+    Route::prefix('user')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::put('/profile', [ProfileController::class, 'update']);
+        Route::put('/change-password', [ProfileController::class, 'changePassword']);
+    });
+
+    // Master Data: Categories
+    Route::apiResource('categories', CategoryController::class);
+    Route::patch('categories/{category}/status', [CategoryController::class, 'updateStatus']);
+
+    // Master Data: Units
+    Route::apiResource('units', UnitController::class);
+    Route::patch('units/{unit}/status', [UnitController::class, 'updateStatus']);
+
+    // Master Data: Products
+    Route::apiResource('products', ProductController::class);
+    Route::patch('products/{product}/status', [ProductController::class, 'updateStatus']);
 });
 
 // Admin-Only Routes (Role-based access protection)

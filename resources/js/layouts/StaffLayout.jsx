@@ -11,16 +11,16 @@ export function StaffLayout({ children }) {
   };
 
   const navClass = ({ isActive }) =>
-    `px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+    `px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
       isActive
-        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-semibold'
         : 'text-slate-400 hover:text-white hover:bg-slate-800'
     }`;
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Top Navigation Bar */}
-      <header className="bg-slate-800/90 backdrop-blur border-b border-slate-700 sticky top-0 z-30">
+      <header className="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/staff/dashboard" className="flex items-center gap-2">
@@ -28,33 +28,61 @@ export function StaffLayout({ children }) {
                 FinToko
               </span>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                Staff Kasir
+                Staff
               </span>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-2">
+            <nav className="hidden lg:flex items-center gap-1.5">
               <NavLink to="/staff/dashboard" className={navClass}>
                 Dashboard
               </NavLink>
+              <NavLink to="/staff/products" className={navClass}>
+                Katalog Produk
+              </NavLink>
+              <NavLink to="/staff/categories" className={navClass}>
+                Kategori
+              </NavLink>
+              <NavLink to="/staff/units" className={navClass}>
+                Satuan
+              </NavLink>
               <NavLink to="/profile" className={navClass}>
-                Profil Saya
+                Profil
               </NavLink>
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="hidden sm:flex flex-col text-right">
-              <span className="text-sm font-semibold text-white">{user?.name}</span>
-              <span className="text-xs text-slate-400">{user?.email}</span>
+              <span className="text-sm font-semibold text-white leading-tight">{user?.name}</span>
+              <span className="text-[11px] text-cyan-400 font-mono">staff toko</span>
             </div>
 
             <button
               onClick={handleLogout}
-              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer"
             >
               Keluar
             </button>
           </div>
+        </div>
+
+        {/* Sub Navigation Bar for mobile */}
+        <div className="lg:hidden border-t border-slate-800/80 px-4 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <NavLink to="/staff/dashboard" className={navClass}>
+            Dashboard
+          </NavLink>
+          <NavLink to="/staff/products" className={navClass}>
+            Katalog Produk
+          </NavLink>
+          <NavLink to="/staff/categories" className={navClass}>
+            Kategori
+          </NavLink>
+          <NavLink to="/staff/units" className={navClass}>
+            Satuan
+          </NavLink>
+          <NavLink to="/profile" className={navClass}>
+            Profil
+          </NavLink>
         </div>
       </header>
 
@@ -64,12 +92,11 @@ export function StaffLayout({ children }) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800 text-center py-4 text-xs text-slate-500">
-        FinToko &copy; 2026 — Staff Area • Role: {user?.role}
+      <footer className="border-t border-slate-900 text-center py-4 text-xs text-slate-500">
+        FinToko &copy; 2026 — Master Data View • Mode: Staff
       </footer>
     </div>
   );
 }
 
 export default StaffLayout;
-

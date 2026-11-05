@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Hash;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database with initial admin, staff, and inactive users.
+     * Seed the application's database with initial admin, staff, and inactive users,
+     * as well as master data (categories, units, and products).
      */
     public function run(): void
     {
@@ -48,5 +49,12 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
+        // Seed Master Data: Categories, Units, Products
+        $this->call([
+            CategorySeeder::class,
+            UnitSeeder::class,
+            ProductSeeder::class,
+        ]);
     }
 }

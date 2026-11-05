@@ -1,8 +1,25 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import productService from '../../services/productService';
 
 export function StaffDashboardPage() {
   const { user } = useAuth();
+  const [activeProductsCount, setActiveProductsCount] = useState(0);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const response = await productService.getProducts({ per_page: 1 });
+        if (response.success) {
+          setActiveProductsCount(response.pagination?.total ?? 0);
+        }
+      } catch (err) {
+        console.error('Gagal memuat produk aktif:', err);
+      }
+    }
+    loadStats();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -18,45 +35,60 @@ export function StaffDashboardPage() {
               Halo, {user?.name}!
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Selamat datang di portal operasional FinToko. Akun Anda memiliki izin akses kasir dan operasional harian.
+              Selamat datang di portal operasional FinToko. Anda dapat melihat katalog produk aktif, kategori, dan satuan toko.
             </p>
           </div>
           <Link
-            to="/profile"
-            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition-all shadow-lg shadow-cyan-900/30 cursor-pointer"
+            to="/staff/products"
+            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition-all shadow-lg shadow-cyan-900/30 cursor-pointer self-start sm:self-auto"
           >
-            👤 Pengaturan Profil
+            📦 Lihat Katalog Produk
           </Link>
         </div>
       </div>
 
-      {/* Info Status Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="bg-slate-800/50 border border-slate-700/70 rounded-2xl p-6">
-          <div className="text-xs font-semibold uppercase text-slate-400">Status Akun</div>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-            <span className="text-lg font-bold text-white">Aktif & Terverifikasi</span>
+      {/* Quick Nav Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <Link
+          to="/staff/products"
+          className="bg-slate-800/60 hover:bg-slate-800/90 border border-slate-700/70 rounded-2xl p-5 transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-2xl">📦</span>
+            <span className="text-xs text-cyan-400 group-hover:underline">Buka &rarr;</span>
           </div>
-          <p className="text-xs text-slate-500 mt-2">
-            Email terdaftar: <span className="text-slate-300 font-mono">{user?.email}</span>
+          <div className="text-xl font-bold text-white mt-3">Katalog Produk</div>
+          <p className="text-xs text-slate-400 mt-1">
+            {activeProductsCount} produk aktif siap ditransaksikan
           </p>
-        </div>
+        </Link>
 
-        <div className="bg-slate-800/50 border border-slate-700/70 rounded-2xl p-6">
-          <div className="text-xs font-semibold uppercase text-slate-400">Batasan Otorisasi</div>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-amber-400 text-base">🛡️</span>
-            <span className="text-sm font-semibold text-slate-200">Staff Restricted Scope</span>
+        <Link
+          to="/staff/categories"
+          className="bg-slate-800/60 hover:bg-slate-800/90 border border-slate-700/70 rounded-2xl p-5 transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-2xl">🏷️</span>
+            <span className="text-xs text-cyan-400 group-hover:underline">Buka &rarr;</span>
           </div>
-          <p className="text-xs text-slate-500 mt-2">
-            Anda dapat melihat dan memperbarui profil pribadi, namun tidak memiliki hak mengelola pengguna lain.
-          </p>
-        </div>
+          <div className="text-xl font-bold text-white mt-3">Kategori Produk</div>
+          <p className="text-xs text-slate-400 mt-1">Daftar kelompok barang aktif</p>
+        </Link>
+
+        <Link
+          to="/staff/units"
+          className="bg-slate-800/60 hover:bg-slate-800/90 border border-slate-700/70 rounded-2xl p-5 transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-2xl">📏</span>
+            <span className="text-xs text-cyan-400 group-hover:underline">Buka &rarr;</span>
+          </div>
+          <div className="text-xl font-bold text-white mt-3">Satuan Ukuran</div>
+          <p className="text-xs text-slate-400 mt-1">Daftar satuan aktif toko</p>
+        </Link>
       </div>
     </div>
   );
 }
 
 export default StaffDashboardPage;
-

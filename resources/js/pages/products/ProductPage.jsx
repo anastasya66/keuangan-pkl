@@ -1,0 +1,447 @@
+import { useCallback, useEffect, useState } from 'react';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import DataTable from '../../components/common/DataTable';
+import Pagination from '../../components/common/Pagination';
+import SearchInput from '../../components/common/SearchInput';
+import StatusBadge from '../../components/common/StatusBadge';
+import useAuth from '../../hooks/useAuth';
+import categoryService from '../../services/categoryService';
+import productService from '../../services/productService';
+import unitService from '../../services/unitService';
+import { formatRupiah } from '../../utils/currency';
+import ProductModal from './ProductModal';
+
+export function ProductPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Filters & Search
+  const [search, setSearch] = useState('');
+  const [categoryIdFilter, setCategoryIdFilter] = useState('');
+  const [unitIdFilter, setUnitIdFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Notification Toast
+  const [toast, setToast] = useState(null);
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Delete Dialog State
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  // Load Categories & Units for filter dropdowns
+  useEffect(() => {
+    async function loadFilterOptions() {
+      try {
+        const [catRes, unitRes] = await Promise.all([
+          categoryService.getCategories({ all: true }),
+          unitService.getUnits({ all: true }),
+        ]);
+        if (catRes.success) setCategories(catRes.data);
+        if (unitRes.success) setUnits(unitRes.data);
+      } catch (err) {
+        console.error('Gagal memuat opsi filter:', err);
+      }
+    }
+    loadFilterOptions();
+  }, []);
+
+  // Fetch products
+  const fetchProducts = useCallback(
+    async (
+      page = 1,
+      searchQuery = search,
+      catId = categoryIdFilter,
+      uId = unitIdFilter,
+      status = statusFilter
+    ) => {
+      setIsLoading(true);
+      try {
+        const params = { page, search: searchQuery };
+        if (catId) params.category_id = catId;
+        if (uId) params.unit_id = uId;
+        if (status !== '') params.is_active = status;
+
+        const response = await productService.getProducts(params);
+        if (response.success) {
+          setProducts(response.data);
+          setPagination(response.pagination);
+        }
+      } catch (error) {
+        showToast(error.response?.data?.message || 'Gagal memuat daftar produk', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [search, categoryIdFilter, unitIdFilter, statusFilter]
+  );
+
+  useEffect(() => {
+    fetchProducts(currentPage, search, categoryIdFilter, unitIdFilter, statusFilter);
+  }, [currentPage, categoryIdFilter, unitIdFilter, statusFilter, fetchProducts]);
+
+  const handleSearchChange = (value) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
+
+  const handleSearchClear = () => {
+    setSearch('');
+    setCurrentPage(1);
+    fetchProducts(1, '', categoryIdFilter, unitIdFilter, statusFilter);
+  };
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setCategoryIdFilter('');
+    setUnitIdFilter('');
+    setStatusFilter('');
+    setCurrentPage(1);
+    fetchProducts(1, '', '', '', '');
+  };
+
+  const handleFormSubmit = async (formData) => {
+    setIsSubmitting(true);
+    try {
+      if (selectedProduct) {
+        await productService.updateProduct(selectedProduct.id, formData);
+        showToast('Produk berhasil diperbarui!');
+      } else {
+        await productService.createProduct(formData);
+        showToast('Produk baru berhasil ditambahkan!');
+      }
+      setIsModalOpen(false);
+      setSelectedProduct(null);
+      fetchProducts(currentPage);
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Gagal menyimpan produk';
+      const errors = error.response?.data?.errors;
+      showToast(message, 'error');
+      return { success: false, errors };
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleStatus = async (prod) => {
+    try {
+      const newStatus = !prod.is_active;
+      await productService.updateProductStatus(prod.id, newStatus);
+      showToast(`Produk ${prod.name} berhasil ${newStatus ? 'diaktifkan' : 'dinonaktifkan'}`);
+      fetchProducts(currentPage);
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Gagal mengubah status produk', 'error');
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await productService.deleteProduct(deleteTarget.id);
+      showToast(`Produk ${deleteTarget.name} berhasil dihapus (soft delete).`);
+      setDeleteTarget(null);
+      fetchProducts(currentPage);
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Gagal menghapus produk', 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const columns = [
+    { header: 'Kode / SKU', className: 'w-32' },
+    { header: 'Nama Produk & Kategori', className: 'w-1/3' },
+    { header: 'Satuan', className: 'text-center' },
+    { header: 'Harga Beli', className: 'text-right' },
+    { header: 'Harga Jual', className: 'text-right' },
+    { header: 'Status', className: 'text-center' },
+    ...(isAdmin ? [{ header: 'Aksi', className: 'text-right' }] : []),
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`p-4 rounded-xl border flex items-center justify-between text-sm shadow-xl transition-all ${
+            toast.type === 'error'
+              ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span>{toast.type === 'error' ? '⚠️' : '✅'}</span>
+            <span className="font-medium">{toast.message}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            className="text-xs text-slate-400 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Header & Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <span>📦</span> Manajemen Master Produk
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Katalog barang toko, penetapan harga modal (beli), dan harga jual kasir
+          </p>
+        </div>
+
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedProduct(null);
+              setIsModalOpen(true);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold text-sm transition-all shadow-lg shadow-emerald-900/30 cursor-pointer self-start sm:self-auto"
+          >
+            <span>+</span> Tambah Produk
+          </button>
+        )}
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              fetchProducts(1, search, categoryIdFilter, unitIdFilter, statusFilter);
+            }}
+            className="flex-1 max-w-md"
+          >
+            <SearchInput
+              value={search}
+              onChange={handleSearchChange}
+              onClear={handleSearchClear}
+              placeholder="Cari nama, SKU, atau barcode produk..."
+            />
+          </form>
+
+          {/* Filter Dropdowns */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Category Filter */}
+            <select
+              value={categoryIdFilter}
+              onChange={(e) => {
+                setCategoryIdFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+            >
+              <option value="">Semua Kategori</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Unit Filter */}
+            <select
+              value={unitIdFilter}
+              onChange={(e) => {
+                setUnitIdFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+            >
+              <option value="">Semua Satuan</option>
+              {units.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name} ({u.symbol})
+                </option>
+              ))}
+            </select>
+
+            {/* Status Filter (Admin Only) */}
+            {isAdmin && (
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              >
+                <option value="">Semua Status</option>
+                <option value="true">Hanya Aktif</option>
+                <option value="false">Hanya Nonaktif</option>
+              </select>
+            )}
+
+            {/* Reset Filter Button */}
+            {(search || categoryIdFilter || unitIdFilter || statusFilter) && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 transition-colors cursor-pointer"
+                title="Reset seluruh filter"
+              >
+                Reset Filter
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Products Data Table */}
+      <DataTable
+        columns={columns}
+        data={products}
+        isLoading={isLoading}
+        emptyMessage="Belum ada data produk yang cocok dengan pencarian atau filter Anda."
+        renderRow={(prod) => (
+          <tr key={prod.id} className="hover:bg-slate-800/40 transition-colors">
+            {/* SKU & Barcode */}
+            <td className="px-4 py-3.5 whitespace-nowrap">
+              <div className="font-mono text-xs font-bold text-emerald-400">
+                {prod.sku}
+              </div>
+              {prod.barcode && (
+                <div className="font-mono text-[10px] text-slate-400 mt-0.5">
+                  🏷️ {prod.barcode}
+                </div>
+              )}
+            </td>
+
+            {/* Name & Category */}
+            <td className="px-4 py-3.5">
+              <div className="font-semibold text-white">
+                {prod.name}
+              </div>
+              <div className="inline-flex items-center gap-1.5 mt-1">
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+                  {prod.category?.name || 'Tanpa Kategori'}
+                </span>
+                {prod.description && (
+                  <span className="text-[11px] text-slate-400 truncate max-w-xs">
+                    • {prod.description}
+                  </span>
+                )}
+              </div>
+            </td>
+
+            {/* Unit */}
+            <td className="px-4 py-3.5 text-center">
+              <span className="px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                {prod.unit?.symbol || '-'}
+              </span>
+            </td>
+
+            {/* Purchase Price */}
+            <td className="px-4 py-3.5 text-right font-mono text-xs text-slate-300 whitespace-nowrap">
+              {formatRupiah(prod.purchase_price_numeric)}
+            </td>
+
+            {/* Selling Price */}
+            <td className="px-4 py-3.5 text-right font-mono text-xs font-bold text-emerald-400 whitespace-nowrap">
+              {formatRupiah(prod.selling_price_numeric)}
+            </td>
+
+            {/* Status */}
+            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+              <StatusBadge isActive={prod.is_active} />
+            </td>
+
+            {/* Actions (Admin Only) */}
+            {isAdmin && (
+              <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                <div className="inline-flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedProduct(prod);
+                      setIsModalOpen(true);
+                    }}
+                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleToggleStatus(prod)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                      prod.is_active
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                    }`}
+                  >
+                    {prod.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(prod)}
+                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-colors cursor-pointer"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </td>
+            )}
+          </tr>
+        )}
+      />
+
+      {/* Pagination */}
+      <Pagination
+        pagination={pagination}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
+
+      {/* Product Create/Edit Modal */}
+      <ProductModal
+        isOpen={isModalOpen}
+        product={selectedProduct}
+        isLoading={isSubmitting}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        onSubmit={handleFormSubmit}
+      />
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        title="Hapus Produk"
+        message={`Apakah Anda yakin ingin menghapus produk "${deleteTarget?.name}" (SKU: ${deleteTarget?.sku})? Data akan dihapus menggunakan mekanisme Soft Delete sehingga riwayat transaksi tetap aman.`}
+        confirmText="Hapus Produk"
+        confirmColor="danger"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+    </div>
+  );
+}
+
+export default ProductPage;
