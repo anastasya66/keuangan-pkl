@@ -48,6 +48,18 @@ export function AdminLayout({ children }) {
               <NavLink to="/admin/users" className={navClass}>
                 Pengguna
               </NavLink>
+              <NavLink to="/admin/accounting/accounts" className={navClass}>
+                Akun (COA)
+              </NavLink>
+              <NavLink to="/admin/accounting/journals" className={navClass}>
+                Jurnal
+              </NavLink>
+              <NavLink to="/admin/accounting/ledger" className={navClass}>
+                Buku Besar
+              </NavLink>
+              <NavLink to="/admin/accounting/trial-balance" className={navClass}>
+                Neraca Saldo
+              </NavLink>
               <NavLink to="/profile" className={navClass}>
                 Profil
               </NavLink>
@@ -85,6 +97,18 @@ export function AdminLayout({ children }) {
           </NavLink>
           <NavLink to="/admin/users" className={navClass}>
             Pengguna
+          </NavLink>
+          <NavLink to="/admin/accounting/accounts" className={navClass}>
+            Akun (COA)
+          </NavLink>
+          <NavLink to="/admin/accounting/journals" className={navClass}>
+            Jurnal
+          </NavLink>
+          <NavLink to="/admin/accounting/ledger" className={navClass}>
+            Buku Besar
+          </NavLink>
+          <NavLink to="/admin/accounting/trial-balance" className={navClass}>
+            Neraca Saldo
           </NavLink>
           <NavLink to="/profile" className={navClass}>
             Profil

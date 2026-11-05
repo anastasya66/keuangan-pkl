@@ -63,3 +63,4 @@ class StoreStockOutRequest extends BaseApiRequest
         ];
     }
 }
+

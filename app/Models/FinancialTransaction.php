@@ -128,6 +128,24 @@ class FinancialTransaction extends Model
     }
 
     /**
+     * Relasi ke jurnal akuntansi yang terkait transaksi ini.
+     */
+    public function journalEntries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JournalEntry::class, 'source_id')->where('source_type', 'financial_transaction');
+    }
+
+    /**
+     * Jurnal aktif yang belum dibatalkan/reversal.
+     */
+    public function activeJournal(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(JournalEntry::class, 'source_id')
+            ->where('source_type', 'financial_transaction')
+            ->where('status', '!=', 'reversed');
+    }
+
+    /**
      * Generate kode transaksi unik otomatis (Format: TRX-YYYYMMDD-XXXX).
      */
     public static function generateTransactionCode(?string $date = null): string

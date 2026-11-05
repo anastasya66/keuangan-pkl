@@ -48,3 +48,4 @@ class InventoryMovementPolicy
         return $user->isAdmin();
     }
 }
+

@@ -45,6 +45,18 @@ export function StaffLayout({ children }) {
               <NavLink to="/staff/units" className={navClass}>
                 Satuan
               </NavLink>
+              <NavLink to="/staff/accounting/accounts" className={navClass}>
+                Akun (COA)
+              </NavLink>
+              <NavLink to="/staff/accounting/journals" className={navClass}>
+                Jurnal
+              </NavLink>
+              <NavLink to="/staff/accounting/ledger" className={navClass}>
+                Buku Besar
+              </NavLink>
+              <NavLink to="/staff/accounting/trial-balance" className={navClass}>
+                Neraca Saldo
+              </NavLink>
               <NavLink to="/profile" className={navClass}>
                 Profil
               </NavLink>
@@ -79,6 +91,18 @@ export function StaffLayout({ children }) {
           </NavLink>
           <NavLink to="/staff/units" className={navClass}>
             Satuan
+          </NavLink>
+          <NavLink to="/staff/accounting/accounts" className={navClass}>
+            Akun (COA)
+          </NavLink>
+          <NavLink to="/staff/accounting/journals" className={navClass}>
+            Jurnal
+          </NavLink>
+          <NavLink to="/staff/accounting/ledger" className={navClass}>
+            Buku Besar
+          </NavLink>
+          <NavLink to="/staff/accounting/trial-balance" className={navClass}>
+            Neraca Saldo
           </NavLink>
           <NavLink to="/profile" className={navClass}>
             Profil

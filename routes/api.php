@@ -1,16 +1,21 @@
 <?php
 
+use App\Http\Controllers\Api\AccountingIntegrationController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ChartOfAccountController;
 use App\Http\Controllers\Api\FinancialTransactionController;
+use App\Http\Controllers\Api\GeneralLedgerController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\InventoryMovementController;
+use App\Http\Controllers\Api\JournalEntryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\TransactionCategoryController;
+use App\Http\Controllers\Api\TrialBalanceController;
 use App\Http\Controllers\Api\UnitController;
 use Illuminate\Support\Facades\Route;
 
@@ -100,6 +105,34 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         // Inventory Stock Overview & Product Stock Detail
         Route::get('/', [InventoryController::class, 'index']);
         Route::get('{product}', [InventoryController::class, 'show'])->whereNumber('product');
+    });
+
+    // Accounting Module (Double-Entry Bookkeeping)
+    // 1. Chart of Accounts
+    Route::apiResource('chart-of-accounts', ChartOfAccountController::class);
+    Route::patch('chart-of-accounts/{chart_of_account}/status', [ChartOfAccountController::class, 'updateStatus']);
+
+    // 2. General Journal
+    Route::get('journals', [JournalEntryController::class, 'index']);
+    Route::post('journals', [JournalEntryController::class, 'store']);
+    Route::get('journals/{journal}', [JournalEntryController::class, 'show'])->whereNumber('journal');
+    Route::put('journals/{journal}', [JournalEntryController::class, 'update'])->whereNumber('journal');
+    Route::delete('journals/{journal}', [JournalEntryController::class, 'destroy'])->whereNumber('journal');
+    Route::post('journals/{journal}/post', [JournalEntryController::class, 'post'])->whereNumber('journal');
+    Route::post('journals/{journal}/reverse', [JournalEntryController::class, 'reverse'])->whereNumber('journal');
+
+    // 3. General Ledger
+    Route::get('general-ledger', [GeneralLedgerController::class, 'index']);
+    Route::get('general-ledger/{accountId}', [GeneralLedgerController::class, 'show'])->whereNumber('accountId');
+
+    // 4. Trial Balance
+    Route::get('trial-balance', [TrialBalanceController::class, 'index']);
+
+    // 5. Accounting Integrations & Mappings
+    Route::prefix('accounting')->group(function () {
+        Route::post('sync-transaction/{transaction}', [AccountingIntegrationController::class, 'syncTransaction']);
+        Route::post('sync-inventory/{movement}', [AccountingIntegrationController::class, 'syncInventory']);
+        Route::get('mappings', [AccountingIntegrationController::class, 'mappings']);
     });
 });
 

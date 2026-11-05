@@ -87,6 +87,24 @@ class InventoryMovement extends Model
     }
 
     /**
+     * Relasi ke jurnal akuntansi yang terkait mutasi ini.
+     */
+    public function journalEntries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JournalEntry::class, 'source_id')->where('source_type', 'inventory_movement');
+    }
+
+    /**
+     * Jurnal aktif yang belum dibatalkan/reversal.
+     */
+    public function activeJournal(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(JournalEntry::class, 'source_id')
+            ->where('source_type', 'inventory_movement')
+            ->where('status', '!=', 'reversed');
+    }
+
+    /**
      * Generate kode mutasi unik otomatis (Format: MOV-YYYYMMDD-XXXX).
      */
     public static function generateMovementCode(?string $date = null): string
@@ -107,3 +125,4 @@ class InventoryMovement extends Model
         return sprintf('%s-%04d', $prefix, $nextSequence);
     }
 }
+

@@ -46,3 +46,4 @@ class InventoryStockResource extends JsonResource
         ];
     }
 }
+

@@ -316,3 +316,4 @@ class InventoryManagementTest extends TestCase
             ->assertJsonPath('success', true);
     }
 }
+

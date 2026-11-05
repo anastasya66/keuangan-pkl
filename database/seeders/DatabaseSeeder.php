@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Seed Master Data, Financial Transactions, and Inventory
+        // Seed Master Data, Financial Transactions, Inventory, and Accounting
         $this->call([
             CategorySeeder::class,
             UnitSeeder::class,
@@ -58,6 +58,8 @@ class DatabaseSeeder extends Seeder
             TransactionCategorySeeder::class,
             FinancialTransactionSeeder::class,
             InventorySeeder::class,
+            ChartOfAccountSeeder::class,
+            AccountingMappingSeeder::class,
         ]);
     }
 }

@@ -4,6 +4,11 @@ import ProtectedRoute from '../components/auth/ProtectedRoute';
 import useAuth from '../hooks/useAuth';
 import AdminLayout from '../layouts/AdminLayout';
 import StaffLayout from '../layouts/StaffLayout';
+import ChartOfAccountsPage from '../pages/accounting/ChartOfAccountsPage';
+import GeneralJournalPage from '../pages/accounting/GeneralJournalPage';
+import GeneralLedgerPage from '../pages/accounting/GeneralLedgerPage';
+import JournalDetailPage from '../pages/accounting/JournalDetailPage';
+import TrialBalancePage from '../pages/accounting/TrialBalancePage';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import UserManagementPage from '../pages/admin/UserManagementPage';
 import LoginPage from '../pages/auth/LoginPage';
@@ -75,6 +80,12 @@ export function AppRoutes() {
         <Route path="categories" element={<CategoryPage />} />
         <Route path="units" element={<UnitPage />} />
         <Route path="users" element={<UserManagementPage />} />
+        {/* Accounting Routes (Admin) */}
+        <Route path="accounting/accounts" element={<ChartOfAccountsPage />} />
+        <Route path="accounting/journals" element={<GeneralJournalPage />} />
+        <Route path="accounting/journals/:id" element={<JournalDetailPage />} />
+        <Route path="accounting/ledger" element={<GeneralLedgerPage />} />
+        <Route path="accounting/trial-balance" element={<TrialBalancePage />} />
       </Route>
 
       {/* Staff Protected Routes */}
@@ -91,6 +102,12 @@ export function AppRoutes() {
         <Route path="products" element={<ProductPage />} />
         <Route path="categories" element={<CategoryPage />} />
         <Route path="units" element={<UnitPage />} />
+        {/* Accounting Routes (Staff) */}
+        <Route path="accounting/accounts" element={<ChartOfAccountsPage />} />
+        <Route path="accounting/journals" element={<GeneralJournalPage />} />
+        <Route path="accounting/journals/:id" element={<JournalDetailPage />} />
+        <Route path="accounting/ledger" element={<GeneralLedgerPage />} />
+        <Route path="accounting/trial-balance" element={<TrialBalancePage />} />
       </Route>
 
       {/* Profile Route (Shared by both roles) */}

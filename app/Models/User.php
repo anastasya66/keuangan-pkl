@@ -91,4 +91,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(InventoryMovement::class, 'created_by');
     }
+
+    /**
+     * Relasi ke jurnal akuntansi yang dibuat pengguna.
+     */
+    public function createdJournals(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JournalEntry::class, 'created_by');
+    }
+
+    /**
+     * Relasi ke jurnal akuntansi yang diposting pengguna.
+     */
+    public function postedJournals(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JournalEntry::class, 'posted_by');
+    }
 }

@@ -198,6 +198,14 @@ class FinancialTransactionController extends Controller
                 'cancelled_by' => $request->user()->id,
                 'cancellation_reason' => $request->input('cancellation_reason'),
             ]);
+
+            // Reversal otomatis jika transaksi memiliki jurnal akuntansi yang posted
+            app(\App\Services\AccountingService::class)->reverseJournalForSource(
+                'financial_transaction',
+                $transaction->id,
+                $request->user()->id,
+                $request->input('cancellation_reason', 'Pembatalan transaksi keuangan')
+            );
         });
 
         $transaction->load(['category', 'creator', 'canceller']);

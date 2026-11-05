@@ -10,7 +10,8 @@ Aplikasi modern pengelolaan transaksi keuangan, master data produk, dan persedia
 - **Tahap 2 — Authentication & User Management**: ✅ SELESAI (Sistem login/logout Sanctum, proteksi status akun `is_active`, Laravel Policies, Admin User Management, Profile & Password management, Protected Routes React, Admin & Staff Layouts).
 - **Tahap 3 — Master Data**: ✅ SELESAI (Modul Kategori Produk, Satuan Produk, Master Produk, dan User Management terintegrasi penuh backend REST API & frontend React dengan pencarian, filter, pagination, dan otorisasi role).
 - **Tahap 4 — Financial Management**: ✅ SELESAI (Modul Transaksi Keuangan Tunggal untuk Pemasukan & Pengeluaran, Kategori Transaksi, Validasi Kepemilikan & Integritas, Mekanisme Pembatalan Transaksi, Perhitungan Saldo Aktif Real-time).
-- **Tahap 5 — Inventory Management**: ✅ SELESAI (Modul Persediaan Stok: Stok Masuk, Stok Keluar, Penyesuaian Stok Opname, Riwayat Mutasi Stok dengan kode unik `MOV-YYYYMMDD-XXXX`, Concurrency Protection `lockForUpdate()`, dan 80 Automated Tests lulus 100%).
+- **Tahap 5 — Inventory Management**: ✅ SELESAI (Modul Persediaan Stok: Stok Masuk, Stok Keluar, Penyesuaian Stok Opname, Riwayat Mutasi Stok dengan kode unik `MOV-YYYYMMDD-XXXX`, Concurrency Protection `lockForUpdate()`).
+- **Tahap 6 — Accounting (Double-Entry Bookkeeping)**: ✅ SELESAI (Chart of Accounts, Jurnal Umum Draft/Posted/Reversal, Buku Besar Running Balance, Neraca Saldo Otomatis, Integrasi Transaksi Keuangan & Persediaan, 96 Automated Tests lulus 100%).
 
 ---
 
@@ -201,23 +202,51 @@ Semua endpoint dapat diakses melalui prefix `/api/v1/*` maupun direct alias `/ap
 
 ---
 
-## 7. Cara Menjalankan Aplikasi & Pengujian di Laragon
+## 7. Modul Accounting (Tahap 6 — Double-Entry Bookkeeping)
+
+Modul akuntansi mencakup pencatatan keuangan berpasangan (*double-entry bookkeeping*):
+- **Chart of Accounts (COA)**: Standar akun Assets, Liabilities, Equity, Revenue, dan Expenses dengan penentuan saldo normal otomatis. Akun yang telah memiliki jurnal diproteksi dari penghapusan (*restrictOnDelete*).
+- **Jurnal Umum (General Journal)**: Siklus jurnal `draft` -> `posted` -> `reversed`. Nomor jurnal unik `JRN-YYYYMMDD-XXXX`, validasi total debit == total kredit, minimal dua baris, akun aktif, dan nilai positif.
+- **Buku Besar (General Ledger)**: Menghitung saldo awal sebelum periode, mutasi debit/kredit posted/reversed, dan saldo berjalan (*running balance*).
+- **Neraca Saldo (Trial Balance)**: Mengakumulasi saldo debit dan kredit seluruh akun per tanggal, memverifikasi status keseimbangan (*equilibrium*).
+- **Integrasi Otomatis**: Integrasi transaksi keuangan pemasukan/pengeluaran dan mutasi persediaan opname fisik atau pembelian stok. Reversal otomatis jika transaksi sumber dibatalkan.
+
+### Daftar Endpoint API Accounting
+| Method | Endpoint | Hak Akses | Deskripsi |
+|---|---|---|---|
+| `GET, POST` | `/api/v1/chart-of-accounts` | Admin & Staff (POST Admin) | Daftar & Tambah Akun COA |
+| `GET, PUT, DELETE`| `/api/v1/chart-of-accounts/{id}` | Admin & Staff (PUT/DELETE Admin) | Detail, Edit, Hapus Akun COA |
+| `PATCH` | `/api/v1/chart-of-accounts/{id}/status` | Admin | Aktifkan/Nonaktifkan Akun COA |
+| `GET, POST` | `/api/v1/journals` | Admin & Staff | Daftar Jurnal & Buat Jurnal Draft |
+| `GET, PUT, DELETE`| `/api/v1/journals/{id}` | Admin & Staff (PUT/DELETE Draft) | Detail, Edit, Hapus Jurnal Draft |
+| `POST` | `/api/v1/journals/{id}/post` | **Admin Only** | Posting Jurnal ke Buku Besar |
+| `POST` | `/api/v1/journals/{id}/reverse` | **Admin Only** | Reversal Jurnal Posted |
+| `GET` | `/api/v1/general-ledger` | Admin & Staff | Buku Besar Akun Default / Query |
+| `GET` | `/api/v1/general-ledger/{accountId}` | Admin & Staff | Buku Besar Akun Spesifik |
+| `GET` | `/api/v1/trial-balance` | Admin & Staff | Laporan Neraca Saldo |
+| `POST` | `/api/v1/accounting/sync-transaction/{id}`| Admin & Staff | Sinkronisasi Jurnal Transaksi Keuangan |
+| `POST` | `/api/v1/accounting/sync-inventory/{id}` | Admin & Staff | Sinkronisasi Jurnal Mutasi Persediaan |
+| `GET` | `/api/v1/accounting/mappings` | Admin & Staff | Daftar Pemetaan Akun Otomatis |
+
+---
+
+## 8. Cara Menjalankan Aplikasi & Pengujian di Laragon
 
 ### 1. Migrasi Database
 ```bash
 php artisan migrate
 ```
 
-### 2. Seeder Database Awal (User, Master Data, Finance, Inventory)
+### 2. Seeder Database Awal (User, Master Data, Finance, Inventory, Accounting)
 ```bash
 php artisan db:seed
 ```
 
-### 3. Menjalankan Automated Testing (80 Tests Passing)
+### 3. Menjalankan Automated Testing (96 Tests Passing)
 ```bash
 php artisan test
 ```
-Untuk menguji modul Inventory secara khusus:
+Untuk menguji modul Accounting secara khusus:
 ```bash
-php artisan test --filter=InventoryManagementTest
+php artisan test --filter=AccountingModuleTest
 ```

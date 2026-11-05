@@ -64,3 +64,4 @@ class StoreStockAdjustmentRequest extends BaseApiRequest
         ];
     }
 }
+
