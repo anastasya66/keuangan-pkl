@@ -24,7 +24,15 @@ class EnsureUserHasRole
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        if (! empty($roles) && ! in_array($user->role, $roles, true)) {
+        // Support role:admin,staff and role:admin|staff
+        $allowedRoles = [];
+        foreach ($roles as $roleGroup) {
+            foreach (preg_split('/[,|]/', $roleGroup) as $singleRole) {
+                $allowedRoles[] = trim($singleRole);
+            }
+        }
+
+        if (! empty($allowedRoles) && ! in_array($user->role, $allowedRoles, true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Akses ditolak: Anda tidak memiliki hak akses untuk resource ini.',

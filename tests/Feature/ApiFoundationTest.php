@@ -112,11 +112,9 @@ class ApiFoundationTest extends TestCase
             ->assertJson([
                 'success' => true,
                 'data' => [
-                    'user' => [
-                        'id' => $user->id,
-                        'email' => 'admin@fintoko.test',
-                        'role' => 'admin',
-                    ],
+                    'id' => $user->id,
+                    'email' => 'admin@fintoko.test',
+                    'role' => 'admin',
                 ],
             ]);
     }

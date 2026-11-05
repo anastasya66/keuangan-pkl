@@ -1,4 +1,4 @@
-# FinToko — API Specification & Postman Testing Guide
+# FinToko — API Specification & Postman Testing Guide (Tahap 2)
 
 Semua endpoint REST API menggunakan prefix `/api/v1` dengan format pertukaran data JSON.
 
@@ -17,153 +17,126 @@ Untuk endpoint yang memerlukan autentikasi:
 
 ---
 
-## 2. Akun Percobaan (Seed Database)
+## 2. Akun Bawaan Development (Seeder)
 
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **admin** | `admin@fintoko.test` | `password` |
-| **staff** | `staff@fintoko.test` | `password` |
-
----
-
-## 3. Daftar Endpoint
-
-### A. Health Check
-- **Method**: `GET`
-- **URL**: `/api/v1/health`
-- **Auth**: Public
-- **Response 200 OK**:
-```json
-{
-  "success": true,
-  "message": "FinToko API is running",
-  "data": {
-    "application": "FinToko",
-    "version": "1.0.0"
-  }
-}
-```
+| Role | Email | Password | Status | Keterangan |
+| :--- | :--- | :--- | :---: | :--- |
+| **admin** | `admin@fintoko.test` | `password` | `true` (Aktif) | Akun Administrator Utama |
+| **staff** | `staff@fintoko.test` | `password` | `true` (Aktif) | Akun Staf Toko / Kasir |
+| **staff** | `nonaktif@fintoko.test` | `password` | `false` (Nonaktif) | Pengujian penolakan akun nonaktif |
 
 ---
 
-### B. User Login
-- **Method**: `POST`
-- **URL**: `/api/v1/auth/login`
-- **Auth**: Public
-- **Payload**:
+## 3. Daftar Endpoint API Lengkap
+
+### A. Authentication
+| Method | Endpoint | Hak Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/v1/auth/login` | Public (Rate-limited: 10/min) | Login dengan email & password. Mengembalikan Bearer Token & User data. |
+| `POST` | `/api/v1/auth/logout` | `auth:sanctum` | Mencabut token aktif saat ini. |
+| `GET` | `/api/v1/auth/me` | `auth:sanctum` | Informasi profil pengguna yang sedang login. |
+| `POST` | `/api/v1/auth/refresh` | `auth:sanctum` | Rotasi token (mencabut token lama dan menerbitkan token baru). |
+
+#### Payload Login:
 ```json
 {
   "email": "admin@fintoko.test",
   "password": "password"
 }
 ```
-- **Response 200 OK**:
+
+---
+
+### B. User Profile (Admin & Staff)
+| Method | Endpoint | Hak Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/v1/user/profile` | `auth:sanctum` | Melihat profil pengguna sendiri. |
+| `PUT` | `/api/v1/user/profile` | `auth:sanctum` | Memperbarui nama dan email pribadi (role & status diproteksi). |
+| `PUT` | `/api/v1/user/change-password` | `auth:sanctum` | Mengubah password dengan validasi password saat ini & konfirmasi. |
+
+#### Payload Perbarui Profil:
+```json
+{
+  "name": "Administrator Baru",
+  "email": "adminbaru@fintoko.test"
+}
+```
+
+#### Payload Ubah Password:
+```json
+{
+  "current_password": "password",
+  "password": "new-password-123",
+  "password_confirmation": "new-password-123"
+}
+```
+
+---
+
+### C. Admin User Management (Khusus Administrator)
+| Method | Endpoint | Hak Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/v1/admin/users` | `auth:sanctum`, `role:admin` | Daftar pengguna dengan pagination, pencarian nama/email, dan filter role/status. |
+| `POST` | `/api/v1/admin/users` | `auth:sanctum`, `role:admin` | Mendaftarkan pengguna baru (admin atau staff). |
+| `GET` | `/api/v1/admin/users/{id}` | `auth:sanctum`, `role:admin` | Melihat detail pengguna spesifik. |
+| `PUT` | `/api/v1/admin/users/{id}` | `auth:sanctum`, `role:admin` | Memperbarui nama, email, dan opsional password pengguna. |
+| `PATCH` | `/api/v1/admin/users/{id}/role` | `auth:sanctum`, `role:admin` | Mengubah role pengguna (`admin` atau `staff`). Memproteksi admin terakhir. |
+| `PATCH` | `/api/v1/admin/users/{id}/status` | `auth:sanctum`, `role:admin` | Mengaktifkan/menonaktifkan pengguna (`is_active`). Memproteksi admin terakhir. |
+| `DELETE` | `/api/v1/admin/users/{id}` | `auth:sanctum`, `role:admin` | Menghapus pengguna dengan soft delete (`deleted_at`). Memproteksi admin terakhir. |
+
+#### Payload Tambah Pengguna Baru (`POST /api/v1/admin/users`):
+```json
+{
+  "name": "Kasir Baru",
+  "email": "kasirbaru@fintoko.test",
+  "password": "password123",
+  "role": "staff",
+  "is_active": true
+}
+```
+
+#### Payload Ubah Role (`PATCH /api/v1/admin/users/{id}/role`):
+```json
+{
+  "role": "admin"
+}
+```
+
+#### Payload Ubah Status (`PATCH /api/v1/admin/users/{id}/status`):
+```json
+{
+  "is_active": false
+}
+```
+
+---
+
+## 4. Format Respons Standar
+
+### Respons Berhasil (200 OK / 201 Created):
 ```json
 {
   "success": true,
-  "message": "Login berhasil",
-  "data": {
-    "user": {
-      "id": 1,
-      "name": "Administrator FinToko",
-      "email": "admin@fintoko.test",
-      "role": "admin"
-    },
-    "token": "1|qXy...example-token",
-    "token_type": "Bearer"
-  }
+  "message": "Pesan keberhasilan operasi",
+  "data": {}
 }
 ```
-- **Response 401 Unauthorized** (Password salah):
-```json
-{
-  "success": false,
-  "message": "Email atau password yang Anda masukkan salah."
-}
-```
-- **Response 422 Unprocessable Content** (Validasi gagal):
+
+### Respons Gagal Validasi (422 Unprocessable Content):
 ```json
 {
   "success": false,
   "message": "Validasi gagal",
   "errors": {
-    "email": ["Email wajib diisi."],
-    "password": ["Password wajib diisi."]
+    "email": ["Email sudah digunakan oleh akun lain."]
   }
 }
 ```
 
----
-
-### C. Profil Pengguna (Me)
-- **Method**: `GET`
-- **URL**: `/api/v1/auth/me`
-- **Auth**: Bearer Token (`auth:sanctum`)
-- **Response 200 OK**:
-```json
-{
-  "success": true,
-  "message": "Informasi user berhasil diambil",
-  "data": {
-    "user": {
-      "id": 1,
-      "name": "Administrator FinToko",
-      "email": "admin@fintoko.test",
-      "role": "admin",
-      "created_at": "2026-11-05T04:27:48.000000Z",
-      "updated_at": "2026-11-05T04:27:48.000000Z"
-    }
-  }
-}
-```
-- **Response 401 Unauthorized** (Token tidak disertakan atau sudah dicabut):
-```json
-{
-  "message": "Unauthenticated."
-}
-```
-
----
-
-### D. User Logout
-- **Method**: `POST`
-- **URL**: `/api/v1/auth/logout`
-- **Auth**: Bearer Token (`auth:sanctum`)
-- **Response 200 OK**:
-```json
-{
-  "success": true,
-  "message": "Logout berhasil. Token autentikasi telah dicabut."
-}
-```
-
----
-
-### E. Verifikasi Hak Akses Admin (Role Protection Example)
-- **Method**: `GET`
-- **URL**: `/api/v1/admin/check`
-- **Auth**: Bearer Token + Role Admin (`auth:sanctum`, `role:admin`)
-- **Response 200 OK** (Jika login sebagai Admin):
-```json
-{
-  "success": true,
-  "message": "Akses administrator berhasil diverifikasi.",
-  "data": {
-    "user": {
-      "id": 1,
-      "name": "Administrator FinToko",
-      "role": "admin"
-    },
-    "authorized": true,
-    "scope": "admin_only"
-  }
-}
-```
-- **Response 403 Forbidden** (Jika login sebagai Staff):
+### Respons Akses Ditolak (403 Forbidden):
 ```json
 {
   "success": false,
   "message": "Akses ditolak: Anda tidak memiliki hak akses untuk resource ini."
 }
 ```
-
