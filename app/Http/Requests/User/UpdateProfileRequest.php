@@ -33,3 +33,4 @@ class UpdateProfileRequest extends BaseApiRequest
         ];
     }
 }
+

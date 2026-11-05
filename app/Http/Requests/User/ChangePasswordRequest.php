@@ -29,3 +29,4 @@ class ChangePasswordRequest extends BaseApiRequest
         ];
     }
 }
+

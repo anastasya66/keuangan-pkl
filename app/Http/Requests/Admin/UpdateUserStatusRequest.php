@@ -26,3 +26,4 @@ class UpdateUserStatusRequest extends BaseApiRequest
         ];
     }
 }
+

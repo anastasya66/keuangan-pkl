@@ -408,3 +408,4 @@ class AuthenticationAndUserTest extends TestCase
         $this->assertSoftDeleted('users', ['id' => $staff->id]);
     }
 }
+

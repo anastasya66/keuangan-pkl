@@ -27,3 +27,4 @@ class UpdateUserRoleRequest extends BaseApiRequest
         ];
     }
 }
+

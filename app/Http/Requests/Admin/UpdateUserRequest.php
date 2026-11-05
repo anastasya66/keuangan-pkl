@@ -34,3 +34,4 @@ class UpdateUserRequest extends BaseApiRequest
         ];
     }
 }
+

@@ -23,6 +23,12 @@ export function LoginPage() {
     setErrorMessage('');
   };
 
+  const fillCredentials = (email, password) => {
+    setFormData({ email, password });
+    setFieldErrors({});
+    setErrorMessage('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
@@ -30,7 +36,7 @@ export function LoginPage() {
 
     // Client-side quick validation
     const errors = {};
-    if (!formData.email.trim()) errors.email = 'Email wajib diisi.';
+    if (!formData.email.trim()) errors.email = 'Email atau username wajib diisi.';
     if (!formData.password) errors.password = 'Password wajib diisi.';
 
     if (Object.keys(errors).length > 0) {
@@ -39,7 +45,7 @@ export function LoginPage() {
     }
 
     setIsSubmitting(true);
-    const result = await login(formData.email, formData.password);
+    const result = await login(formData.email.trim(), formData.password);
     setIsSubmitting(false);
 
     if (result.success) {
@@ -80,20 +86,20 @@ export function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Field */}
+            {/* Email / Username Field */}
             <div>
               <label htmlFor="email" className="block text-xs font-medium text-slate-300 mb-1.5">
-                Alamat Email
+                Alamat Email / Username
               </label>
               <input
                 id="email"
                 name="email"
-                type="email"
+                type="text"
                 autoComplete="email"
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="nama@toko.com"
+                placeholder="admin@fintoko.test atau admin"
                 className={`w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
                   fieldErrors.email ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-700'
                 }`}
@@ -152,8 +158,30 @@ export function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
-            Akses aplikasi terbatas untuk staf dan pemilik toko yang terdaftar.
+          {/* Quick Demo Helper Section */}
+          <div className="mt-6 pt-5 border-t border-slate-800">
+            <div className="text-[11px] font-semibold uppercase text-slate-400 mb-2.5 text-center">
+              Akses Cepat Pengujian (1-Klik Isi Form):
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => fillCredentials('admin@fintoko.test', 'password')}
+                className="px-3 py-2 text-left rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700 text-xs transition-colors"
+              >
+                <div className="font-semibold text-emerald-400">👑 Admin</div>
+                <div className="text-[10px] text-slate-400 truncate">admin@fintoko.test</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fillCredentials('staff@fintoko.test', 'password')}
+                className="px-3 py-2 text-left rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700 text-xs transition-colors"
+              >
+                <div className="font-semibold text-cyan-400">👤 Staff</div>
+                <div className="text-[10px] text-slate-400 truncate">staff@fintoko.test</div>
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 
-export function StaffLayout() {
+export function StaffLayout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -60,7 +60,7 @@ export function StaffLayout() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
+        {children || <Outlet />}
       </main>
 
       {/* Footer */}
@@ -72,3 +72,4 @@ export function StaffLayout() {
 }
 
 export default StaffLayout;
+

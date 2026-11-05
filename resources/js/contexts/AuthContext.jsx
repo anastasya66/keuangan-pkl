@@ -51,7 +51,6 @@ export function AuthProvider({ children }) {
 
   // Handle Login
   const login = async (email, password) => {
-    setIsLoading(true);
     try {
       const response = await authService.login({ email, password });
       if (response && response.success && response.data?.token) {
@@ -71,14 +70,11 @@ export function AuthProvider({ children }) {
         error.response?.data?.message || error.message || 'Terjadi kesalahan saat login.';
       const errors = error.response?.data?.errors || null;
       return { success: false, message, errors };
-    } finally {
-      setIsLoading(false);
     }
   };
 
   // Handle Logout
   const logout = async () => {
-    setIsLoading(true);
     try {
       await authService.logout();
     } catch (error) {
@@ -86,7 +82,6 @@ export function AuthProvider({ children }) {
       console.warn('Panggilan logout server gagal, membersihkan sesi lokal:', error.message);
     } finally {
       clearAuth();
-      setIsLoading(false);
     }
   };
 
@@ -110,3 +105,4 @@ export function AuthProvider({ children }) {
 }
 
 export default AuthContext;
+

@@ -20,3 +20,4 @@ abstract class BaseApiRequest extends FormRequest
         ], 422));
     }
 }
+
