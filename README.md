@@ -1,85 +1,83 @@
 # FinToko — Financial Management System
 
-Aplikasi modern pengelolaan transaksi dan pencatatan keuangan toko yang dirancang dengan arsitektur decoupled (Backend RESTful API + Frontend Single Page Application).
+Aplikasi modern pengelolaan transaksi dan pencatatan keuangan toko. Dibangun secara terpadu (Unified Modern Monolith SPA) menggunakan Laravel, React, Tailwind CSS, dan MariaDB dalam **satu kesatuan proyek tanpa pemisahan folder frontend dan backend**.
 
 ---
 
 ## 1. Deskripsi Aplikasi
-**FinToko** dibangun untuk memberikan visibilitas penuh terhadap kondisi finansial toko secara cepat, akurat, dan aman. Proyek ini memisahkan backend dan frontend secara menyeluruh sehingga memudahkan skalabilitas dan deployment di berbagai platform.
+**FinToko** menyediakan platform pencatatan keuangan toko yang rapi, cepat, dan aman. Seluruh aset React dan REST API dikelola dalam satu repository terpadu:
+- **Backend API**: Berbasis Laravel 12 dengan arsitektur RESTful (`/api/v1`) & Laravel Sanctum.
+- **Frontend SPA**: Berbasis React 19 + Tailwind CSS v4 yang di-bundle secara efisien menggunakan Vite dan Laravel Vite Plugin.
 
 ---
 
 ## 2. Technology Stack
 
-### Backend
-- **Framework**: Laravel 11/12
-- **Bahasa**: PHP 8.2+
-- **Arsitektur**: RESTful API
-- **Autentikasi**: Laravel Sanctum (Bearer Token)
-- **Format Pertukaran Data**: JSON
-- **API Versioning**: `/api/v1`
-
-### Frontend
-- **Library**: React 19
-- **Bahasa**: JavaScript
-- **Build Tool**: Vite
+### Core Frameworks & Libraries
+- **Backend Framework**: Laravel 12
+- **Language**: PHP 8.2+
+- **API Authentication**: Laravel Sanctum (Bearer Token)
+- **Frontend Library**: React 19
+- **Build Tool**: Vite 7
 - **Styling**: Tailwind CSS v4
-- **HTTP Client**: Axios (dengan interceptors)
+- **HTTP Client**: Axios (dengan request/response interceptor)
 - **Routing**: React Router DOM v7
-
-### Database & Environment
-- **Database**: MariaDB 10.4+ (atau MySQL 8+)
-- **Nama Database**: `fintoko_db`
-- **Charset & Collation**: `utf8mb4` / `utf8mb4_unicode_ci`
-- **Development Stack**: Laragon / XAMPP
+- **Database**: MariaDB 10.4+ / MySQL 8+
+- **Database Name**: `fintoko_db`
 
 ---
 
-## 3. Struktur Direktori Proyek
+## 3. Struktur Direktori Proyek (Unified)
 
 ```text
-fintoko/
-│
-├── backend/                  # RESTful API Backend (Laravel)
-│   ├── app/                  # Controller, Models, Middleware, FormRequests
-│   ├── bootstrap/            # Application configuration & API prefix setup
-│   ├── config/               # Konfigurasi aplikasi (CORS, Sanctum, Database)
-│   ├── database/             # Migrasi dan Seeder (Admin & Staff)
-│   ├── routes/               # api.php (/api/v1/...) & web.php
-│   ├── storage/              # Storage & Logs
-│   ├── tests/                # Automated Feature & Unit Tests
-│   ├── .env.example          # Template konfigurasi environment backend
-│   └── composer.json         # Dependensi backend PHP
-│
-├── frontend/                 # Client Single Page Application (React + Vite)
-│   ├── public/               # Asset statis
-│   ├── src/
-│   │   ├── assets/           # Media & gambar
-│   │   ├── components/       # Komponen UI modular
-│   │   ├── layouts/          # Layout halaman
-│   │   ├── pages/            # Komponen halaman tampilan
-│   │   ├── routes/           # Routing aplikasi
-│   │   ├── services/         # api.js (Axios instance & interceptors)
-│   │   ├── hooks/            # Custom hooks
-│   │   ├── contexts/         # State management context
-│   │   ├── utils/            # Helper formatters
-│   │   ├── App.jsx           # Komponen utama & uji status health
-│   │   └── main.jsx          # Entry point React
-│   ├── .env.example          # Template environment frontend
-│   ├── package.json          # Dependensi frontend NPM
-│   └── vite.config.js        # Konfigurasi Vite & Tailwind CSS
-│
+fintoko/ (keuangan-pkl/)
+├── app/                      # Model Eloquent (User), Controller API, FormRequests, Middleware
+│   ├── Http/
+│   │   ├── Controllers/Api/  # HealthController, AuthController, AdminController
+│   │   ├── Middleware/       # EnsureUserHasRole
+│   │   └── Requests/Auth/    # LoginRequest
+│   └── Models/User.php       # Model User dengan HasApiTokens & kolom role
+├── bootstrap/                # Bootstrap aplikasi & prefix /api/v1
+├── config/                   # Konfigurasi aplikasi (CORS, Sanctum, Database)
+├── database/                 # Migrasi (users, tokens, roles) & Seeder default
 ├── docs/                     # Dokumentasi arsitektur dan spesifikasi API
-├── .gitignore                # Aturan ignore Git root
+├── public/                   # Entry point web server & compiled assets
+├── resources/                # Source code Frontend (React & Styles)
+│   ├── css/
+│   │   └── app.css           # Tailwind CSS v4 setup
+│   ├── js/                   # Source Code React SPA
+│   │   ├── assets/           # Media & gambar
+│   │   ├── components/       # Komponen UI reusable
+│   │   ├── contexts/         # State management context
+│   │   ├── hooks/            # Custom hooks
+│   │   ├── layouts/          # Layout halaman
+│   │   ├── pages/            # View pages
+│   │   ├── routes/           # Routing React Router DOM
+│   │   ├── services/
+│   │   │   └── api.js        # Axios instance terpusat (/api/v1)
+│   │   ├── utils/            # Helper fungsi & formatter
+│   │   ├── App.jsx           # UI FinToko & indikator status health
+│   │   └── main.jsx          # Entry point React
+│   └── views/
+│       └── app.blade.php     # Template Blade SPA pembungkus React
+├── routes/
+│   ├── api.php               # Route REST API v1 (/api/v1/health, auth, admin)
+│   └── web.php               # Route SPA handler
+├── storage/                  # Storage aplikasi & logs
+├── tests/                    # Feature & Unit automated test suite
+├── .env.example              # Template konfigurasi environment
+├── artisan                   # CLI tool Laravel
+├── composer.json             # Dependensi PHP
+├── package.json              # Dependensi JavaScript (React, Tailwind, Vite)
+├── vite.config.js            # Konfigurasi Vite + Laravel + React
+├── .gitignore                # Aturan Git ignore kredensial & build
 ├── README.md                 # Dokumentasi proyek
 └── LICENSE                   # MIT License
 ```
 
 ---
 
-## 4. Persyaratan Instalasi
-
-Pastikan telah terpasang pada komputer Anda:
+## 4. Persyaratan Sistem
 - **PHP** >= 8.2 (dengan ekstensi `pdo_mysql`, `bcmath`, `curl`, `mbstring`, `openssl`, `fileinfo`)
 - **Composer** >= 2.x
 - **Node.js** >= 18.x
@@ -99,128 +97,73 @@ COLLATE utf8mb4_unicode_ci;
 
 ---
 
-## 6. Konfigurasi & Menjalankan Backend
+## 6. Panduan Menjalankan Aplikasi
 
-1. Masuk ke direktori `backend`:
-   ```bash
-   cd backend
-   ```
-2. Salin template `.env.example` ke `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-3. Sesuaikan konfigurasi database di file `.env`:
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=fintoko_db
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
-4. Install dependensi PHP (jika belum):
-   ```bash
-   composer install
-   ```
-5. Generate application key:
-   ```bash
-   php artisan key:generate
-   ```
-6. Jalankan migrasi dan seeder awal:
-   ```bash
-   php artisan migrate --seed
-   ```
-7. Jalankan development server backend:
-   ```bash
-   php artisan serve
-   ```
-   Backend akan aktif di `http://127.0.0.1:8000`.
+Semua perintah dijalankan langsung dari root direktori proyek:
 
----
-
-## 7. Konfigurasi & Menjalankan Frontend
-
-1. Buka terminal baru dan masuk ke direktori `frontend`:
-   ```bash
-   cd frontend
-   ```
-2. Salin `.env.example` ke `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-   Pastikan berisi:
-   ```env
-   VITE_API_BASE_URL=http://127.0.0.1:8000/api/v1
-   ```
-3. Install dependensi JavaScript (jika belum):
-   ```bash
-   npm install
-   ```
-4. Jalankan development server frontend:
-   ```bash
-   npm run dev
-   ```
-   Frontend akan aktif di `http://127.0.0.1:5173`. Buka di browser untuk memverifikasi koneksi status **Connected**.
-
----
-
-## 8. Menjalankan Automated Test Backend
-
-Backend dilengkapi dengan Feature Test otomatis untuk memastikan seluruh fungsi fondasi bekerja:
+### 1. Salin Environment
 ```bash
-cd backend
+cp .env.example .env
+```
+Pastikan pengaturan database di `.env` sesuai:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=fintoko_db
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 2. Install Dependensi & Setup Awal
+```bash
+composer install
+npm install
+php artisan key:generate
+php artisan migrate --seed
+```
+
+### 3. Menjalankan Server Development
+Buka 2 tab terminal di folder proyek:
+
+**Terminal 1 — Backend Server:**
+```bash
+php artisan serve
+```
+> Server aktif di `http://127.0.0.1:8000`.
+
+**Terminal 2 — Vite Asset Compiler / HMR:**
+```bash
+npm run dev
+```
+
+Buka browser di **`http://127.0.0.1:8000`** untuk melihat dashboard FinToko dengan status badge hijau **"Connected"**.
+
+---
+
+## 7. Menjalankan Automated Test Backend
+
+```bash
 php artisan test --filter=ApiFoundationTest
 ```
 
 ---
 
-## 9. Daftar Endpoint API (`/api/v1`)
+## 8. Daftar Endpoint API (`/api/v1`)
 
 | Method | Endpoint | Hak Akses | Deskripsi |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/health` | Public | Cek status operasional API |
-| `POST` | `/api/v1/auth/login` | Public | Login dan dapatkan token Sanctum |
-| `POST` | `/api/v1/auth/logout` | `auth:sanctum` | Cabut token aktif saat ini |
+| `GET` | `/api/v1/health` | Public | Cek status kesehatan API |
+| `POST` | `/api/v1/auth/login` | Public | Login dan peroleh token Sanctum |
+| `POST` | `/api/v1/auth/logout` | `auth:sanctum` | Cabut token aktif |
 | `GET` | `/api/v1/auth/me` | `auth:sanctum` | Informasi profil user yang sedang login |
 | `GET` | `/api/v1/admin/check` | `auth:sanctum`, `role:admin` | Verifikasi hak akses admin |
 
 ---
 
-## 10. Panduan Pengujian API Melalui Postman
+## 9. Akun Default Pengujian
 
-### Akun Awal (Tersedia dari Seeder)
-- **Akun Admin**: `admin@fintoko.test` / Password: `password`
-- **Akun Staff**: `staff@fintoko.test` / Password: `password`
-
-### Langkah Pengujian:
-
-#### 1. Uji Health Check
-- Buat request `GET http://127.0.0.1:8000/api/v1/health`
-- Klik **Send**. Status harus `200 OK` dengan status `success: true`.
-
-#### 2. Uji Login
-- Buat request `POST http://127.0.0.1:8000/api/v1/auth/login`
-- Header: `Content-Type: application/json` & `Accept: application/json`
-- Body (Raw JSON):
-  ```json
-  {
-    "email": "admin@fintoko.test",
-    "password": "password"
-  }
-  ```
-- Klik **Send**. Salin token yang dihasilkan pada field `data.token`.
-
-#### 3. Uji Endpoint Me (Profil)
-- Buat request `GET http://127.0.0.1:8000/api/v1/auth/me`
-- Tab **Auth**: Pilih Type **Bearer Token** dan paste token tadi.
-- Klik **Send**. Status harus `200 OK` dan mengembalikan data profil admin.
-
-#### 4. Uji Role Protection (Admin Check)
-- Buat request `GET http://127.0.0.1:8000/api/v1/admin/check`
-- Gunakan token admin: Respon `200 OK` (`authorized: true`).
-- Gunakan token staff: Respon `403 Forbidden` (`Akses ditolak`).
-
-#### 5. Uji Logout
-- Buat request `POST http://127.0.0.1:8000/api/v1/auth/logout`
-- Gunakan Bearer Token aktif.
-- Respon `200 OK`. Token telah dicabut. Jika token tersebut digunakan kembali ke `/auth/me`, API akan mengembalikan `401 Unauthorized`.
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **admin** | `admin@fintoko.test` | `password` |
+| **staff** | `staff@fintoko.test` | `password` |

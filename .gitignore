@@ -1,48 +1,24 @@
-# ==========================================
-# FinToko — Root Git Ignore Rules
-# ==========================================
-
-# Environment secrets
-.env
-.env.*
-!.env.example
-backend/.env
-backend/.env.*
-!backend/.env.example
-frontend/.env
-frontend/.env.*
-!frontend/.env.example
-
-# Backend dependencies & caches
-/backend/vendor/
-/backend/bootstrap/cache/
-/backend/storage/*.key
-/backend/storage/app/*
-!/backend/storage/app/.gitignore
-/backend/storage/framework/cache/*
-!/backend/storage/framework/cache/.gitignore
-/backend/storage/framework/sessions/*
-!/backend/storage/framework/sessions/.gitignore
-/backend/storage/framework/testing/*
-!/backend/storage/framework/testing/.gitignore
-/backend/storage/framework/views/*
-!/backend/storage/framework/views/.gitignore
-/backend/storage/logs/*
-!/backend/storage/logs/.gitignore
-*.sqlite
-*.sqlite-journal
-
-# Frontend dependencies & builds
-/frontend/node_modules/
-/frontend/dist/
-/frontend/dist-ssr/
 *.log
-npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
-
-# Editor & OS files
-.vscode/
-.idea/
 .DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
 Thumbs.db

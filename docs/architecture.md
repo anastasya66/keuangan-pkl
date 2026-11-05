@@ -1,14 +1,17 @@
 # FinToko — Architecture & System Design Documentation
 
 ## 1. Overview
-**FinToko** adalah aplikasi manajemen keuangan toko modern yang dirancang dengan pemisahan penuh antara backend API dan frontend client (decoupled architecture).
+**FinToko** adalah aplikasi manajemen keuangan toko modern yang dirancang dalam struktur **Unified Modern Monolith (Single Codebase SPA)**:
+- Backend RESTful API dan Frontend React SPA disatukan dalam satu repository tanpa folder terpisah `frontend/` dan `backend/`.
+- Frontend dikompilasi oleh Vite melalui `laravel-vite-plugin` ke dalam direktori `public/build/`.
+- Seluruh routing web diarahkan ke view `resources/views/app.blade.php`, sedangkan request `/api/v1/*` dilayani oleh router API Laravel.
 
 ---
 
 ## 2. Technology Stack
 
 ### Backend
-- **Framework**: Laravel 11/12 (PHP 8.2+)
+- **Framework**: Laravel 12 (PHP 8.2+)
 - **Architecture**: RESTful API
 - **Authentication**: Laravel Sanctum (Token-based API authentication)
 - **API Versioning**: Prefix `/api/v1`
@@ -16,7 +19,7 @@
 
 ### Frontend
 - **Framework/Library**: React 19
-- **Build Tool**: Vite
+- **Build Tool**: Vite 7 via `laravel-vite-plugin`
 - **Styling**: Tailwind CSS v4
 - **HTTP Client**: Axios dengan interceptors
 - **Routing**: React Router DOM v7
@@ -27,53 +30,54 @@
 
 ```text
 fintoko/
-├── backend/                  # Laravel REST API Application
-│   ├── app/
-│   │   ├── Http/
-│   │   │   ├── Controllers/Api/   # API Endpoint Controllers (Health, Auth, Admin)
-│   │   │   ├── Middleware/        # EnsureUserHasRole
-│   │   │   └── Requests/          # Form Request Validation (LoginRequest)
-│   │   └── Models/                # Eloquent Models (User with HasApiTokens)
-│   ├── bootstrap/            # Application bootstrap & routing config
-│   ├── config/               # App configuration (CORS, Sanctum, Database)
-│   ├── database/
-│   │   ├── migrations/       # Schema migrations (users, tokens, roles)
-│   │   └── seeders/          # Initial seeders (Admin & Staff accounts)
-│   ├── routes/
-│   │   └── api.php           # REST API routes (/api/v1/...)
-│   ├── storage/              # Application logs and caches
-│   ├── tests/                # Feature & Unit automated test suite
-│   ├── .env.example          # Environment template
-│   └── composer.json         # PHP dependencies
-│
-├── frontend/                 # React + Vite Single Page Application
-│   ├── public/               # Static assets
-│   ├── src/
-│   │   ├── assets/           # Images, SVG icons, fonts
-│   │   ├── components/       # Reusable atomic UI components
-│   │   ├── layouts/          # Page layouts (Admin, Auth, Main)
-│   │   ├── pages/            # View pages / screen routes
-│   │   ├── routes/           # React Router route definitions
-│   │   ├── services/         # Axios API client (api.js)
-│   │   ├── hooks/            # Custom React hooks
-│   │   ├── contexts/         # React Context (AuthContext)
-│   │   ├── utils/            # Helper functions & formatters
-│   │   ├── App.jsx           # Main React component
-│   │   └── main.jsx          # Entry point
-│   ├── package.json          # Node dependencies
-│   └── vite.config.js        # Vite & Tailwind configuration
-│
-├── docs/                     # Technical documentation & API references
-├── .gitignore                # Root Git ignore rules
-├── README.md                 # Project README and quick start
+├── app/                      # Model Eloquent (User), Controller API, FormRequests, Middleware
+│   ├── Http/
+│   │   ├── Controllers/Api/  # HealthController, AuthController, AdminController
+│   │   ├── Middleware/       # EnsureUserHasRole
+│   │   └── Requests/Auth/    # LoginRequest
+│   └── Models/User.php       # Model User dengan HasApiTokens & kolom role
+├── bootstrap/                # Bootstrap aplikasi & prefix /api/v1
+├── config/                   # Konfigurasi aplikasi (CORS, Sanctum, Database)
+├── database/                 # Migrasi (users, tokens, roles) & Seeder default
+├── docs/                     # Dokumentasi arsitektur dan spesifikasi API
+├── public/                   # Entry point web server & compiled assets
+├── resources/                # Source code Frontend (React & Styles)
+│   ├── css/
+│   │   └── app.css           # Tailwind CSS v4 setup
+│   ├── js/                   # Source Code React SPA
+│   │   ├── assets/           # Media & gambar
+│   │   ├── components/       # Komponen UI reusable
+│   │   ├── contexts/         # State management context
+│   │   ├── hooks/            # Custom hooks
+│   │   ├── layouts/          # Layout halaman
+│   │   ├── pages/            # View pages
+│   │   ├── routes/           # Routing React Router DOM
+│   │   ├── services/
+│   │   │   └── api.js        # Axios instance terpusat (/api/v1)
+│   │   ├── utils/            # Helper fungsi & formatter
+│   │   ├── App.jsx           # UI FinToko & indikator status health
+│   │   └── main.jsx          # Entry point React
+│   └── views/
+│       └── app.blade.php     # Template Blade SPA pembungkus React
+├── routes/
+│   ├── api.php               # Route REST API v1 (/api/v1/health, auth, admin)
+│   └── web.php               # Route SPA handler
+├── storage/                  # Storage aplikasi & logs
+├── tests/                    # Feature & Unit automated test suite
+├── .env.example              # Template konfigurasi environment
+├── artisan                   # CLI tool Laravel
+├── composer.json             # Dependensi PHP
+├── package.json              # Dependensi JavaScript (React, Tailwind, Vite)
+├── vite.config.js            # Konfigurasi Vite + Laravel + React
+├── .gitignore                # Aturan Git ignore kredensial & build
+├── README.md                 # Dokumentasi proyek
 └── LICENSE                   # MIT License
 ```
 
 ---
 
-## 4. Security Principles
-1. **Separation of Secrets**: Kredensial tidak pernah di-commit ke Git.
-2. **Hashed Passwords**: Password di-hash menggunakan algoritma Bcrypt bawaan Laravel `Hash::make()`.
-3. **Token Invalidation**: Sanctum token dicabut saat pengguna logout.
-4. **CORS Whitelist**: Origin dibatasi ke frontend development dan production yang sah tanpa wildcard.
-5. **Role-Based Access Control**: Middleware `EnsureUserHasRole` (`role:<role_name>`) memvalidasi role sebelum controller dipanggil.
+## 4. Keuntungan Struktur Unified
+1. **Zero CORS Issues**: Frontend dan backend berjalan dalam domain dan origin yang sama saat production (`/api/v1`).
+2. **Simplified Deployment**: Cukup deploy satu aplikasi Laravel; Vite mengompilasi aset langsung ke `public/build/`.
+3. **Single Environment**: Hanya memerlukan satu file `.env` untuk mengatur seluruh konfigurasi aplikasi.
+4. **Hot Module Replacement (HMR)**: Terintegrasi langsung dengan `@viteReactRefresh` bawaan Laravel Vite Plugin.

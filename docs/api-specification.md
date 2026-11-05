@@ -166,3 +166,4 @@ Untuk endpoint yang memerlukan autentikasi:
   "message": "Akses ditolak: Anda tidak memiliki hak akses untuk resource ini."
 }
 ```
+
