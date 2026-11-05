@@ -1,28 +1,48 @@
-# ============================================================
-# FinToko — .gitignore
-# ============================================================
+# ==========================================
+# FinToko — Root Git Ignore Rules
+# ==========================================
 
-# Environment variables (JANGAN PERNAH commit!)
+# Environment secrets
 .env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
 
-# Upload files
-uploads/bukti/*
-!uploads/bukti/.gitkeep
+# Backend dependencies & caches
+/backend/vendor/
+/backend/bootstrap/cache/
+/backend/storage/*.key
+/backend/storage/app/*
+!/backend/storage/app/.gitignore
+/backend/storage/framework/cache/*
+!/backend/storage/framework/cache/.gitignore
+/backend/storage/framework/sessions/*
+!/backend/storage/framework/sessions/.gitignore
+/backend/storage/framework/testing/*
+!/backend/storage/framework/testing/.gitignore
+/backend/storage/framework/views/*
+!/backend/storage/framework/views/.gitignore
+/backend/storage/logs/*
+!/backend/storage/logs/.gitignore
+*.sqlite
+*.sqlite-journal
 
-# IDE / Editor
-.idea/
+# Frontend dependencies & builds
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editor & OS files
 .vscode/
-*.swp
-*.swo
-*~
+.idea/
 .DS_Store
 Thumbs.db
-
-# OS
-desktop.ini
-
-# Docker volumes
-db_data/
-
-# Logs
-*.log
