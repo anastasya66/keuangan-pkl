@@ -432,3 +432,4 @@ class FinancialManagementTest extends TestCase
             ->assertJsonPath('success', true);
     }
 }
+

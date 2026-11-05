@@ -1,6 +1,6 @@
-# FinToko — Financial Management System
+# FinToko — Financial & Inventory Management System
 
-Aplikasi modern pengelolaan transaksi, master data, dan pencatatan keuangan toko. Dibangun secara terpadu (**Unified Modern Monolith SPA**) menggunakan **Laravel 12 (PHP 8.2)**, **React 19**, **Tailwind CSS v4**, dan **MariaDB**.
+Aplikasi modern pengelolaan transaksi keuangan, master data produk, dan persediaan (*inventory*) toko. Dibangun secara terpadu (**Unified Modern Monolith SPA**) menggunakan **Laravel 12 (PHP 8.2)**, **React 19**, **Tailwind CSS v4**, dan **MariaDB**.
 
 ---
 
@@ -9,7 +9,8 @@ Aplikasi modern pengelolaan transaksi, master data, dan pencatatan keuangan toko
 - **Tahap 1 — Project Foundation**: ✅ SELESAI (Konfigurasi Laravel 12, MariaDB `fintoko_db`, React 19 + Vite, Tailwind CSS v4, Sanctum API prefix `/api/v1`).
 - **Tahap 2 — Authentication & User Management**: ✅ SELESAI (Sistem login/logout Sanctum, proteksi status akun `is_active`, Laravel Policies, Admin User Management, Profile & Password management, Protected Routes React, Admin & Staff Layouts).
 - **Tahap 3 — Master Data**: ✅ SELESAI (Modul Kategori Produk, Satuan Produk, Master Produk, dan User Management terintegrasi penuh backend REST API & frontend React dengan pencarian, filter, pagination, dan otorisasi role).
-- **Tahap 4 — Financial Management**: ✅ SELESAI (Modul Transaksi Keuangan Tunggal untuk Pemasukan & Pengeluaran, Kategori Transaksi, Validasi Kepemilikan & Integritas, Mekanisme Pembatalan Transaksi, Perhitungan Saldo Aktif Real-time, dan 68 Automated Tests lulus 100%).
+- **Tahap 4 — Financial Management**: ✅ SELESAI (Modul Transaksi Keuangan Tunggal untuk Pemasukan & Pengeluaran, Kategori Transaksi, Validasi Kepemilikan & Integritas, Mekanisme Pembatalan Transaksi, Perhitungan Saldo Aktif Real-time).
+- **Tahap 5 — Inventory Management**: ✅ SELESAI (Modul Persediaan Stok: Stok Masuk, Stok Keluar, Penyesuaian Stok Opname, Riwayat Mutasi Stok dengan kode unik `MOV-YYYYMMDD-XXXX`, Concurrency Protection `lockForUpdate()`, dan 80 Automated Tests lulus 100%).
 
 ---
 
@@ -20,8 +21,8 @@ Aplikasi modern pengelolaan transaksi, master data, dan pencatatan keuangan toko
 - **Bahasa**: PHP 8.2+
 - **Database**: MariaDB 10.4+ / MySQL 8+
 - **Autentikasi**: Laravel Sanctum (Personal Access Token / Bearer Token)
-- **Otorisasi**: Laravel Policies (`FinancialTransactionPolicy`, `TransactionCategoryPolicy`, `ProductPolicy`, `CategoryPolicy`, `UnitPolicy`, `UserPolicy`) & Custom Middleware (`active`, `role`)
-- **Penghapusan & Integritas**: Soft Deletes (`deleted_at`), Referential Integrity Protection (`restrictOnDelete`), Database Transactions
+- **Otorisasi**: Laravel Policies (`InventoryMovementPolicy`, `FinancialTransactionPolicy`, `TransactionCategoryPolicy`, `ProductPolicy`, `CategoryPolicy`, `UnitPolicy`, `UserPolicy`) & Custom Middleware (`active`, `role`)
+- **Penghapusan & Integritas**: Soft Deletes (`deleted_at`), Referential Integrity (`restrictOnDelete`), Row-level Locking (`lockForUpdate()`), Database Transactions (`DB::transaction()`)
 - **API Spec**: RESTful JSON responses (`/api/v1/*` dan direct alias `/api/*`)
 
 ### Frontend
@@ -37,56 +38,40 @@ Aplikasi modern pengelolaan transaksi, master data, dan pencatatan keuangan toko
 
 ## 3. Database Design & Relasi Tabel
 
-### A. Tabel `transaction_categories`
-Menyimpan kelompok kategori pencatatan keuangan untuk pemasukan dan pengeluaran.
+### A. Tabel `products` (Penambahan Kolom Stok)
+Menyimpan informasi master produk toko beserta kuantitas stok terkini (*Single Source of Truth*).
+| Kolom | Tipe | Keterangan |
+| :--- | :--- | :--- |
+| `stock` | DECIMAL(12,2) | Kuantitas stok produk terkini (default: 0.00, tidak boleh negatif) |
+
+### B. Tabel `inventory_movements`
+Menyimpan catatan permanen (*audit trail*) setiap perubahan kuantitas stok produk.
 | Kolom | Tipe | Keterangan |
 | :--- | :--- | :--- |
 | `id` | BIGINT (PK) | Auto increment primary key |
-| `name` | VARCHAR(100) | Nama kategori (wajib, unik per `type`) |
-| `type` | VARCHAR(20) | Jenis kategori: `income` atau `expense` |
-| `description` | TEXT | Keterangan kelompok transaksi (opsional) |
-| `is_active` | BOOLEAN | Status aktif kategori (default: true) |
-| `created_at` | TIMESTAMP | Waktu pembuatan |
-| `updated_at` | TIMESTAMP | Waktu pembaruan terakhir |
-| `deleted_at` | TIMESTAMP | Waktu soft delete |
-
-### B. Tabel `financial_transactions`
-Menyimpan seluruh transaksi pemasukan (*income*) dan pengeluaran (*expense*) dalam satu tabel terpadu.
-| Kolom | Tipe | Keterangan |
-| :--- | :--- | :--- |
-| `id` | BIGINT (PK) | Auto increment primary key |
-| `transaction_code` | VARCHAR(50) | Kode unik transaksi (cth: `TRX-20261105-0001`, unik) |
-| `transaction_type` | VARCHAR(20) | Jenis transaksi: `income` atau `expense` |
-| `category_id` | BIGINT (FK) | Relasi ke `transaction_categories.id` (`restrictOnDelete`) |
-| `amount` | DECIMAL(15,2)| Nominal transaksi (wajib > 0) |
-| `transaction_date` | DATE | Tanggal transaksi toko |
-| `description` | TEXT | Keterangan transaksi (opsional) |
-| `created_by` | BIGINT (FK) | ID user pencatat transaksi (dari `auth()->id()`) |
-| `updated_by` | BIGINT (FK) | ID user pengubah transaksi terakhir |
-| `status` | VARCHAR(20) | Status transaksi: `completed` (default) atau `cancelled` |
-| `cancelled_at` | TIMESTAMP | Waktu transaksi dibatalkan |
-| `cancelled_by` | BIGINT (FK) | ID user yang membatalkan transaksi |
-| `cancellation_reason` | TEXT | Alasan pembatalan transaksi |
-| `created_at` | TIMESTAMP | Waktu pembuatan |
-| `updated_at` | TIMESTAMP | Waktu pembaruan terakhir |
-| `deleted_at` | TIMESTAMP | Waktu soft delete |
-
-### C. Tabel Master Data Lainnya
-- `categories`: Kategori barang/produk toko.
-- `units`: Satuan ukuran produk toko.
-- `products`: Katalog produk toko dengan harga beli & jual.
-- `users`: Data pengguna (admin & staff) dengan hash kata sandi.
+| `movement_code` | VARCHAR(50) | Kode unik mutasi (cth: `MOV-20261105-0001`, unik) |
+| `product_id` | BIGINT (FK) | Relasi ke `products.id` (`restrictOnDelete`) |
+| `movement_type` | VARCHAR(20) | Jenis mutasi: `stock_in`, `stock_out`, `adjustment_in`, `adjustment_out` |
+| `quantity` | DECIMAL(12,2)| Jumlah kuantitas barang yang bermutasi (wajib > 0) |
+| `stock_before` | DECIMAL(12,2)| Kuantitas stok sebelum mutasi |
+| `stock_after` | DECIMAL(12,2)| Kuantitas stok sesudah mutasi |
+| `adjustment_reason` | TEXT | Alasan penyesuaian fisik (wajib jika adjustment) |
+| `description` | TEXT | Keterangan mutasi (opsional) |
+| `reference_number` | VARCHAR(100)| Nomor dokumen/PO/Invoice referensi |
+| `movement_date` | DATE | Tanggal mutasi terjadi |
+| `created_by` | BIGINT (FK) | User pencatat mutasi (`users.id`, dari `auth()->id()`) |
+| `created_at` | TIMESTAMP | Waktu mutasi dicatat |
+| `updated_at` | TIMESTAMP | Waktu pembaruan |
 
 ### Relasi Antar Tabel
 ```text
-users (1) ────────────────< (hasMany) ──── financial_transactions (N)
-                                                 │ (belongsTo)
-transaction_categories (1) ──< (hasMany) ────────┘
+users (id) ─────────────────< (created_by) ──── inventory_movements
+                                                     │ (product_id)
+products (id) ──────────────< (hasMany) ─────────────┘
+  │ (category_id)               │ (unit_id)
+  ▼                             ▼
+categories (id)               units (id)
 ```
-- Transaksi `income` hanya boleh memilih kategori transaksi berjenis `income`.
-- Transaksi `expense` hanya boleh memilih kategori transaksi berjenis `expense`.
-- Kategori transaksi berstatus nonaktif ditolak untuk pembuatan transaksi baru.
-- Kategori transaksi yang masih memiliki riwayat transaksi dilarang dihapus.
 
 ---
 
@@ -94,84 +79,81 @@ transaction_categories (1) ──< (hasMany) ────────┘
 
 | Fitur / Modul | Role Admin | Role Staff |
 | :--- | :---: | :---: |
-| **Kategori Transaksi**: Lihat daftar | ✅ Semua | ✅ Hanya yang Aktif |
-| **Kategori Transaksi**: Tambah / Ubah / Hapus | ✅ Ya | ❌ Ditolak (403 Forbidden) |
-| **Transaksi Keuangan**: Lihat semua transaksi | ✅ Semua | ✅ Semua |
-| **Transaksi Keuangan**: Tambah transaksi baru | ✅ Ya | ✅ Ya (Otomatis tercatat sebagai pembuat) |
-| **Transaksi Keuangan**: Ubah transaksi | ✅ Ya (Kecuali cancelled) | ✅ Hanya miliknya sendiri (Kecuali cancelled) |
-| **Transaksi Keuangan**: Batalkan transaksi | ✅ Ya (Kecuali cancelled) | ✅ Hanya miliknya sendiri (Kecuali cancelled) |
-| **Transaksi Keuangan**: Hapus (Soft delete) | ✅ Ya | ❌ Ditolak (403 Forbidden) |
+| **Lihat Stok & Ringkasan**: `/api/inventory` | ✅ Semua produk | ✅ Produk aktif |
+| **Detail Stok Produk**: `/api/inventory/{id}` | ✅ Ya | ✅ Ya |
+| **Stok Masuk (Stock In)**: Catat penerimaan barang | ✅ Ya | ✅ Ya |
+| **Stok Keluar (Stock Out)**: Catat pengeluaran barang | ✅ Ya | ✅ Ya |
+| **Penyesuaian Stok (Adjustment)**: Stock opname fisik | ✅ Ya | ❌ Ditolak (403 Forbidden - Khusus Admin) |
+| **Riwayat Mutasi**: Lihat seluruh mutasi stok | ✅ Semua | ✅ Semua |
 
 ---
 
-## 5. Daftar REST API Endpoints
+## 5. Daftar Lengkap REST API Endpoints (Inventory)
 
 Semua endpoint dapat diakses melalui prefix `/api/v1/*` maupun direct alias `/api/*`. Wajib menyertakan header:
 `Authorization: Bearer <TOKEN>` dan `Accept: application/json`.
 
-### A. Kategori Transaksi (`/api/v1/transaction-categories` & `/api/transaction-categories`)
 | Method | Endpoint | Query Param / Body | Keterangan | Akses |
 | :--- | :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/transaction-categories` | `search`, `type`, `is_active`, `all=true`, `page` | Daftar kategori transaksi | Admin & Staff (aktif saja) |
-| `POST` | `/api/v1/transaction-categories` | Body: `name`, `type`, `description`, `is_active` | Tambah kategori baru | Admin |
-| `GET` | `/api/v1/transaction-categories/{id}` | - | Detail kategori transaksi | Admin & Staff |
-| `PUT` | `/api/v1/transaction-categories/{id}` | Body: `name`, `type`, `description`, `is_active` | Perbarui kategori transaksi | Admin |
-| `PATCH`| `/api/v1/transaction-categories/{id}/status` | Body: `is_active` (boolean) | Ubah status aktif/nonaktif | Admin |
-| `DELETE`| `/api/v1/transaction-categories/{id}` | - | Hapus kategori (ditolak jika ada relasi) | Admin |
-
-### B. Transaksi Keuangan (`/api/v1/transactions` & `/api/transactions`)
-| Method | Endpoint | Query Param / Body | Keterangan | Akses |
-| :--- | :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/transactions` | `search`, `transaction_type`, `category_id`, `status`, `start_date`, `end_date`, `created_by`, `page` | Seluruh transaksi + ringkasan saldo | Admin & Staff |
-| `POST` | `/api/v1/transactions` | Body: `transaction_type`, `category_id`, `amount`, `transaction_date`, `description` | Tambah transaksi baru | Admin & Staff |
-| `GET` | `/api/v1/transactions/{id}` | - | Detail transaksi keuangan | Admin & Staff |
-| `PUT` | `/api/v1/transactions/{id}` | Body: `category_id`, `amount`, `transaction_date`, `description` | Perbarui transaksi (cek kepemilikan) | Admin / Pemilik Staff |
-| `PATCH`| `/api/v1/transactions/{id}/cancel` | Body: `cancellation_reason` | Batalkan transaksi (audit log) | Admin / Pemilik Staff |
-| `DELETE`| `/api/v1/transactions/{id}` | - | Hapus transaksi (soft delete) | Admin |
-
-### C. Dedicated Endpoint Pemasukan & Pengeluaran
-| Method | Endpoint | Keterangan | Akses |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/incomes` (atau `/api/incomes`) | Daftar khusus transaksi pemasukan (income) | Admin & Staff |
-| `POST` | `/api/v1/incomes` (atau `/api/incomes`) | Tambah transaksi pemasukan (otomatis type=income) | Admin & Staff |
-| `GET` | `/api/v1/expenses` (atau `/api/expenses`) | Daftar khusus transaksi pengeluaran (expense) | Admin & Staff |
-| `POST` | `/api/v1/expenses` (atau `/api/expenses`) | Tambah transaksi pengeluaran (otomatis type=expense) | Admin & Staff |
+| `GET` | `/api/inventory` | `search`, `category_id`, `unit_id`, `low_stock`, `out_of_stock`, `page` | Ringkasan stok seluruh produk | Admin & Staff |
+| `GET` | `/api/inventory/{productId}` | - | Detail stok produk & 15 mutasi terakhir | Admin & Staff |
+| `GET` | `/api/inventory/stock-in` | `search`, `product_id`, `start_date`, `end_date`, `page` | Daftar riwayat stok masuk | Admin & Staff |
+| `POST` | `/api/inventory/stock-in` | Body: `product_id`, `quantity`, `movement_date`, `description`, `reference_number` | Tambah stok masuk produk | Admin & Staff |
+| `GET` | `/api/inventory/stock-out` | `search`, `product_id`, `start_date`, `end_date`, `page` | Daftar riwayat stok keluar | Admin & Staff |
+| `POST` | `/api/inventory/stock-out` | Body: `product_id`, `quantity`, `movement_date`, `description`, `reference_number` | Tambah stok keluar produk | Admin & Staff |
+| `GET` | `/api/inventory/adjustments` | `search`, `product_id`, `start_date`, `end_date`, `page` | Daftar riwayat penyesuaian | Admin & Staff |
+| `POST` | `/api/inventory/adjustments` | Body: `product_id`, `actual_stock`, `adjustment_reason`, `movement_date`, `description` | Catat penyesuaian stok fisik | Admin Only |
+| `GET` | `/api/inventory/movements` | `search`, `product_id`, `movement_type`, `created_by`, `start_date`, `end_date`, `page` | Seluruh riwayat mutasi stok | Admin & Staff |
+| `GET` | `/api/inventory/movements/{id}` | - | Detail satu mutasi stok | Admin & Staff |
 
 ---
 
 ## 6. Contoh Request & Response JSON
 
-### A. Contoh Request: Tambah Pemasukan
-`POST /api/v1/transactions` (atau `/api/v1/incomes`)
+### A. Tambah Stok Masuk (Stock In)
+`POST /api/inventory/stock-in`
+
+**Body Request:**
 ```json
 {
-  "transaction_type": "income",
-  "category_id": 1,
-  "amount": 150000.00,
-  "transaction_date": "2026-11-05",
-  "description": "Penjualan beras dan sembako shift pagi"
+  "product_id": 1,
+  "quantity": 15,
+  "movement_date": "2026-11-05",
+  "description": "Penerimaan pasokan beras dari supplier",
+  "reference_number": "PO-202611-001"
 }
 ```
 
-### B. Contoh Response Berhasil (HTTP 201 Created)
+**Response Sukses (HTTP 201 Created):**
 ```json
 {
   "success": true,
-  "message": "Transaksi Pemasukan berhasil ditambahkan",
+  "message": "Stok berhasil ditambahkan",
   "data": {
-    "id": 1,
-    "transaction_code": "TRX-20261105-0001",
-    "transaction_type": "income",
-    "amount": "150000.00",
-    "amount_numeric": 150000,
-    "transaction_date": "2026-11-05",
-    "description": "Penjualan beras dan sembako shift pagi",
-    "status": "completed",
-    "category": {
+    "id": 8,
+    "movement_code": "MOV-20261105-0002",
+    "product_id": 1,
+    "movement_type": "stock_in",
+    "quantity": "15.00",
+    "quantity_numeric": 15,
+    "stock_before": "50.00",
+    "stock_before_numeric": 50,
+    "stock_after": "65.00",
+    "stock_after_numeric": 65,
+    "adjustment_reason": null,
+    "description": "Penerimaan pasokan beras dari supplier",
+    "reference_number": "PO-202611-001",
+    "movement_date": "2026-11-05",
+    "product": {
       "id": 1,
-      "name": "Penjualan Produk",
-      "type": "income",
-      "is_active": true
+      "sku": "PRD-SMB-001",
+      "name": "Beras Pandan Wangi Premium 5kg",
+      "current_stock": 65,
+      "unit": {
+        "id": 2,
+        "name": "Kilogram",
+        "symbol": "kg"
+      }
     },
     "created_by": {
       "id": 2,
@@ -179,78 +161,63 @@ Semua endpoint dapat diakses melalui prefix `/api/v1/*` maupun direct alias `/ap
       "email": "staff@fintoko.test",
       "role": "staff"
     },
-    "updated_by": null,
-    "cancelled_at": null,
-    "cancelled_by": null,
-    "cancellation_reason": null,
-    "created_at": "2026-11-05T06:05:00.000000Z",
-    "updated_at": "2026-11-05T06:05:00.000000Z"
+    "created_at": "2026-11-05T06:24:00.000000Z",
+    "updated_at": "2026-11-05T06:24:00.000000Z"
   }
 }
 ```
 
-### C. Contoh Response Daftar Transaksi + Ringkasan Saldo (HTTP 200 OK)
-`GET /api/v1/transactions`
+### B. Penyesuaian Stok Opname Fisik (Stock Adjustment)
+`POST /api/inventory/adjustments`
+
+**Body Request:**
+```json
+{
+  "product_id": 3,
+  "actual_stock": 38,
+  "adjustment_reason": "2 bungkus kemasan rusak saat bongkar muat gudang",
+  "movement_date": "2026-11-05"
+}
+```
+
+**Response Sukses (HTTP 201 Created):**
 ```json
 {
   "success": true,
-  "message": "Daftar transaksi keuangan berhasil diambil",
-  "data": [ ... ],
-  "summary": {
-    "total_income": "2175000.00",
-    "total_expense": "880000.00",
-    "net_balance": "1295000.00",
-    "total_income_numeric": 2175000,
-    "total_expense_numeric": 880000,
-    "net_balance_numeric": 1295000
-  },
-  "pagination": {
-    "current_page": 1,
-    "last_page": 1,
-    "per_page": 10,
-    "total": 6
+  "message": "Penyesuaian stok berhasil disimpan",
+  "data": {
+    "id": 9,
+    "movement_code": "MOV-20261105-0003",
+    "product_id": 3,
+    "movement_type": "adjustment_out",
+    "quantity": "2.00",
+    "quantity_numeric": 2,
+    "stock_before": "40.00",
+    "stock_after": "38.00",
+    "adjustment_reason": "2 bungkus kemasan rusak saat bongkar muat gudang"
   }
 }
 ```
 
 ---
 
-## 7. Akun Pengujian Development (Tersedia dari Seeder)
-
-| Role | Alamat Email / Username | Kata Sandi | Status | Hak Akses |
-| :--- | :--- | :--- | :---: | :--- |
-| **admin** | `admin@fintoko.test` / `admin` | `password` / `Admin1234` | **Aktif** | Akses penuh (Dashboard Admin, Master Data, Financial Management, Kelola Pengguna) |
-| **staff** | `staff@fintoko.test` | `password` | **Aktif** | Akses staf kasir (Pencatatan Pemasukan/Pengeluaran, Katalog Master, Profil Pribadi) |
-| **staff** | `nonaktif@fintoko.test` | `password` | **Nonaktif** | Untuk pengujian blokir akun dinonaktifkan |
-
----
-
-## 8. Cara Menjalankan Aplikasi & Pengujian di Laragon
+## 7. Cara Menjalankan Aplikasi & Pengujian di Laragon
 
 ### 1. Migrasi Database
-Jalankan migrasi seluruh tabel (users, categories, units, products, transaction_categories, financial_transactions):
 ```bash
 php artisan migrate
 ```
 
-### 2. Seeder Database
-Isi data awal pengguna, master data produk, kategori transaksi, dan riwayat transaksi awal:
+### 2. Seeder Database Awal (User, Master Data, Finance, Inventory)
 ```bash
 php artisan db:seed
 ```
 
-### 3. Jalankan Web Server Laravel
-```bash
-php artisan serve --port=8000
-```
-Buka browser di: **http://127.0.0.1:8000**
-
-### 4. Menjalankan Automated Testing
-Seluruh 68 automated test dapat dijalankan kapan saja dengan:
+### 3. Menjalankan Automated Testing (80 Tests Passing)
 ```bash
 php artisan test
 ```
-Untuk menguji modul Financial Management secara spesifik:
+Untuk menguji modul Inventory secara khusus:
 ```bash
-php artisan test --filter=FinancialManagementTest
+php artisan test --filter=InventoryManagementTest
 ```

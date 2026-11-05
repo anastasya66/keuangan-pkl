@@ -10,7 +10,7 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database with initial admin, staff, and inactive users,
-     * master data, and financial transactions.
+     * master data, financial transactions, and inventory stocks.
      */
     public function run(): void
     {
@@ -50,13 +50,14 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Seed Master Data: Categories, Units, Products
+        // Seed Master Data, Financial Transactions, and Inventory
         $this->call([
             CategorySeeder::class,
             UnitSeeder::class,
             ProductSeeder::class,
             TransactionCategorySeeder::class,
             FinancialTransactionSeeder::class,
+            InventorySeeder::class,
         ]);
     }
 }

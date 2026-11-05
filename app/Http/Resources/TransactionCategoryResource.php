@@ -26,3 +26,4 @@ class TransactionCategoryResource extends JsonResource
         ];
     }
 }
+

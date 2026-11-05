@@ -51,3 +51,4 @@ class TransactionCategoryPolicy
         return $user->isAdmin();
     }
 }
+

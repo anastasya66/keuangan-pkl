@@ -83,4 +83,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(FinancialTransaction::class, 'created_by');
     }
+
+    /**
+     * Relasi ke mutasi persediaan yang dicatat oleh pengguna ini.
+     */
+    public function inventoryMovements(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(InventoryMovement::class, 'created_by');
+    }
 }

@@ -84,3 +84,4 @@ class TransactionCategory extends Model
         return $this->type === 'expense';
     }
 }
+

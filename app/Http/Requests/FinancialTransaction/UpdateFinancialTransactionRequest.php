@@ -94,3 +94,4 @@ class UpdateFinancialTransactionRequest extends BaseApiRequest
         ];
     }
 }
+

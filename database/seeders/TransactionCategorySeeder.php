@@ -86,3 +86,4 @@ class TransactionCategorySeeder extends Seeder
         }
     }
 }
+

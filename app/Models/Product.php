@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -25,6 +26,7 @@ class Product extends Model
         'description',
         'purchase_price',
         'selling_price',
+        'stock',
         'is_active',
     ];
 
@@ -39,6 +41,7 @@ class Product extends Model
             'is_active' => 'boolean',
             'purchase_price' => 'decimal:2',
             'selling_price' => 'decimal:2',
+            'stock' => 'decimal:2',
         ];
     }
 
@@ -57,5 +60,20 @@ class Product extends Model
     {
         return $this->belongsTo(Unit::class);
     }
-}
 
+    /**
+     * Seluruh riwayat mutasi stok untuk produk ini.
+     */
+    public function movements(): HasMany
+    {
+        return $this->hasMany(InventoryMovement::class);
+    }
+
+    /**
+     * Cek kecukupan stok produk terhadap kuantitas yang diminta.
+     */
+    public function hasSufficientStock(float $quantity): bool
+    {
+        return (float) $this->stock >= $quantity;
+    }
+}

@@ -111,3 +111,4 @@ class FinancialTransactionSeeder extends Seeder
         }
     }
 }
+

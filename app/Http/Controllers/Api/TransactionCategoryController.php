@@ -164,3 +164,4 @@ class TransactionCategoryController extends Controller
         ], Response::HTTP_OK);
     }
 }
+

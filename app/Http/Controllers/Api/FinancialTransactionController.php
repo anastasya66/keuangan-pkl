@@ -224,3 +224,4 @@ class FinancialTransactionController extends Controller
         ], Response::HTTP_OK);
     }
 }
+

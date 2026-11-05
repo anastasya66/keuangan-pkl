@@ -26,3 +26,4 @@ class UpdateTransactionCategoryStatusRequest extends BaseApiRequest
         ];
     }
 }
+

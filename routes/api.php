@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\FinancialTransactionController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\InventoryController;
+use App\Http\Controllers\Api\InventoryMovementController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\TransactionCategoryController;
@@ -76,6 +78,29 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::post('incomes', [FinancialTransactionController::class, 'store'])->name('incomes.store');
     Route::get('expenses', [FinancialTransactionController::class, 'index'])->name('expenses.index');
     Route::post('expenses', [FinancialTransactionController::class, 'store'])->name('expenses.store');
+
+    // Inventory Management
+    Route::prefix('inventory')->group(function () {
+        // Stock In
+        Route::get('stock-in', [InventoryMovementController::class, 'stockInList']);
+        Route::post('stock-in', [InventoryController::class, 'stockIn']);
+
+        // Stock Out
+        Route::get('stock-out', [InventoryMovementController::class, 'stockOutList']);
+        Route::post('stock-out', [InventoryController::class, 'stockOut']);
+
+        // Stock Adjustments
+        Route::get('adjustments', [InventoryMovementController::class, 'adjustmentList']);
+        Route::post('adjustments', [InventoryController::class, 'adjust']);
+
+        // Stock Movements History
+        Route::get('movements', [InventoryMovementController::class, 'index']);
+        Route::get('movements/{movement}', [InventoryMovementController::class, 'show']);
+
+        // Inventory Stock Overview & Product Stock Detail
+        Route::get('/', [InventoryController::class, 'index']);
+        Route::get('{product}', [InventoryController::class, 'show'])->whereNumber('product');
+    });
 });
 
 // Admin-Only Routes (Role-based access protection)
