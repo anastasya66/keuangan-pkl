@@ -58,40 +58,38 @@ export function ChartOfAccountsPage() {
 
   useEffect(() => {
     fetchAccounts(currentPage, search, typeFilter, statusFilter);
-  }, [currentPage, typeFilter, statusFilter, fetchAccounts]);
+  }, [currentPage, search, typeFilter, statusFilter, fetchAccounts]);
 
   const handleFormSubmit = async (formData) => {
     setIsSubmitting(true);
     try {
       if (selectedAccount) {
         await accountingService.updateAccount(selectedAccount.id, formData);
-        showToast('Akun akuntansi berhasil diperbarui!');
+        showToast('Akun berhasil diperbarui.');
       } else {
         await accountingService.createAccount(formData);
-        showToast('Akun akuntansi baru berhasil ditambahkan!');
+        showToast('Akun baru berhasil ditambahkan.');
       }
       setIsModalOpen(false);
       setSelectedAccount(null);
       fetchAccounts(currentPage);
-      return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Gagal menyimpan akun';
-      const errors = error.response?.data?.errors;
-      showToast(message, 'error');
-      return { success: false, errors };
+      const msg = error.response?.data?.message || 'Gagal menyimpan akun.';
+      showToast(msg, 'error');
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleToggleStatus = async (acc) => {
+  const handleToggleStatus = async (account) => {
     try {
-      const newStatus = !acc.is_active;
-      await accountingService.updateAccountStatus(acc.id, newStatus);
-      showToast(`Akun ${acc.account_code} berhasil ${newStatus ? 'diaktifkan' : 'dinonaktifkan'}`);
+      const newStatus = !account.is_active;
+      await accountingService.updateAccountStatus(account.id, newStatus);
+      showToast(`Status akun ${account.account_code} berhasil diubah.`);
       fetchAccounts(currentPage);
     } catch (error) {
-      showToast(error.response?.data?.message || 'Gagal mengubah status akun', 'error');
+      showToast(error.response?.data?.message || 'Gagal mengubah status akun.', 'error');
     }
   };
 
@@ -100,11 +98,11 @@ export function ChartOfAccountsPage() {
     setIsDeleting(true);
     try {
       await accountingService.deleteAccount(deleteTarget.id);
-      showToast(`Akun ${deleteTarget.account_code} - ${deleteTarget.account_name} berhasil dihapus.`);
+      showToast(`Akun ${deleteTarget.account_code} berhasil dihapus.`);
       setDeleteTarget(null);
       fetchAccounts(currentPage);
     } catch (error) {
-      showToast(error.response?.data?.message || 'Gagal menghapus akun', 'error');
+      showToast(error.response?.data?.message || 'Gagal menghapus akun.', 'error');
     } finally {
       setIsDeleting(false);
     }
@@ -112,13 +110,13 @@ export function ChartOfAccountsPage() {
 
   const getTypeBadge = (type) => {
     const badges = {
-      assets: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-      liabilities: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-      equity: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
-      revenue: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-      expenses: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+      assets: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      liabilities: 'bg-amber-50 text-amber-700 border-amber-200',
+      equity: 'bg-purple-50 text-purple-700 border-purple-200',
+      revenue: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      expenses: 'bg-rose-50 text-rose-700 border-rose-200',
     };
-    return badges[type] || 'bg-slate-800 text-slate-400 border-slate-700';
+    return badges[type] || 'bg-slate-100 text-slate-600 border-slate-200';
   };
 
   const columns = [
@@ -135,20 +133,20 @@ export function ChartOfAccountsPage() {
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`p-4 rounded-xl border flex items-center justify-between text-sm shadow-xl transition-all ${
+          className={`p-4 rounded-2xl border flex items-center justify-between text-xs font-semibold shadow-md transition-all ${
             toast.type === 'error'
-              ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+              ? 'bg-rose-50 border-rose-200 text-rose-700'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-700'
           }`}
         >
           <div className="flex items-center gap-2">
             <span>{toast.type === 'error' ? '⚠️' : '✅'}</span>
-            <span className="font-medium">{toast.message}</span>
+            <span>{toast.message}</span>
           </div>
           <button
             type="button"
             onClick={() => setToast(null)}
-            className="text-xs text-slate-400 hover:text-white"
+            className="text-xs text-[#8EA6AF] hover:text-[#16323B] cursor-pointer"
           >
             ✕
           </button>
@@ -158,10 +156,10 @@ export function ChartOfAccountsPage() {
       {/* Header Page */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span>Daftar Akun (Chart of Accounts)</span>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#10262E] flex items-center gap-2">
+            <span>📑</span> Daftar Akun (Chart of Accounts)
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-xs text-[#577782] mt-1">
             Kelola kode akun akuntansi terstandar dengan prinsip double-entry bookkeeping.
           </p>
         </div>
@@ -173,15 +171,15 @@ export function ChartOfAccountsPage() {
               setSelectedAccount(null);
               setIsModalOpen(true);
             }}
-            className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#27C5E5] to-[#38BFE0] hover:from-[#1FB2D0] hover:to-[#2FB0CF] text-white font-bold text-xs shadow-md shadow-[#38BFE0]/25 transition-all cursor-pointer self-start sm:self-auto"
           >
-            <span>+ Tambah Akun</span>
+            <span>+</span> Tambah Akun Baru
           </button>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div className="bg-white p-4 rounded-3xl border border-[#D7EBEF] shadow-xs flex flex-col md:flex-row gap-3 items-center justify-between">
         <div className="w-full md:w-72">
           <SearchInput
             value={search}
@@ -198,14 +196,13 @@ export function ChartOfAccountsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          {/* Filter Kategori */}
           <select
             value={typeFilter}
             onChange={(e) => {
               setTypeFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+            className="px-3 py-2 bg-[#F8FDFF] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25"
           >
             <option value="">Semua Kategori</option>
             <option value="assets">Assets (Aset)</option>
@@ -215,14 +212,13 @@ export function ChartOfAccountsPage() {
             <option value="expenses">Expenses (Beban)</option>
           </select>
 
-          {/* Filter Status */}
           <select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+            className="px-3 py-2 bg-[#F8FDFF] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25"
           >
             <option value="">Semua Status</option>
             <option value="true">Aktif</option>
@@ -234,36 +230,35 @@ export function ChartOfAccountsPage() {
       {/* Data Table */}
       <DataTable
         columns={columns}
+        data={accounts}
         isLoading={isLoading}
-        isEmpty={accounts.length === 0}
         emptyMessage="Tidak ada akun akuntansi yang sesuai kriteria pencarian."
-      >
-        {accounts.map((acc) => (
-          <tr key={acc.id} className="border-b border-slate-800/60 hover:bg-slate-800/30 transition-colors">
-            <td className="px-4 py-3 font-mono font-bold text-emerald-400">
+        renderRow={(acc) => (
+          <tr key={acc.id} className="hover:bg-[#F3FBFC] transition-colors">
+            <td className="px-4 py-3.5 font-mono font-bold text-[#167A93]">
               {acc.account_code}
             </td>
-            <td className="px-4 py-3">
-              <span className="font-semibold text-slate-100">{acc.account_name}</span>
+            <td className="px-4 py-3.5">
+              <span className="font-bold text-[#10262E]">{acc.account_name}</span>
               {acc.description && (
-                <p className="text-xs text-slate-500 line-clamp-1">{acc.description}</p>
+                <p className="text-xs text-[#577782] line-clamp-1 mt-0.5">{acc.description}</p>
               )}
             </td>
-            <td className="px-4 py-3 text-center">
-              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${getTypeBadge(acc.account_type)}`}>
+            <td className="px-4 py-3.5 text-center">
+              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getTypeBadge(acc.account_type)}`}>
                 {acc.account_type_label}
               </span>
             </td>
-            <td className="px-4 py-3 text-center">
-              <span className="font-mono text-xs text-slate-300 uppercase px-2 py-0.5 bg-slate-950 rounded-lg border border-slate-800">
+            <td className="px-4 py-3.5 text-center">
+              <span className="font-mono text-xs text-[#167A93] font-bold uppercase px-2 py-0.5 bg-[#EAF8FA] rounded-md border border-[#38BFE0]/30">
                 {acc.normal_balance}
               </span>
             </td>
-            <td className="px-4 py-3 text-center">
+            <td className="px-4 py-3.5 text-center">
               <StatusBadge isActive={acc.is_active} />
             </td>
             {isAdmin && (
-              <td className="px-4 py-3 text-right whitespace-nowrap">
+              <td className="px-4 py-3.5 text-right whitespace-nowrap">
                 <div className="flex items-center justify-end gap-1.5">
                   <button
                     type="button"
@@ -271,7 +266,7 @@ export function ChartOfAccountsPage() {
                       setSelectedAccount(acc);
                       setIsModalOpen(true);
                     }}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#F3FBFC] text-[#16323B] border border-[#D7EBEF] transition-colors cursor-pointer shadow-2xs"
                   >
                     Edit
                   </button>
@@ -279,10 +274,10 @@ export function ChartOfAccountsPage() {
                   <button
                     type="button"
                     onClick={() => handleToggleStatus(acc)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
                       acc.is_active
-                        ? 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
-                        : 'border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10'
+                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                     }`}
                   >
                     {acc.is_active ? 'Nonaktifkan' : 'Aktifkan'}
@@ -292,7 +287,7 @@ export function ChartOfAccountsPage() {
                     <button
                       type="button"
                       onClick={() => setDeleteTarget(acc)}
-                      className="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 transition-colors cursor-pointer"
                     >
                       Hapus
                     </button>
@@ -301,15 +296,13 @@ export function ChartOfAccountsPage() {
               </td>
             )}
           </tr>
-        ))}
-      </DataTable>
+        )}
+      />
 
       {/* Pagination */}
       {pagination && (
         <Pagination
-          currentPage={pagination.current_page}
-          lastPage={pagination.last_page}
-          total={pagination.total}
+          pagination={pagination}
           onPageChange={(page) => setCurrentPage(page)}
         />
       )}
@@ -341,4 +334,3 @@ export function ChartOfAccountsPage() {
 }
 
 export default ChartOfAccountsPage;
-

@@ -4,7 +4,17 @@ import ExpenseDistributionChart from '../../components/charts/ExpenseDistributio
 import FinancialChart from '../../components/charts/FinancialChart';
 import useAuth from '../../hooks/useAuth';
 import reportService from '../../services/reportService';
-import { formatDateTime, formatRupiah } from '../../utils/currency';
+import { formatRupiah } from '../../utils/currency';
+import {
+  IconDashboard,
+  IconBox,
+  IconWallet,
+  IconTrendingUp,
+  IconTrendingDown,
+  IconBalance,
+  IconJournal,
+  IconIncomeStatement,
+} from '../../components/common/Icons';
 
 export function AdminDashboardPage() {
   const { user } = useAuth();
@@ -72,40 +82,66 @@ export function AdminDashboardPage() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header & Controls */}
-      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 backdrop-blur shadow-xl">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-white via-[#F8FDFF] to-[#EBF8FB] border border-[#D7EBEF] rounded-3xl p-6 sm:p-8 shadow-xs relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-[#38BFE0]/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              Level Akses: Administrator
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E3F6FA] text-[#167A93] border border-[#38BFE0]/30 mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#27C5E5] animate-pulse"></span>
+              Beranda Ringkasan Toko
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Dashboard Keuangan & Operasional
+            <h1 className="text-2xl sm:text-3xl font-black text-[#10262E] tracking-tight">
+              Halo, {user?.name}! 👋
             </h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Pantau arus kas, laba rugi akuntansi, neraca keseimbangan, dan persediaan toko secara realtime.
+            <p className="mt-1 text-xs sm:text-sm text-[#577782] max-w-2xl leading-relaxed">
+              Yuk pantau arus uang kas, penjualan, dan stok barang tokomu hari ini dengan rapi.
             </p>
           </div>
 
-          {/* Period Selector Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Quick Action Shortcuts */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              to="/admin/products"
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white hover:bg-[#F3FBFC] border border-[#D7EBEF] text-[#16323B] font-semibold text-xs shadow-2xs transition-all cursor-pointer btn-press"
+            >
+              <IconBox className="w-4 h-4 text-[#27C5E5]" />
+              <span>Katalog Barang</span>
+            </Link>
+            <Link
+              to="/admin/reports/income-statement"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer btn-press"
+            >
+              <IconIncomeStatement className="w-4 h-4 text-white" />
+              <span>Cek Untung &amp; Rugi</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Period Selector Tabs */}
+        <div className="mt-6 pt-5 border-t border-[#D7EBEF]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="text-xs font-semibold text-[#577782]">
+            Periode Tampilan: <span className="text-[#10262E] font-bold">{summary?.period?.label || 'Bulan Ini'}</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
             {[
               { key: 'today', label: 'Hari Ini' },
               { key: 'this_week', label: 'Minggu Ini' },
               { key: 'this_month', label: 'Bulan Ini' },
               { key: 'this_year', label: 'Tahun Ini' },
-              { key: 'custom', label: 'Kustom' },
+              { key: 'custom', label: 'Pilih Tanggal' },
             ].map((p) => (
               <button
                 key={p.key}
                 type="button"
                 onClick={() => handlePeriodChange(p.key)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer btn-press ${
                   period === p.key
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40 border border-emerald-500'
-                    : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/60'
+                    ? 'bg-[#27C5E5] text-white shadow-sm shadow-[#27C5E5]/30'
+                    : 'bg-white hover:bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF]'
                 }`}
               >
                 {p.label}
@@ -114,26 +150,26 @@ export function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Custom Date Filter Panel */}
+        {/* Custom Date Form */}
         {isCustomDate && (
           <form
             onSubmit={handleCustomFilterSubmit}
-            className="mt-4 pt-4 border-t border-slate-700/80 flex flex-wrap items-end gap-3"
+            className="mt-4 pt-4 border-t border-[#D7EBEF] flex flex-wrap items-end gap-3 animate-modal-pop"
           >
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">
-                Dari Tanggal
+              <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+                Mulai Tanggal
               </label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 required
-                className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="bg-white border border-[#D7EBEF] rounded-xl px-3 py-1.5 text-xs text-[#16323B] focus:outline-none focus:border-[#38BFE0] input-focus-glow"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">
+              <label className="block text-[11px] font-semibold text-[#577782] mb-1">
                 Sampai Tanggal
               </label>
               <input
@@ -141,264 +177,278 @@ export function AdminDashboardPage() {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 required
-                className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="bg-white border border-[#D7EBEF] rounded-xl px-3 py-1.5 text-xs text-[#16323B] focus:outline-none focus:border-[#38BFE0] input-focus-glow"
               />
             </div>
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-all cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#27C5E5] hover:bg-[#38BFE0] text-white transition-all cursor-pointer shadow-xs btn-press"
             >
-              Terapkan Filter
+              Tampilkan
             </button>
           </form>
         )}
       </div>
 
-      {/* KPI Financial Cards (Row 1: Operasional & Laba Bersih) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Pemasukan */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 backdrop-blur shadow-xl relative overflow-hidden group">
+      {/* 4 Financial Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        {/* Card 1: Total Pemasukan */}
+        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#36B878]/50 card-interactive group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Total Pemasukan
+            <span className="text-[11px] font-bold text-[#577782] uppercase tracking-wider">
+              Total Uang Masuk
             </span>
-            <span className="text-xl">💰</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#36B878] flex items-center justify-center border border-emerald-100">
+              <IconTrendingUp className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-black text-emerald-400 mt-2 font-mono">
+          <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
             {loading ? '...' : formatRupiah(summary?.total_income || 0)}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Arus kas masuk ({summary?.period?.label || 'Periode terpilih'})
-          </p>
+          <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-[#36B878]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#36B878]"></span>
+            <span>Kas masuk tercatat</span>
+          </div>
         </div>
 
-        {/* Pengeluaran */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 backdrop-blur shadow-xl relative overflow-hidden group">
+        {/* Card 2: Total Pengeluaran */}
+        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#E66D79]/50 card-interactive group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Total Pengeluaran
+            <span className="text-[11px] font-bold text-[#577782] uppercase tracking-wider">
+              Total Uang Keluar
             </span>
-            <span className="text-xl">💸</span>
+            <div className="w-9 h-9 rounded-xl bg-rose-50 text-[#E66D79] flex items-center justify-center border border-rose-100">
+              <IconTrendingDown className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-black text-rose-400 mt-2 font-mono">
+          <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
             {loading ? '...' : formatRupiah(summary?.total_expense || 0)}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Biaya & pengeluaran operasional
-          </p>
+          <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-[#E66D79]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E66D79]"></span>
+            <span>Biaya &amp; belanja toko</span>
+          </div>
         </div>
 
-        {/* Laba Bersih Akuntansi */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 backdrop-blur shadow-xl relative overflow-hidden group">
+        {/* Card 3: Saldo Kas & Bank */}
+        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#38BFE0]/50 card-interactive group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Laba Bersih Akuntansi
+            <span className="text-[11px] font-bold text-[#577782] uppercase tracking-wider">
+              Sisa Uang Kas &amp; Bank
             </span>
-            <span className="text-xl">📈</span>
+            <div className="w-9 h-9 rounded-xl bg-[#EAF8FA] text-[#27C5E5] flex items-center justify-center border border-[#D7EBEF]">
+              <IconWallet className="w-4 h-4" />
+            </div>
           </div>
-          <div
-            className={`text-2xl font-black mt-2 font-mono ${
-              (summary?.net_profit || 0) >= 0 ? 'text-teal-300' : 'text-rose-400'
-            }`}
-          >
-            {loading ? '...' : formatRupiah(summary?.net_profit || 0)}
-          </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Pendapatan - Beban (Jurnal Terposting)
-          </p>
-        </div>
-
-        {/* Saldo Kas & Bank */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 backdrop-blur shadow-xl relative overflow-hidden group">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Saldo Kas & Bank
-            </span>
-            <span className="text-xl">🏦</span>
-          </div>
-          <div className="text-2xl font-black text-cyan-400 mt-2 font-mono">
+          <div className="text-2xl font-black text-[#167A93] mt-3 font-mono">
             {loading ? '...' : formatRupiah(summary?.cash_balance || 0)}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Likuiditas kas aktual per {summary?.period?.end_date || 'hari ini'}
-          </p>
+          <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-[#577782]">
+            <span>Uang siap pakai saat ini</span>
+          </div>
+        </div>
+
+        {/* Card 4: Total Produk & Persediaan */}
+        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#38BFE0]/50 card-interactive group">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-[#577782] uppercase tracking-wider">
+              Barang &amp; Sisa Stok
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-[#F0FAFC] text-[#27C5E5] flex items-center justify-center border border-[#D7EBEF]">
+              <IconBox className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
+            {loading ? '...' : `${inventorySummary?.total_products || 0} Barang`}
+          </div>
+          <div className="flex items-center justify-between mt-2 text-xs">
+            <span className="text-[#577782]">{inventorySummary?.total_units || 0} unit fisik</span>
+            <Link to="/admin/reports/inventory" className="text-[#167A93] font-bold hover:underline">
+              Cek Stok &rarr;
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* KPI Neraca Keseimbangan (Row 2: Neraca Akuntansi) */}
-      <div className="bg-slate-850/60 border border-slate-800 rounded-2xl p-5 backdrop-blur">
+      {/* Accounting Equilibrium Banner */}
+      <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs card-interactive">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">⚖️</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#EAF8FA] text-[#27C5E5] flex items-center justify-center border border-[#D7EBEF]">
+              <IconBalance className="w-5 h-5" />
+            </div>
             <div>
-              <h3 className="text-sm font-bold text-white">
-                Posisi Keuangan & Persamaan Akuntansi (Neraca)
+              <h3 className="text-sm font-bold text-[#10262E]">
+                Keseimbangan Saldo Keuangan Toko
               </h3>
-              <p className="text-xs text-slate-400">
-                Prinsip Keseimbangan: Aset = Kewajiban + Ekuitas
+              <p className="text-xs text-[#577782]">
+                Prinsip Keseimbangan: Total Aset = Total Hutang Toko + Modal Pemilik
               </p>
             </div>
           </div>
+
           {summary && (
             <span
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
                 summary.is_equity_balanced
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                  : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-rose-50 text-rose-700 border-rose-200'
               }`}
             >
               <span
                 className={`w-2 h-2 rounded-full ${
-                  summary.is_equity_balanced ? 'bg-emerald-400' : 'bg-rose-400'
+                  summary.is_equity_balanced ? 'bg-emerald-500' : 'bg-rose-500'
                 }`}
               ></span>
-              {summary.is_equity_balanced ? 'Neraca Seimbang (Equilibrium)' : 'Belum Seimbang'}
+              {summary.is_equity_balanced ? 'Saldo Pas & Seimbang (Balance)' : 'Belum Seimbang'}
             </span>
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
-            <div className="text-xs text-indigo-400 font-semibold uppercase">Total Aset</div>
-            <div className="text-xl font-bold font-mono text-white mt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-3.5 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#167A93]">Total Aset Toko</div>
+            <div className="text-lg font-black font-mono text-[#10262E] mt-1">
               {loading ? '...' : formatRupiah(summary?.total_assets || 0)}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Kas, Piutang, & Persediaan</div>
+            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Uang kas, rekening bank, &amp; nilai barang</div>
           </div>
 
-          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
-            <div className="text-xs text-amber-400 font-semibold uppercase">Total Kewajiban (Hutang)</div>
-            <div className="text-xl font-bold font-mono text-white mt-1">
+          <div className="p-3.5 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#F0B75A]">Total Hutang (Kewajiban)</div>
+            <div className="text-lg font-black font-mono text-[#10262E] mt-1">
               {loading ? '...' : formatRupiah(summary?.total_liabilities || 0)}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Hutang Usaha & Operasional</div>
+            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Hutang ke supplier &amp; operasional</div>
           </div>
 
-          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
-            <div className="text-xs text-purple-400 font-semibold uppercase">Total Ekuitas (Modal)</div>
-            <div className="text-xl font-bold font-mono text-white mt-1">
+          <div className="p-3.5 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#27C5E5]">Total Modal (Ekuitas)</div>
+            <div className="text-lg font-black font-mono text-[#10262E] mt-1">
               {loading ? '...' : formatRupiah(summary?.total_equity || 0)}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Modal Pemilik + Laba Berjalan</div>
+            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Modal awal + laba bersih toko</div>
           </div>
         </div>
       </div>
 
-      {/* Financial Charts Section */}
+      {/* Financial Analytics: Cash Flow Chart & Expense Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <FinancialChart points={chartData} title="Tren Pemasukan vs Pengeluaran" />
+          <FinancialChart points={chartData} title="Grafik Arus Uang (Masuk vs Keluar)" />
         </div>
         <div className="lg:col-span-1">
           <ExpenseDistributionChart distribution={distribution} />
         </div>
       </div>
 
-      {/* Inventory & Low Stock Alerts Section */}
+      {/* Inventory Overview & Low Stock Warnings */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Inventory Summary Cards */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 backdrop-blur shadow-xl lg:col-span-1 flex flex-col justify-between">
+        {/* Inventory Valuation Card */}
+        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-6 shadow-xs lg:col-span-1 flex flex-col justify-between card-interactive">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <span>📦</span> Ringkasan Persediaan
+              <h3 className="text-sm font-bold text-[#10262E] flex items-center gap-2">
+                <IconBox className="w-4 h-4 text-[#27C5E5]" />
+                <span>Ringkasan Stok Barang</span>
               </h3>
               <Link
                 to="/admin/reports/inventory"
-                className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold"
+                className="text-xs text-[#167A93] hover:text-[#38BFE0] font-bold btn-press"
               >
-                Laporan &rarr;
+                Lengkap &rarr;
               </Link>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-xs text-slate-300">Total Varian Produk</span>
-                <span className="text-sm font-bold text-white font-mono">
-                  {inventorySummary?.total_products || 0} SKU
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
+                <span className="text-xs text-[#577782]">Total Jenis Barang</span>
+                <span className="text-xs font-bold font-mono text-[#10262E]">
+                  {inventorySummary?.total_products || 0} Barang
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-xs text-slate-300">Total Kuantitas Fisik</span>
-                <span className="text-sm font-bold text-white font-mono">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
+                <span className="text-xs text-[#577782]">Total Kuantitas Fisik</span>
+                <span className="text-xs font-bold font-mono text-[#10262E]">
                   {inventorySummary?.total_units || 0} unit
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-xs text-slate-300">Valuasi Persediaan (Cost)</span>
-                <span className="text-sm font-bold text-emerald-400 font-mono">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
+                <span className="text-xs text-[#577782]">Nilai Aset Modal Barang</span>
+                <span className="text-xs font-bold font-mono text-[#36B878]">
                   {formatRupiah(inventorySummary?.total_valuation || 0)}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-700/80 grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <div className="text-xs font-bold text-emerald-400">
+          <div className="mt-4 pt-4 border-t border-[#EBF5F8] grid grid-cols-3 gap-2 text-center">
+            <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100">
+              <div className="text-xs font-black text-emerald-700">
                 {inventorySummary?.available_count || 0}
               </div>
-              <div className="text-[10px] text-slate-400">Stok Aman</div>
+              <div className="text-[10px] text-[#577782] font-medium">Stok Aman</div>
             </div>
-            <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <div className="text-xs font-bold text-amber-400">
+            <div className="p-2 rounded-xl bg-amber-50 border border-amber-100">
+              <div className="text-xs font-black text-amber-700">
                 {inventorySummary?.low_stock_count || 0}
               </div>
-              <div className="text-[10px] text-slate-400">Menipis</div>
+              <div className="text-[10px] text-[#577782] font-medium">Menipis</div>
             </div>
-            <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20">
-              <div className="text-xs font-bold text-rose-400">
+            <div className="p-2 rounded-xl bg-rose-50 border border-rose-100">
+              <div className="text-xs font-black text-rose-700">
                 {inventorySummary?.out_of_stock_count || 0}
               </div>
-              <div className="text-[10px] text-slate-400">Habis</div>
+              <div className="text-[10px] text-[#577782] font-medium">Habis</div>
             </div>
           </div>
         </div>
 
         {/* Low Stock Warning Table */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 backdrop-blur shadow-xl lg:col-span-2">
+        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-6 shadow-xs lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <span>⚠️</span> Peringatan Stok Menipis & Habis
+            <h3 className="text-sm font-bold text-[#10262E] flex items-center gap-2">
+              <span className="p-1 rounded-md bg-amber-50 text-amber-600">⚠️</span>
+              <span>Barang yang Perlu Ditambah (Stok Menipis)</span>
             </h3>
-            <span className="text-xs text-slate-400">Ambang Batas: &le; 10 unit</span>
+            <span className="text-xs text-[#8EA6AF]">Batas Menipis: &le; 10 unit</span>
           </div>
 
           {lowStock.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 text-xs">
-              🎉 Semua stok produk dalam batas aman (&gt; 10 unit).
+            <div className="text-center py-10 text-[#8EA6AF] text-xs">
+              🎉 Bagus! Semua stok barang masih aman di atas 10 unit.
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto no-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-700 text-slate-400 uppercase tracking-wider text-[10px]">
-                    <th className="py-2.5 px-3">SKU</th>
-                    <th className="py-2.5 px-3">Nama Produk</th>
+                  <tr className="border-b border-[#D7EBEF] text-[#8EA6AF] uppercase tracking-wider text-[10px]">
+                    <th className="py-2.5 px-3">Kode SKU</th>
+                    <th className="py-2.5 px-3">Nama Barang</th>
                     <th className="py-2.5 px-3">Kategori</th>
                     <th className="py-2.5 px-3 text-right">Sisa Stok</th>
                     <th className="py-2.5 px-3 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-[#EBF5F8]">
                   {lowStock.map((prod) => (
-                    <tr key={prod.id} className="hover:bg-slate-700/40 transition-colors">
-                      <td className="py-2.5 px-3 font-mono font-semibold text-slate-300">
+                    <tr key={prod.id} className="hover:bg-[#F3FBFC] transition-colors">
+                      <td className="py-2.5 px-3 font-mono font-bold text-[#16323B]">
                         {prod.sku}
                       </td>
-                      <td className="py-2.5 px-3 font-medium text-white">{prod.name}</td>
-                      <td className="py-2.5 px-3 text-slate-400">{prod.category || '-'}</td>
-                      <td className="py-2.5 px-3 text-right font-mono font-bold text-rose-400">
+                      <td className="py-2.5 px-3 font-medium text-[#10262E]">{prod.name}</td>
+                      <td className="py-2.5 px-3 text-[#577782]">{prod.category || '-'}</td>
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-[#E66D79]">
                         {prod.stock} {prod.unit}
                       </td>
                       <td className="py-2.5 px-3 text-center">
                         <span
-                          className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                             prod.stock <= 0
-                              ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                              : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
                           }`}
                         >
                           {prod.status_label || (prod.stock <= 0 ? 'Habis' : 'Menipis')}
@@ -413,56 +463,69 @@ export function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Recent Activities Timeline */}
-      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 backdrop-blur shadow-xl">
+      {/* Recent Transactions Table */}
+      <div className="bg-white border border-[#D7EBEF] rounded-3xl p-6 shadow-xs">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <span>⏱️</span> Aktivitas Transaksi Terkini
-          </h3>
-          <span className="text-xs text-slate-400">
-            Transaksi Keuangan, Mutasi Stok, dan Jurnal Akuntansi
-          </span>
+          <div>
+            <h3 className="text-sm font-bold text-[#10262E] flex items-center gap-2">
+              <IconJournal className="w-4 h-4 text-[#27C5E5]" />
+              <span>Catatan Transaksi Terkini</span>
+            </h3>
+            <p className="text-xs text-[#577782] mt-0.5">
+              5 transaksi terakhir yang tercatat di toko Anda
+            </p>
+          </div>
+          <Link
+            to="/admin/reports/income-statement"
+            className="text-xs font-bold text-[#167A93] hover:text-[#38BFE0] btn-press"
+          >
+            Lihat Semua Transaksi &rarr;
+          </Link>
         </div>
 
         {activities.length === 0 ? (
-          <div className="text-center py-8 text-slate-400 text-xs">
-            Belum ada aktivitas transaksi tercatat.
+          <div className="text-center py-8 text-[#8EA6AF] text-xs">
+            Belum ada aktivitas transaksi yang tercatat.
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
-            {activities.map((act) => (
+          <div className="divide-y divide-[#EBF5F8]">
+            {activities.slice(0, 5).map((act) => (
               <div
                 key={act.id}
-                className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-700/20 px-2 rounded-xl transition-colors"
+                className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#F3FBFC] px-3 rounded-2xl transition-colors card-interactive"
               >
-                <div className="flex items-start gap-3">
-                  <span className="text-lg mt-0.5">
-                    {act.type === 'income'
-                      ? '📥'
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                    act.type === 'income'
+                      ? 'bg-emerald-50 text-[#36B878] border-emerald-100'
                       : act.type === 'expense'
-                      ? '📤'
-                      : act.type === 'inventory'
-                      ? '📦'
-                      : '📑'}
-                  </span>
+                      ? 'bg-rose-50 text-[#E66D79] border-rose-100'
+                      : 'bg-[#F0FAFC] text-[#27C5E5] border-[#D7EBEF]'
+                  }`}>
+                    {act.type === 'income' ? (
+                      <IconTrendingUp className="w-4 h-4" />
+                    ) : act.type === 'expense' ? (
+                      <IconTrendingDown className="w-4 h-4" />
+                    ) : (
+                      <IconBox className="w-4 h-4" />
+                    )}
+                  </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white">{act.title}</span>
+                      <span className="text-xs font-bold text-[#10262E]">{act.title}</span>
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
                           act.type === 'income'
-                            ? 'bg-emerald-500/20 text-emerald-400'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : act.type === 'expense'
-                            ? 'bg-rose-500/20 text-rose-400'
-                            : act.type === 'inventory'
-                            ? 'bg-amber-500/20 text-amber-400'
-                            : 'bg-indigo-500/20 text-indigo-400'
+                            ? 'bg-rose-50 text-rose-700 border-rose-200'
+                            : 'bg-cyan-50 text-cyan-700 border-cyan-200'
                         }`}
                       >
                         {act.type_label}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">{act.description}</p>
+                    <p className="text-xs text-[#577782] mt-0.5">{act.description}</p>
                   </div>
                 </div>
 
@@ -471,81 +534,21 @@ export function AdminDashboardPage() {
                     <span
                       className={`font-mono font-bold ${
                         act.type === 'income'
-                          ? 'text-emerald-400'
+                          ? 'text-[#36B878]'
                           : act.type === 'expense'
-                          ? 'text-rose-400'
-                          : 'text-slate-200'
+                          ? 'text-[#E66D79]'
+                          : 'text-[#10262E]'
                       }`}
                     >
                       {formatRupiah(act.amount)}
                     </span>
                   )}
-                  <span className="text-[11px] text-slate-500">{act.date}</span>
+                  <span className="text-[11px] text-[#8EA6AF]">{act.date}</span>
                 </div>
               </div>
             ))}
           </div>
         )}
-      </div>
-
-      {/* Reports Quick Link Bar */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-800 rounded-2xl p-6">
-        <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4">
-          📊 Akses Laporan Toko (Tahap 7)
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link
-            to="/admin/reports/income-statement"
-            className="p-4 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 transition-all group"
-          >
-            <div className="text-xl mb-1">📑</div>
-            <div className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">
-              Laporan Laba Rugi
-            </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Pendapatan, beban, dan laba bersih toko dengan ekspor PDF & Excel.
-            </p>
-          </Link>
-
-          <Link
-            to="/admin/reports/balance-sheet"
-            className="p-4 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 transition-all group"
-          >
-            <div className="text-xl mb-1">⚖️</div>
-            <div className="text-sm font-bold text-white group-hover:text-cyan-400 transition-colors">
-              Laporan Neraca
-            </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Aset, kewajiban, modal ekuitas, dan cek keseimbangan akuntansi.
-            </p>
-          </Link>
-
-          <Link
-            to="/admin/reports/inventory"
-            className="p-4 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/50 transition-all group"
-          >
-            <div className="text-xl mb-1">📦</div>
-            <div className="text-sm font-bold text-white group-hover:text-amber-400 transition-colors">
-              Laporan Stok & Valuasi
-            </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Kuantitas fisik, status stok, dan nilai valuasi aset barang.
-            </p>
-          </Link>
-
-          <Link
-            to="/admin/reports/stock-movements"
-            className="p-4 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-purple-500/50 transition-all group"
-          >
-            <div className="text-xl mb-1">🔄</div>
-            <div className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">
-              Riwayat Mutasi Stok
-            </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Audit trail stok masuk, stok keluar, dan opname persediaan.
-            </p>
-          </Link>
-        </div>
       </div>
     </div>
   );

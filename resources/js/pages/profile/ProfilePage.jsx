@@ -84,25 +84,25 @@ export function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white">Pengaturan Profil Pengguna</h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <h1 className="text-2xl font-extrabold text-[#16323B]">Pengaturan Profil Pengguna</h1>
+        <p className="text-sm text-[#5A7C85] mt-1">
           Kelola data diri, alamat email, dan keamanan kata sandi akun FinToko Anda
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Update Profile Card */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl backdrop-blur">
-          <h2 className="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">
+        <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs">
+          <h2 className="text-sm font-bold text-[#16323B] mb-4 pb-2.5 border-b border-[#D7EBEF]">
             Informasi Pribadi
           </h2>
 
           {profileFeedback.message && (
             <div
-              className={`mb-4 p-3 rounded-xl text-xs font-medium ${
+              className={`mb-4 p-3 rounded-xl text-xs font-semibold ${
                 profileFeedback.type === 'success'
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  : 'bg-rose-50 text-rose-800 border border-rose-200'
               }`}
             >
               {profileFeedback.message}
@@ -111,45 +111,45 @@ export function ProfilePage() {
 
           <form onSubmit={handleProfileSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Nama Lengkap</label>
+              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">Nama Lengkap</label>
               <input
                 type="text"
                 required
                 value={profileForm.name}
                 onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-[#F3FBFC] border border-[#D7EBEF] text-[#16323B] text-sm focus:bg-white focus:outline-none focus:border-[#38BFE0] focus:ring-2 focus:ring-[#38BFE0]/20 transition-all"
               />
               {profileErrors.name && (
-                <p className="text-xs text-rose-400 mt-1">{profileErrors.name[0]}</p>
+                <p className="text-xs text-rose-600 mt-1 font-medium">{profileErrors.name[0]}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Alamat Email</label>
+              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">Alamat Email</label>
               <input
                 type="email"
                 required
                 value={profileForm.email}
                 onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-[#F3FBFC] border border-[#D7EBEF] text-[#16323B] text-sm focus:bg-white focus:outline-none focus:border-[#38BFE0] focus:ring-2 focus:ring-[#38BFE0]/20 transition-all"
               />
               {profileErrors.email && (
-                <p className="text-xs text-rose-400 mt-1">{profileErrors.email[0]}</p>
+                <p className="text-xs text-rose-600 mt-1 font-medium">{profileErrors.email[0]}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Role Akun</label>
-              <div className="px-3 py-2 rounded-xl bg-slate-900/50 border border-slate-800 text-slate-400 text-sm font-semibold uppercase">
+              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">Role Akun</label>
+              <div className="px-3 py-2 rounded-xl bg-[#F3FBFC] border border-[#D7EBEF] text-[#5A7C85] text-xs font-semibold uppercase">
                 {user?.role} (Permanen)
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">Role hanya dapat diubah oleh Administrator.</p>
+              <p className="text-[11px] text-[#5A7C85] mt-1">Role hanya dapat diubah oleh Administrator.</p>
             </div>
 
             <button
               type="submit"
               disabled={isUpdatingProfile}
-              className="w-full mt-2 py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-md"
+              className="w-full mt-2 py-2.5 px-4 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-md shadow-[#27C5E5]/20 cursor-pointer"
             >
               {isUpdatingProfile ? 'Menyimpan...' : 'Simpan Perubahan Profil'}
             </button>
@@ -157,17 +157,17 @@ export function ProfilePage() {
         </div>
 
         {/* Change Password Card */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl backdrop-blur">
-          <h2 className="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">
+        <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs">
+          <h2 className="text-sm font-bold text-[#16323B] mb-4 pb-2.5 border-b border-[#D7EBEF]">
             Perbarui Kata Sandi
           </h2>
 
           {passwordFeedback.message && (
             <div
-              className={`mb-4 p-3 rounded-xl text-xs font-medium ${
+              className={`mb-4 p-3 rounded-xl text-xs font-semibold ${
                 passwordFeedback.type === 'success'
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  : 'bg-rose-50 text-rose-800 border border-rose-200'
               }`}
             >
               {passwordFeedback.message}
@@ -176,7 +176,7 @@ export function ProfilePage() {
 
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
                 Password Saat Ini
               </label>
               <input
@@ -187,15 +187,15 @@ export function ProfilePage() {
                   setPasswordForm({ ...passwordForm, current_password: e.target.value })
                 }
                 placeholder="••••••••"
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-[#F3FBFC] border border-[#D7EBEF] text-[#16323B] text-sm focus:bg-white focus:outline-none focus:border-[#38BFE0] focus:ring-2 focus:ring-[#38BFE0]/20 transition-all"
               />
               {passwordErrors.current_password && (
-                <p className="text-xs text-rose-400 mt-1">{passwordErrors.current_password[0]}</p>
+                <p className="text-xs text-rose-600 mt-1 font-medium">{passwordErrors.current_password[0]}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
                 Password Baru (Min. 8 karakter)
               </label>
               <input
@@ -204,15 +204,15 @@ export function ProfilePage() {
                 value={passwordForm.password}
                 onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
                 placeholder="••••••••"
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-[#F3FBFC] border border-[#D7EBEF] text-[#16323B] text-sm focus:bg-white focus:outline-none focus:border-[#38BFE0] focus:ring-2 focus:ring-[#38BFE0]/20 transition-all"
               />
               {passwordErrors.password && (
-                <p className="text-xs text-rose-400 mt-1">{passwordErrors.password[0]}</p>
+                <p className="text-xs text-rose-600 mt-1 font-medium">{passwordErrors.password[0]}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
                 Konfirmasi Password Baru
               </label>
               <input
@@ -223,10 +223,10 @@ export function ProfilePage() {
                   setPasswordForm({ ...passwordForm, password_confirmation: e.target.value })
                 }
                 placeholder="••••••••"
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 rounded-xl bg-[#F3FBFC] border border-[#D7EBEF] text-[#16323B] text-sm focus:bg-white focus:outline-none focus:border-[#38BFE0] focus:ring-2 focus:ring-[#38BFE0]/20 transition-all"
               />
               {passwordErrors.password_confirmation && (
-                <p className="text-xs text-rose-400 mt-1">
+                <p className="text-xs text-rose-600 mt-1 font-medium">
                   {passwordErrors.password_confirmation[0]}
                 </p>
               )}
@@ -235,7 +235,7 @@ export function ProfilePage() {
             <button
               type="submit"
               disabled={isUpdatingPassword}
-              className="w-full mt-2 py-2 px-4 rounded-xl bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-md"
+              className="w-full mt-2 py-2.5 px-4 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-md shadow-[#27C5E5]/20 cursor-pointer"
             >
               {isUpdatingPassword ? 'Memproses...' : 'Ubah Kata Sandi'}
             </button>
@@ -247,4 +247,3 @@ export function ProfilePage() {
 }
 
 export default ProfilePage;
-

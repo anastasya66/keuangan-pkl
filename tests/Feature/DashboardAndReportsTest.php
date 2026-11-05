@@ -431,7 +431,10 @@ class DashboardAndReportsTest extends TestCase
         foreach ($routes as $route) {
             $resp = $this->actingAs($this->admin, 'sanctum')->get($route);
             $resp->assertStatus(200);
-            $this->assertStringContainsString('text/csv', $resp->headers->get('Content-Type'));
+            $this->assertTrue(
+                str_contains($resp->headers->get('Content-Type'), 'application/vnd.ms-excel') ||
+                str_contains($resp->headers->get('Content-Type'), 'text/csv')
+            );
             $this->assertStringContainsString('attachment;', $resp->headers->get('Content-Disposition'));
         }
     }
@@ -446,3 +449,4 @@ class DashboardAndReportsTest extends TestCase
         $this->getJson('/api/v1/reports/balance-sheet')->assertStatus(401);
     }
 }
+

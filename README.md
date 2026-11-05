@@ -230,19 +230,49 @@ Modul akuntansi mencakup pencatatan keuangan berpasangan (*double-entry bookkeep
 
 ---
 
-## 8. Cara Menjalankan Aplikasi & Pengujian di Laragon
+## 8. Panduan Setup Awal di Laptop Baru (Laragon)
 
-### 1. Migrasi Database
-```bash
-php artisan migrate
+Jika aplikasi baru saja di-clone/download dari Git, folder `vendor/` dan `node_modules/` belum ada karena diabaikan oleh Git.
+
+### Cara Cepat (Otomatis):
+Klik dua kali file **`setup.bat`** di folder project, atau jalankan melalui Terminal:
+```cmd
+setup.bat
 ```
 
-### 2. Seeder Database Awal (User, Master Data, Finance, Inventory, Accounting)
-```bash
-php artisan db:seed
-```
+### Cara Manual Langkah-demi-Langkah:
+1. **Buka Terminal Laragon**, arahkan ke direktori project:
+   ```bash
+   cd E:\laragon\www\keuangan-pkl
+   ```
+2. **Unduh dependensi PHP (Composer)** *(Mencegah error `vendor/autoload.php not found`)*:
+   ```bash
+   composer install
+   ```
+3. **Buat file konfigurasi `.env`**:
+   ```bash
+   copy .env.example .env
+   ```
+4. **Generate Application Key**:
+   ```bash
+   php artisan key:generate
+   ```
+5. **Jalankan Migrasi & Data Seeder** *(Pastikan MariaDB di Laragon sudah klik "Start All")*:
+   ```bash
+   php artisan migrate --seed
+   ```
+6. **Unduh dependensi & Kompilasi Frontend (React 19 + Vite)**:
+   ```bash
+   npm install
+   npm run build
+   ```
+7. **Jalankan Server Lokal**:
+   ```bash
+   php artisan serve
+   ```
+   Akses di browser: **`http://127.0.0.1:8000`**
 
-### 3. Menjalankan Automated Testing (96 Tests Passing)
+### Menjalankan Automated Testing (112 Tests Passing)
 ```bash
 php artisan test
 ```
@@ -250,3 +280,53 @@ Untuk menguji modul Accounting secara khusus:
 ```bash
 php artisan test --filter=AccountingModuleTest
 ```
+
+---
+
+## 9. Menjalankan Aplikasi Menggunakan Docker & Docker Compose
+
+FinToko mendukung eksekusi secara langsung melalui **Laragon** (development lokal) maupun **Docker & Docker Compose** secara berdampingan tanpa konflik port.
+
+### Arsitektur Docker:
+- **`app`**: PHP 8.2-FPM Alpine dengan ekstensi lengkap (`pdo_mysql`, `gd`, `bcmath`, `zip`, `intl`, `opcache`), Composer 2, dan multi-stage build frontend asset.
+- **`nginx`**: Web server Nginx Alpine sebagai reverse proxy ke PHP-FPM dan penyaji static asset di port **8080**.
+- **`mariadb`**: Database MariaDB 10.11 LTS terisolasi dengan persistent volume `fintoko_mariadb_data` di port **3307** (mencegah bentrok dengan port 3306 Laragon).
+
+### Panduan Menjalankan Docker:
+
+1. **Gunakan File `.env` yang Sama (Terpadu)**:
+   ```bash
+   cp .env.example .env
+   ```
+   *(Cukup 1 file `.env` untuk Laragon maupun Docker! Port dan host Docker terkonfigurasi otomatis).*
+
+2. **Jalankan Container & Build Otomatis**:
+   ```bash
+   docker compose up -d --build
+   ```
+
+3. **Akses Aplikasi FinToko**:
+   Buka peramban di: **`http://localhost:8080`**
+
+4. **Perintah Docker Berguna**:
+   - Menjalankan migrasi manual:
+     ```bash
+     docker compose exec app php artisan migrate
+     ```
+   - Menjalankan data seeder:
+     ```bash
+     docker compose exec app php artisan db:seed
+     ```
+   - Menjalankan test suite di dalam container:
+     ```bash
+     docker compose exec app php artisan test
+     ```
+   - Melihat log container secara real-time:
+     ```bash
+     docker compose logs -f app
+     ```
+   - Menghentikan container:
+     ```bash
+     docker compose down
+     ```
+

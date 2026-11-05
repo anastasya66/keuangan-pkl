@@ -7,6 +7,179 @@
 @source '../**/*.jsx';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  /* 60% Primary Background & Surfaces (Reference 1) */
+  --color-brand-bg: #EAF8FA;
+  --color-brand-bg-alt: #F3FBFC;
+  --color-brand-surface: #FFFFFF;
+  --color-brand-surface-subtle: #E5F5F8;
+  
+  /* 30% Secondary Color & Supporting Tokens */
+  --color-brand-primary: #38BFE0;
+  --color-brand-secondary: #79CFE0;
+  --color-brand-muted: #A9DDE7;
+  --color-brand-border: #D7EBEF;
+  --color-brand-border-light: #EBF5F8;
+  
+  /* 10% Accent Colors */
+  --color-accent-cyan: #27C5E5;
+  --color-accent-green: #36B878;
+  --color-accent-orange: #F0B75A;
+  --color-accent-red: #E66D79;
+  
+  /* Typography Colors */
+  --color-text-main: #16323B;
+  --color-text-heading: #10262E;
+  --color-text-muted: #577782;
+  --color-text-subtle: #8EA6AF;
+}
+
+/* Custom Keyframe Animations for Physics-based Micro-interactions */
+@keyframes modalPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.93) translateY(16px);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.015) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes backdropFadeIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+  }
+}
+
+@keyframes dropdownPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.94) translateY(-10px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.01) translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes toastSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tabSlide {
+  0% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Custom Utilities for SaaS Icy Blue Theme & Motion */
+@layer utilities {
+  .bg-icy-gradient {
+    background: linear-gradient(135deg, #EAF8FA 0%, #F5FCFD 50%, #E3F6FA 100%);
+  }
+  
+  .bg-brand-gradient {
+    background: linear-gradient(135deg, #27C5E5 0%, #38BFE0 100%);
+  }
+
+  .bg-brand-gradient-hover {
+    background: linear-gradient(135deg, #20B3D1 0%, #30B2D1 100%);
+  }
+
+  .card-shadow {
+    box-shadow: 0 4px 20px -2px rgba(56, 191, 224, 0.08), 0 2px 6px -1px rgba(22, 50, 59, 0.03);
+  }
+
+  .card-shadow-hover {
+    box-shadow: 0 10px 30px -4px rgba(56, 191, 224, 0.16), 0 4px 10px -2px rgba(22, 50, 59, 0.05);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Micro-interaction Utilities */
+  .animate-modal-pop {
+    animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-backdrop {
+    animation: backdropFadeIn 0.22s ease-out forwards;
+  }
+
+  .animate-dropdown-pop {
+    animation: dropdownPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-toast {
+    animation: toastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .btn-press {
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+  }
+  .btn-press:active {
+    transform: scale(0.96);
+  }
+
+  .card-interactive {
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(56, 191, 224, 0.14);
+  }
+  .card-interactive:active {
+    transform: scale(0.995);
+  }
+
+  .input-focus-glow {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .input-focus-glow:focus {
+    transform: scale(1.003);
+    box-shadow: 0 0 0 3px rgba(39, 197, 229, 0.18);
+  }
+}
+
+/* Global Transitions */
+* {
+  border-color: #D7EBEF;
+}
+
+body {
+  background-color: #EAF8FA;
+  color: #16323B;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
 }

@@ -84,7 +84,7 @@ export const reportService = {
       params,
       responseType: 'blob',
     });
-    downloadBlob(response, 'laporan-laba-rugi.csv');
+    downloadBlob(response, 'laporan-laba-rugi.xls');
   },
 
   // === LAPORAN NERACA (BALANCE SHEET) ===
@@ -106,7 +106,7 @@ export const reportService = {
       params,
       responseType: 'blob',
     });
-    downloadBlob(response, 'laporan-neraca.csv');
+    downloadBlob(response, 'laporan-neraca.xls');
   },
 
   // === LAPORAN STOK & VALUASI (INVENTORY REPORT) ===
@@ -128,7 +128,7 @@ export const reportService = {
       params,
       responseType: 'blob',
     });
-    downloadBlob(response, 'laporan-stok-persediaan.csv');
+    downloadBlob(response, 'laporan-stok-persediaan.xls');
   },
 
   // === LAPORAN MUTASI STOK (STOCK MOVEMENTS) ===
@@ -150,8 +150,9 @@ export const reportService = {
       params,
       responseType: 'blob',
     });
-    downloadBlob(response, 'laporan-mutasi-persediaan.csv');
+    downloadBlob(response, 'laporan-mutasi-persediaan.xls');
   },
 };
 
 export default reportService;
+

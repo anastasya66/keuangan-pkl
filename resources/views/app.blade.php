@@ -3,11 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FinToko — Financial Management System</title>
+    <title>FinToko — Financial & Inventory Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/main.jsx'])
 </head>
-<body class="bg-slate-900 text-slate-100 antialiased min-h-screen">
+<body class="bg-[#EAF8FA] text-[#16323B] font-sans antialiased min-h-screen selection:bg-[#38BFE0]/25 selection:text-[#10262E]">
     <div id="root"></div>
 </body>
 </html>

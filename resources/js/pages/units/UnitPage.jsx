@@ -8,6 +8,7 @@ import useAuth from '../../hooks/useAuth';
 import unitService from '../../services/unitService';
 import { formatDateTime } from '../../utils/currency';
 import UnitModal from './UnitModal';
+import { IconRuler } from '../../components/common/Icons';
 
 export function UnitPage() {
   const { user } = useAuth();
@@ -75,10 +76,10 @@ export function UnitPage() {
     try {
       if (selectedUnit) {
         await unitService.updateUnit(selectedUnit.id, formData);
-        showToast('Satuan produk berhasil diperbarui!');
+        showToast('Satuan ukuran berhasil diperbarui!');
       } else {
         await unitService.createUnit(formData);
-        showToast('Satuan baru berhasil ditambahkan!');
+        showToast('Satuan ukuran baru berhasil ditambahkan!');
       }
       setIsModalOpen(false);
       setSelectedUnit(null);
@@ -122,11 +123,11 @@ export function UnitPage() {
 
   const columns = [
     { header: 'Nama Satuan', className: 'w-1/4' },
-    { header: 'Simbol', className: 'w-24 text-center' },
+    { header: 'Simbol', className: 'text-center' },
     { header: 'Deskripsi', className: 'w-1/3' },
-    { header: 'Jml Produk', className: 'text-center' },
+    { header: 'Jumlah Produk', className: 'text-center' },
     { header: 'Status', className: 'text-center' },
-    { header: 'Dibuat', className: 'hidden md:table-cell' },
+    { header: 'Dibuat Pada', className: 'hidden md:table-cell' },
     ...(isAdmin ? [{ header: 'Aksi', className: 'text-right' }] : []),
   ];
 
@@ -135,20 +136,20 @@ export function UnitPage() {
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`p-4 rounded-xl border flex items-center justify-between text-sm shadow-xl transition-all ${
+          className={`p-4 rounded-2xl border flex items-center justify-between text-xs font-semibold shadow-md transition-all animate-toast ${
             toast.type === 'error'
-              ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+              ? 'bg-rose-50 border-rose-200 text-rose-700'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-700'
           }`}
         >
           <div className="flex items-center gap-2">
             <span>{toast.type === 'error' ? '⚠️' : '✅'}</span>
-            <span className="font-medium">{toast.message}</span>
+            <span>{toast.message}</span>
           </div>
           <button
             type="button"
             onClick={() => setToast(null)}
-            className="text-xs text-slate-400 hover:text-white"
+            className="text-xs text-[#8EA6AF] hover:text-[#16323B] cursor-pointer btn-press"
           >
             ✕
           </button>
@@ -158,11 +159,14 @@ export function UnitPage() {
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span>📏</span> Manajemen Satuan Produk
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#10262E] flex items-center gap-2.5">
+            <span className="p-2 rounded-xl bg-white border border-[#D7EBEF] text-[#27C5E5] shadow-2xs">
+              <IconRuler className="w-5 h-5" />
+            </span>
+            <span>Satuan Ukuran Barang</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Standarisasi ukuran dan satuan kemasan produk toko (pcs, kg, liter, botol, pack, dus)
+          <p className="text-xs text-[#577782] mt-1">
+            Atur satuan ukuran kemasan barang toko (contoh: kg, pcs, botol, dus, bungkus)
           </p>
         </div>
 
@@ -173,47 +177,49 @@ export function UnitPage() {
               setSelectedUnit(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold text-sm transition-all shadow-lg shadow-emerald-900/30 cursor-pointer self-start sm:self-auto"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs transition-all shadow-md shadow-[#27C5E5]/20 cursor-pointer self-start sm:self-auto btn-press"
           >
-            <span>+</span> Tambah Satuan
+            <span>+ Tambah Satuan Baru</span>
           </button>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            fetchUnits(1, search, statusFilter);
-          }}
-          className="flex-1 max-w-md"
-        >
-          <SearchInput
-            value={search}
-            onChange={handleSearchChange}
-            onClear={handleSearchClear}
-            placeholder="Cari nama atau simbol satuan..."
-          />
-        </form>
+      <div className="bg-white p-4 rounded-3xl border border-[#D7EBEF] shadow-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              fetchUnits(1, search, statusFilter);
+            }}
+            className="flex-1 max-w-md"
+          >
+            <SearchInput
+              value={search}
+              onChange={handleSearchChange}
+              onClear={handleSearchClear}
+              placeholder="Cari nama atau simbol satuan..."
+            />
+          </form>
 
-        {isAdmin && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">Status:</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-            >
-              <option value="">Semua Status</option>
-              <option value="true">Hanya Aktif</option>
-              <option value="false">Hanya Nonaktif</option>
-            </select>
-          </div>
-        )}
+          {isAdmin && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-[#577782]">Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-2 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs focus:ring-2 focus:ring-[#38BFE0]/25 focus:outline-none"
+              >
+                <option value="">Semua Status</option>
+                <option value="true">Hanya Aktif</option>
+                <option value="false">Hanya Nonaktif</option>
+              </select>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Units Data Table */}
@@ -223,23 +229,23 @@ export function UnitPage() {
         isLoading={isLoading}
         emptyMessage="Belum ada data satuan yang cocok dengan pencarian Anda."
         renderRow={(unit) => (
-          <tr key={unit.id} className="hover:bg-slate-800/40 transition-colors">
-            <td className="px-4 py-3.5 font-semibold text-white">
+          <tr key={unit.id} className="hover:bg-[#F3FBFC] transition-colors">
+            <td className="px-4 py-3.5 font-bold text-[#10262E]">
               {unit.name}
             </td>
 
             <td className="px-4 py-3.5 text-center">
-              <span className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+              <span className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-[#EAF8FA] text-[#167A93] border border-[#38BFE0]/30">
                 {unit.symbol}
               </span>
             </td>
 
-            <td className="px-4 py-3.5 text-xs text-slate-300">
-              {unit.description || <span className="text-slate-500 italic">Tidak ada deskripsi</span>}
+            <td className="px-4 py-3.5 text-xs text-[#577782]">
+              {unit.description || <span className="text-[#8EA6AF] italic">Tidak ada deskripsi</span>}
             </td>
 
-            <td className="px-4 py-3.5 text-center text-xs font-semibold text-slate-300">
-              <span className="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">
+            <td className="px-4 py-3.5 text-center text-xs font-semibold text-[#577782]">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#EAF8FA] border border-[#38BFE0]/30 text-[#167A93]">
                 {unit.products_count ?? 0} produk
               </span>
             </td>
@@ -248,7 +254,7 @@ export function UnitPage() {
               <StatusBadge isActive={unit.is_active} />
             </td>
 
-            <td className="px-4 py-3.5 text-xs text-slate-400 hidden md:table-cell">
+            <td className="px-4 py-3.5 text-xs text-[#8EA6AF] hidden md:table-cell">
               {formatDateTime(unit.created_at)}
             </td>
 
@@ -261,7 +267,7 @@ export function UnitPage() {
                       setSelectedUnit(unit);
                       setIsModalOpen(true);
                     }}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#F3FBFC] text-[#16323B] border border-[#D7EBEF] transition-colors cursor-pointer shadow-2xs"
                   >
                     Edit
                   </button>
@@ -269,10 +275,10 @@ export function UnitPage() {
                   <button
                     type="button"
                     onClick={() => handleToggleStatus(unit)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
                       unit.is_active
-                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
-                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                     }`}
                   >
                     {unit.is_active ? 'Nonaktifkan' : 'Aktifkan'}
@@ -281,7 +287,7 @@ export function UnitPage() {
                   <button
                     type="button"
                     onClick={() => setDeleteTarget(unit)}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors cursor-pointer"
                   >
                     Hapus
                   </button>
@@ -313,8 +319,8 @@ export function UnitPage() {
       {/* Confirm Delete Dialog */}
       <ConfirmDialog
         isOpen={Boolean(deleteTarget)}
-        title="Hapus Satuan Produk"
-        message={`Apakah Anda yakin ingin menghapus satuan "${deleteTarget?.name} (${deleteTarget?.symbol})"? Penghapusan akan ditolak jika masih terdapat produk yang menggunakan satuan ini.`}
+        title="Hapus Satuan"
+        message={`Apakah Anda yakin ingin menghapus satuan "${deleteTarget?.name}" (${deleteTarget?.symbol})? Penghapusan akan ditolak jika masih terdapat produk yang menggunakan satuan ini.`}
         confirmText="Hapus Satuan"
         confirmColor="danger"
         isLoading={isDeleting}
@@ -326,4 +332,3 @@ export function UnitPage() {
 }
 
 export default UnitPage;
-

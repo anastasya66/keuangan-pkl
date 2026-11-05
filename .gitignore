@@ -1,24 +1,78 @@
-*.log
-.DS_Store
+# =========================================================================
+# FinToko — Comprehensive Git Ignore Rules
+# =========================================================================
+
+# Environment & Sensitive Files
 .env
 .env.backup
 .env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
+.env.*
+!.env.example
 /auth.json
+
+# Composer & PHP Dependencies
+/vendor
+composer.phar
+
+# Node & Frontend Dependencies
 /node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Compiled Assets & Storage Symlink
 /public/build
 /public/hot
 /public/storage
+
+# Storage, Session, Cache & Key Files
 /storage/*.key
 /storage/pail
-/vendor
+/storage/oauth-*.key
+/storage/logs/*.log
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+
+# Testing & Coverage
+.phpunit.result.cache
+/.phpunit.cache
+/tests/Coverage
+
+# Database Dumps & Exports
+*.sql
+*.sql.gz
+*.sqlite
+*.sqlite-journal
+
+# IDEs, Editors & Tooling
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+.phpactor.json
+*.sublime-project
+*.sublime-workspace
+
+# Operating System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Local Docker Overrides
+docker-compose.override.yml
+
+# Homestead
 Homestead.json
 Homestead.yaml
-Thumbs.db

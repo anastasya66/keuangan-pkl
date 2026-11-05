@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+import { IconTag } from '../../components/common/Icons';
 
 export function CategoryModal({
   isOpen,
-  category = null, // null for create, object for edit
+  category = null,
   isLoading = false,
   onClose,
   onSubmit,
@@ -58,16 +59,19 @@ export function CategoryModal({
   const isEdit = Boolean(category?.id);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 text-slate-100">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <span>🏷️</span> {isEdit ? 'Ubah Data Kategori' : 'Tambah Kategori Baru'}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10262E]/35 backdrop-blur-xs animate-backdrop">
+      <div className="bg-white border border-[#D7EBEF] rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 text-[#16323B] animate-modal-pop">
+        <div className="flex items-center justify-between pb-4 border-b border-[#D7EBEF]">
+          <h3 className="text-base sm:text-lg font-bold text-[#10262E] flex items-center gap-2">
+            <span className="p-2 rounded-xl bg-[#EAF8FA] text-[#27C5E5]">
+              <IconTag className="w-5 h-5" />
+            </span>
+            <span>{isEdit ? 'Ubah Kategori Barang' : 'Tambah Kategori Baru'}</span>
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+            className="w-8 h-8 rounded-xl bg-[#F3FBFC] hover:bg-[#EAF8FA] text-[#8EA6AF] hover:text-[#16323B] transition-colors flex items-center justify-center cursor-pointer btn-press"
           >
             ✕
           </button>
@@ -76,8 +80,8 @@ export function CategoryModal({
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           {/* Name Field */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Nama Kategori <span className="text-rose-400">*</span>
+            <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
+              Nama Kategori <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -85,13 +89,13 @@ export function CategoryModal({
               required
               value={formData.name}
               onChange={handleChange}
-              placeholder="Contoh: Sembako, Minuman Kemasan"
-              className={`w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
-                fieldErrors.name ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-700'
+              placeholder="Contoh: Sembako, Minuman, Alat Tulis"
+              className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow ${
+                fieldErrors.name ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
               }`}
             />
             {fieldErrors.name && (
-              <p className="mt-1 text-xs text-rose-400 font-medium">
+              <p className="mt-1 text-[11px] text-rose-500 font-medium">
                 {Array.isArray(fieldErrors.name) ? fieldErrors.name[0] : fieldErrors.name}
               </p>
             )}
@@ -99,51 +103,52 @@ export function CategoryModal({
 
           {/* Description Field */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Deskripsi (Opsional)
+            <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
+              Catatan Kategori (Opsional)
             </label>
             <textarea
               name="description"
-              rows={3}
+              rows="3"
               value={formData.description}
               onChange={handleChange}
-              placeholder="Deskripsi singkat mengenai kelompok produk dalam kategori ini"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all resize-none"
+              placeholder="Keterangan singkat mengenai kelompok barang ini..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow"
             />
           </div>
 
-          {/* Status Checkbox */}
-          <div className="flex items-center gap-3 pt-2">
-            <input
-              type="checkbox"
-              id="is_active_cat"
-              name="is_active"
-              checked={formData.is_active}
-              onChange={handleChange}
-              className="w-4 h-4 rounded text-emerald-600 bg-slate-800 border-slate-700 focus:ring-emerald-500 cursor-pointer"
-            />
-            <label htmlFor="is_active_cat" className="text-sm font-medium text-slate-300 cursor-pointer">
-              Kategori Aktif (Dapat dipilih pada produk baru)
+          {/* Active Status Checkbox */}
+          <div>
+            <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                name="is_active"
+                checked={formData.is_active}
+                onChange={handleChange}
+                className="w-4 h-4 rounded text-[#27C5E5] focus:ring-[#27C5E5] border-[#D7EBEF]"
+              />
+              <span className="text-xs font-semibold text-[#16323B]">
+                Kategori Aktif (Dapat langsung digunakan saat menambah barang)
+              </span>
             </label>
           </div>
 
           {/* Action Buttons */}
-          <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-[#D7EBEF] flex items-center justify-end gap-3">
             <button
               type="button"
               disabled={isLoading}
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium text-slate-300 transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-white hover:bg-[#F3FBFC] border border-[#D7EBEF] text-xs font-semibold text-[#577782] transition-colors cursor-pointer disabled:opacity-50 btn-press"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-sm font-semibold shadow-lg shadow-emerald-900/30 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2 btn-press"
             >
               {isLoading && (
-                <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
               )}
               {isEdit ? 'Simpan Perubahan' : 'Tambah Kategori'}
             </button>
@@ -155,4 +160,3 @@ export function CategoryModal({
 }
 
 export default CategoryModal;
-

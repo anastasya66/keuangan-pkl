@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { IconAccounts } from '../../components/common/Icons';
 
 export default function AccountModal({ isOpen, onClose, onSubmit, account, isSubmitting }) {
   const [formData, setFormData] = useState({
@@ -50,101 +51,107 @@ export default function AccountModal({ isOpen, onClose, onSubmit, account, isSub
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
-    const res = await onSubmit(formData);
-    if (res?.errors) {
-      setErrors(res.errors);
+    try {
+      await onSubmit(formData);
+    } catch (err) {
+      if (err.response?.status === 422 && err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+      }
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10262E]/35 backdrop-blur-xs animate-backdrop">
+      <div className="relative w-full max-w-lg bg-white border border-[#D7EBEF] rounded-3xl shadow-2xl overflow-hidden animate-modal-pop">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white">
-            {account ? 'Edit Akun Akuntansi' : 'Tambah Akun Akuntansi Baru'}
+        <div className="px-6 py-4 border-b border-[#D7EBEF] flex items-center justify-between">
+          <h3 className="text-base sm:text-lg font-bold text-[#10262E] flex items-center gap-2">
+            <span className="p-2 rounded-xl bg-[#EAF8FA] text-[#27C5E5]">
+              <IconAccounts className="w-5 h-5" />
+            </span>
+            <span>{account ? 'Ubah Rekening Akun' : 'Tambah Rekening Akun Baru'}</span>
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white text-lg font-mono leading-none cursor-pointer"
+            className="w-8 h-8 rounded-xl bg-[#F3FBFC] hover:bg-[#EAF8FA] text-[#8EA6AF] hover:text-[#16323B] transition-colors flex items-center justify-center cursor-pointer btn-press"
           >
             ✕
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
           {/* Kode & Tipe */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Kode Akun <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
+                Nomor Kode Akun <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.account_code}
                 onChange={(e) => setFormData({ ...formData, account_code: e.target.value })}
-                placeholder="Contoh: 1110"
-                className={`w-full px-3 py-2 bg-slate-950 border ${
-                  errors.account_code ? 'border-rose-500' : 'border-slate-800'
-                } rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500`}
+                placeholder="Contoh: 1101, 4101"
+                className={`w-full px-3.5 py-2.5 bg-[#F8FDFF] border ${
+                  errors.account_code ? 'border-rose-300' : 'border-[#D7EBEF]'
+                } rounded-xl text-[#16323B] font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow`}
                 required
               />
               {errors.account_code && (
-                <p className="mt-1 text-xs text-rose-400">{errors.account_code[0]}</p>
+                <p className="mt-1 text-[11px] text-rose-500 font-medium">{errors.account_code[0]}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Kategori Akun <span className="text-rose-400">*</span>
+              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
+                Kategori Akun <span className="text-rose-500">*</span>
               </label>
               <select
                 value={formData.account_type}
                 onChange={handleTypeChange}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-[#F8FDFF] border border-[#D7EBEF] rounded-xl text-[#16323B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow"
               >
-                <option value="assets">Assets (Aset)</option>
-                <option value="liabilities">Liabilities (Kewajiban)</option>
-                <option value="equity">Equity (Modal)</option>
-                <option value="revenue">Revenue (Pendapatan)</option>
-                <option value="expenses">Expenses (Beban)</option>
+                <option value="assets">Aset (Kas, Bank, Piutang)</option>
+                <option value="liabilities">Kewajiban (Hutang Toko)</option>
+                <option value="equity">Modal (Ekuitas Pemilik)</option>
+                <option value="revenue">Pendapatan (Penjualan Toko)</option>
+                <option value="expenses">Beban (Biaya Operasional)</option>
               </select>
             </div>
           </div>
 
           {/* Nama Akun */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Nama Akun <span className="text-rose-400">*</span>
+            <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
+              Nama Rekening / Akun <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
               value={formData.account_name}
               onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
-              placeholder="Contoh: Kas Toko Ritel"
-              className={`w-full px-3 py-2 bg-slate-950 border ${
-                errors.account_name ? 'border-rose-500' : 'border-slate-800'
-              } rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500`}
+              placeholder="Contoh: Kas Toko, Rekening BCA, Beban Listrik"
+              className={`w-full px-3.5 py-2.5 bg-[#F8FDFF] border ${
+                errors.account_name ? 'border-rose-300' : 'border-[#D7EBEF]'
+              } rounded-xl text-[#16323B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow`}
               required
             />
             {errors.account_name && (
-              <p className="mt-1 text-xs text-rose-400">{errors.account_name[0]}</p>
+              <p className="mt-1 text-[11px] text-rose-500 font-medium">{errors.account_name[0]}</p>
             )}
           </div>
 
           {/* Normal Balance */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Saldo Normal (Normal Balance)
+            <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
+              Posisi Saldo Normal
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label
-                className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition-all ${
+                className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all select-none btn-press ${
                   formData.normal_balance === 'debit'
-                    ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400'
-                    : 'bg-slate-950 border-slate-800 text-slate-400'
+                    ? 'bg-[#EAF8FA] border-[#38BFE0] text-[#167A93]'
+                    : 'bg-[#F8FDFF] border-[#D7EBEF] text-[#577782]'
                 }`}
               >
                 <input
@@ -155,14 +162,14 @@ export default function AccountModal({ isOpen, onClose, onSubmit, account, isSub
                   onChange={(e) => setFormData({ ...formData, normal_balance: e.target.value })}
                   className="hidden"
                 />
-                Debit
+                Debit (Dr)
               </label>
 
               <label
-                className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition-all ${
+                className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all select-none btn-press ${
                   formData.normal_balance === 'credit'
-                    ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400'
-                    : 'bg-slate-950 border-slate-800 text-slate-400'
+                    ? 'bg-[#EAF8FA] border-[#38BFE0] text-[#167A93]'
+                    : 'bg-[#F8FDFF] border-[#D7EBEF] text-[#577782]'
                 }`}
               >
                 <input
@@ -173,58 +180,52 @@ export default function AccountModal({ isOpen, onClose, onSubmit, account, isSub
                   onChange={(e) => setFormData({ ...formData, normal_balance: e.target.value })}
                   className="hidden"
                 />
-                Kredit
+                Kredit (Cr)
               </label>
             </div>
           </div>
 
           {/* Deskripsi */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Keterangan Tambahan
-            </label>
+            <label className="block text-xs font-semibold text-[#16323B] mb-1.5">Catatan Akun (Opsional)</label>
             <textarea
+              rows="2"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Catatan fungsi atau peruntukan akun ini..."
-              rows={2}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
+              placeholder="Keterangan singkat fungsi rekening akun ini..."
+              className="w-full px-3.5 py-2.5 bg-[#F8FDFF] border border-[#D7EBEF] rounded-xl text-[#16323B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow"
             />
           </div>
 
           {/* Status Aktif */}
-          <div className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800/80 rounded-xl">
-            <div>
-              <span className="text-xs font-semibold text-slate-200">Status Akun</span>
-              <p className="text-[11px] text-slate-500">Akun nonaktif tidak bisa digunakan pada transaksi jurnal baru</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
+          <div>
+            <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={formData.is_active}
                 onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                className="sr-only peer"
+                className="w-4 h-4 rounded text-[#27C5E5] focus:ring-[#27C5E5] border-[#D7EBEF]"
               />
-              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+              <span className="text-xs font-semibold text-[#16323B]">Akun Aktif (Dapat dipilih dalam catatan jurnal)</span>
             </label>
           </div>
 
-          {/* Buttons */}
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-800">
+          {/* Footer Buttons */}
+          <div className="pt-4 border-t border-[#D7EBEF] flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-white hover:bg-[#F3FBFC] border border-[#D7EBEF] text-xs font-semibold text-[#577782] cursor-pointer btn-press"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer disabled:opacity-50 btn-press"
             >
-              {isSubmitting ? 'Menyimpan...' : account ? 'Simpan Perubahan' : 'Tambah Akun'}
+              {isSubmitting ? 'Menyimpan...' : account ? 'Simpan Perubahan' : 'Buat Akun'}
             </button>
           </div>
         </form>
@@ -232,4 +233,3 @@ export default function AccountModal({ isOpen, onClose, onSubmit, account, isSub
     </div>
   );
 }
-

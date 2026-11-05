@@ -6,7 +6,7 @@ import Pagination from '../../components/common/Pagination';
 import SearchInput from '../../components/common/SearchInput';
 import useAuth from '../../hooks/useAuth';
 import accountingService from '../../services/accountingService';
-import { formatDateTime, formatRupiah } from '../../utils/currency';
+import { formatRupiah } from '../../utils/currency';
 import JournalModal from './JournalModal';
 
 export function GeneralJournalPage() {
@@ -65,27 +65,25 @@ export function GeneralJournalPage() {
 
   useEffect(() => {
     fetchJournals(currentPage, search, statusFilter, startDate, endDate);
-  }, [currentPage, statusFilter, startDate, endDate, fetchJournals]);
+  }, [currentPage, search, statusFilter, startDate, endDate, fetchJournals]);
 
   const handleFormSubmit = async (formData) => {
     setIsSubmitting(true);
     try {
       if (selectedJournal) {
         await accountingService.updateJournal(selectedJournal.id, formData);
-        showToast('Jurnal draft berhasil diperbarui!');
+        showToast('Draft jurnal berhasil diperbarui.');
       } else {
         await accountingService.createJournal(formData);
-        showToast('Jurnal baru berhasil disimpan sebagai draft!');
+        showToast('Draft jurnal berhasil dibuat.');
       }
       setIsModalOpen(false);
       setSelectedJournal(null);
       fetchJournals(currentPage);
-      return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Gagal menyimpan jurnal';
-      const errors = error.response?.data?.errors;
-      showToast(message, 'error');
-      return { success: false, errors };
+      const msg = error.response?.data?.message || 'Gagal menyimpan jurnal.';
+      showToast(msg, 'error');
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -96,49 +94,47 @@ export function GeneralJournalPage() {
     setIsPosting(true);
     try {
       await accountingService.postJournal(postTarget.id);
-      showToast(`Jurnal ${postTarget.journal_number} berhasil diposting ke buku besar!`);
+      showToast(`Jurnal ${postTarget.journal_number} berhasil diposting ke buku besar.`);
       setPostTarget(null);
       fetchJournals(currentPage);
     } catch (error) {
-      showToast(error.response?.data?.message || 'Gagal memposting jurnal', 'error');
+      showToast(error.response?.data?.message || 'Gagal memposting jurnal.', 'error');
     } finally {
       setIsPosting(false);
     }
   };
 
-  const handleReverseJournal = async () => {
+  const handleReverseJournal = async (e) => {
+    e.preventDefault();
     if (!reverseTarget) return;
     setIsReversing(true);
     try {
       await accountingService.reverseJournal(reverseTarget.id, reverseReason);
-      showToast(`Jurnal ${reverseTarget.journal_number} berhasil dibatalkan melalui reversal!`);
+      showToast(`Jurnal ${reverseTarget.journal_number} berhasil direverse.`);
       setReverseTarget(null);
       setReverseReason('');
       fetchJournals(currentPage);
     } catch (error) {
-      showToast(error.response?.data?.message || 'Gagal mereverse jurnal', 'error');
+      showToast(error.response?.data?.message || 'Gagal mereverse jurnal.', 'error');
     } finally {
       setIsReversing(false);
     }
   };
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 'posted':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
-      case 'reversed':
-        return 'bg-rose-500/10 text-rose-400 border-rose-500/30';
-      case 'draft':
-      default:
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
-    }
+    const badges = {
+      draft: 'bg-slate-100 text-slate-600 border-slate-200',
+      posted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      reversed: 'bg-rose-50 text-rose-700 border-rose-200',
+    };
+    return badges[status] || 'bg-slate-100 text-slate-600 border-slate-200';
   };
 
   const columns = [
-    { header: 'No. Jurnal', className: 'w-44 font-mono font-bold' },
-    { header: 'Tanggal', className: 'w-28 text-center' },
-    { header: 'Keterangan', className: 'w-1/3' },
-    { header: 'Total Nilai', className: 'text-right font-mono' },
+    { header: 'No. Jurnal', className: 'w-36 font-mono font-bold' },
+    { header: 'Tanggal', className: 'w-24 text-center' },
+    { header: 'Keterangan Transaksi', className: 'w-2/5' },
+    { header: 'Total Nilai (Debit)', className: 'text-right font-mono' },
     { header: 'Status', className: 'text-center' },
     { header: 'Aksi', className: 'text-right' },
   ];
@@ -148,20 +144,20 @@ export function GeneralJournalPage() {
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`p-4 rounded-xl border flex items-center justify-between text-sm shadow-xl transition-all ${
+          className={`p-4 rounded-2xl border flex items-center justify-between text-xs font-semibold shadow-md transition-all ${
             toast.type === 'error'
-              ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+              ? 'bg-rose-50 border-rose-200 text-rose-700'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-700'
           }`}
         >
           <div className="flex items-center gap-2">
             <span>{toast.type === 'error' ? '⚠️' : '✅'}</span>
-            <span className="font-medium">{toast.message}</span>
+            <span>{toast.message}</span>
           </div>
           <button
             type="button"
             onClick={() => setToast(null)}
-            className="text-xs text-slate-400 hover:text-white"
+            className="text-xs text-[#8EA6AF] hover:text-[#16323B] cursor-pointer"
           >
             ✕
           </button>
@@ -171,10 +167,10 @@ export function GeneralJournalPage() {
       {/* Header Page */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span>Jurnal Umum (General Journal)</span>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#10262E] flex items-center gap-2">
+            <span>📝</span> Jurnal Umum (General Journal)
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-xs text-[#577782] mt-1">
             Daftar seluruh entri jurnal akuntansi berpasangan (double-entry bookkeeping).
           </p>
         </div>
@@ -185,14 +181,14 @@ export function GeneralJournalPage() {
             setSelectedJournal(null);
             setIsModalOpen(true);
           }}
-          className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#27C5E5] to-[#38BFE0] hover:from-[#1FB2D0] hover:to-[#2FB0CF] text-white font-bold text-xs shadow-md shadow-[#38BFE0]/25 transition-all cursor-pointer self-start sm:self-auto"
         >
-          <span>+ Buat Jurnal Baru</span>
+          <span>+</span> Buat Jurnal Baru
         </button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col lg:flex-row gap-3 items-center justify-between">
+      <div className="bg-white p-4 rounded-3xl border border-[#D7EBEF] shadow-xs flex flex-col lg:flex-row gap-3 items-center justify-between">
         <div className="w-full lg:w-72">
           <SearchInput
             value={search}
@@ -216,7 +212,7 @@ export function GeneralJournalPage() {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+            className="px-3 py-2 bg-[#F8FDFF] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25"
           >
             <option value="">Semua Status</option>
             <option value="draft">Draft</option>
@@ -232,10 +228,10 @@ export function GeneralJournalPage() {
               setStartDate(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+            className="px-3 py-2 bg-[#F8FDFF] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25"
             title="Dari Tanggal"
           />
-          <span className="text-slate-600 text-xs">s/d</span>
+          <span className="text-[#8EA6AF] text-xs font-bold">s/d</span>
           <input
             type="date"
             value={endDate}
@@ -243,7 +239,7 @@ export function GeneralJournalPage() {
               setEndDate(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+            className="px-3 py-2 bg-[#F8FDFF] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25"
             title="Sampai Tanggal"
           />
 
@@ -255,9 +251,9 @@ export function GeneralJournalPage() {
                 setEndDate('');
                 setCurrentPage(1);
               }}
-              className="px-2.5 py-1.5 rounded-xl text-xs text-slate-400 hover:text-white bg-slate-800 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-xl text-xs text-[#577782] hover:bg-[#EAF8FA] bg-[#F3FBFC] border border-[#D7EBEF] cursor-pointer font-semibold"
             >
-              Reset Tanggal
+              Reset
             </button>
           )}
         </div>
@@ -266,52 +262,50 @@ export function GeneralJournalPage() {
       {/* Data Table */}
       <DataTable
         columns={columns}
+        data={journals}
         isLoading={isLoading}
-        isEmpty={journals.length === 0}
         emptyMessage="Tidak ada catatan jurnal umum yang ditemukan."
-      >
-        {journals.map((jrn) => (
-          <tr key={jrn.id} className="border-b border-slate-800/60 hover:bg-slate-800/30 transition-colors">
-            <td className="px-4 py-3">
+        renderRow={(jrn) => (
+          <tr key={jrn.id} className="hover:bg-[#F3FBFC] transition-colors">
+            <td className="px-4 py-3.5">
               <Link
                 to={`${basePath}/journals/${jrn.id}`}
-                className="font-mono font-bold text-emerald-400 hover:underline"
+                className="font-mono font-bold text-[#167A93] hover:underline"
               >
                 {jrn.journal_number}
               </Link>
               {jrn.reference_number && (
-                <p className="text-[11px] text-slate-500 font-mono">Ref: {jrn.reference_number}</p>
+                <p className="text-[11px] text-[#8EA6AF] font-mono mt-0.5">Ref: {jrn.reference_number}</p>
               )}
             </td>
-            <td className="px-4 py-3 text-center text-xs text-slate-300">
+            <td className="px-4 py-3.5 text-center text-xs text-[#577782] whitespace-nowrap">
               {jrn.journal_date}
             </td>
-            <td className="px-4 py-3">
-              <span className="text-xs text-slate-200 font-medium line-clamp-1">{jrn.description}</span>
+            <td className="px-4 py-3.5">
+              <span className="text-xs text-[#10262E] font-medium line-clamp-1">{jrn.description}</span>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-slate-500 uppercase">Sumber: {jrn.source_type || 'manual'}</span>
-                <span className="text-slate-700">•</span>
-                <span className="text-[10px] text-slate-500">{jrn.details_count || 2} baris</span>
+                <span className="text-[10px] text-[#8EA6AF] uppercase font-bold">Sumber: {jrn.source_type || 'manual'}</span>
+                <span className="text-[#D7EBEF]">&bull;</span>
+                <span className="text-[10px] text-[#8EA6AF]">{jrn.details_count || 2} baris</span>
               </div>
             </td>
-            <td className="px-4 py-3 text-right font-mono font-semibold text-slate-100">
+            <td className="px-4 py-3.5 text-right font-mono font-bold text-[#10262E] whitespace-nowrap">
               {formatRupiah(jrn.total_debit)}
             </td>
-            <td className="px-4 py-3 text-center">
-              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${getStatusBadge(jrn.status)}`}>
+            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(jrn.status)}`}>
                 {jrn.status_label}
               </span>
             </td>
-            <td className="px-4 py-3 text-right whitespace-nowrap">
+            <td className="px-4 py-3.5 text-right whitespace-nowrap">
               <div className="flex items-center justify-end gap-1.5">
                 <Link
                   to={`${basePath}/journals/${jrn.id}`}
-                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#F3FBFC] text-[#16323B] border border-[#D7EBEF] transition-colors cursor-pointer shadow-2xs"
                 >
                   Detail
                 </Link>
 
-                {/* Tombol aksi khusus status draft */}
                 {jrn.status === 'draft' && (
                   <>
                     <button
@@ -320,7 +314,7 @@ export function GeneralJournalPage() {
                         setSelectedJournal(jrn);
                         setIsModalOpen(true);
                       }}
-                      className="px-2.5 py-1 rounded-lg text-xs font-medium border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#F3FBFC] text-[#16323B] border border-[#D7EBEF] transition-colors cursor-pointer shadow-2xs"
                     >
                       Edit
                     </button>
@@ -329,7 +323,7 @@ export function GeneralJournalPage() {
                       <button
                         type="button"
                         onClick={() => setPostTarget(jrn)}
-                        className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer"
                       >
                         Posting
                       </button>
@@ -337,7 +331,6 @@ export function GeneralJournalPage() {
                   </>
                 )}
 
-                {/* Tombol reversal khusus status posted (Admin only) */}
                 {jrn.status === 'posted' && isAdmin && (
                   <button
                     type="button"
@@ -345,7 +338,7 @@ export function GeneralJournalPage() {
                       setReverseTarget(jrn);
                       setReverseReason('');
                     }}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer"
                   >
                     Reversal
                   </button>
@@ -353,15 +346,13 @@ export function GeneralJournalPage() {
               </div>
             </td>
           </tr>
-        ))}
-      </DataTable>
+        )}
+      />
 
       {/* Pagination */}
       {pagination && (
         <Pagination
-          currentPage={pagination.current_page}
-          lastPage={pagination.last_page}
-          total={pagination.total}
+          pagination={pagination}
           onPageChange={(page) => setCurrentPage(page)}
         />
       )}
@@ -391,47 +382,48 @@ export function GeneralJournalPage() {
 
       {/* Reversal Confirmation Modal */}
       {Boolean(reverseTarget) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="text-rose-400">⚠️</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10262E]/35 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-white border border-[#D7EBEF] rounded-3xl shadow-2xl p-6 sm:p-8 space-y-4 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-black text-[#10262E] flex items-center gap-2">
+              <span className="text-rose-500">⚠️</span>
               <span>Reversal Jurnal Akuntansi</span>
             </h3>
-            <p className="text-xs text-slate-400">
-              Sistem akan membuat jurnal pembalik otomatis (debit menjadi kredit dan kredit menjadi debit) untuk membatalkan dampak jurnal <strong className="text-slate-200">{reverseTarget.journal_number}</strong>.
+            <p className="text-xs text-[#577782] leading-relaxed">
+              Membuat jurnal pembalik otomatis untuk menetralkan mutasi akun pada jurnal{' '}
+              <strong className="text-[#10262E]">{reverseTarget?.journal_number}</strong>.
             </p>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Alasan Reversal (Opsional)
-              </label>
-              <textarea
-                value={reverseReason}
-                onChange={(e) => setReverseReason(e.target.value)}
-                placeholder="Contoh: Koreksi pembatalan transaksi dari pelanggan..."
-                rows={3}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-rose-500"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={() => setReverseTarget(null)}
-                disabled={isReversing}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleReverseJournal}
-                disabled={isReversing}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-500 hover:bg-rose-400 text-white cursor-pointer shadow-lg shadow-rose-500/20"
-              >
-                {isReversing ? 'Memproses...' : 'Eksekusi Reversal'}
-              </button>
-            </div>
+            <form onSubmit={handleReverseJournal} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[#16323B] mb-1.5">
+                  Alasan Reversal <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  required
+                  rows="2"
+                  value={reverseReason}
+                  onChange={(e) => setReverseReason(e.target.value)}
+                  placeholder="Misal: Koreksi salah catat akun transaksi..."
+                  className="w-full px-3.5 py-2.5 bg-[#F8FDFF] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/25"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setReverseTarget(null)}
+                  disabled={isReversing}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-bold text-[#577782] cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isReversing}
+                  className="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-md shadow-rose-500/20 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isReversing ? 'Memproses...' : 'Proses Reversal'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -440,4 +432,3 @@ export function GeneralJournalPage() {
 }
 
 export default GeneralJournalPage;
-

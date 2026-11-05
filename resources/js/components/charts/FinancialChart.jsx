@@ -1,62 +1,61 @@
 import React, { useState } from 'react';
 import { formatRupiah } from '../../utils/currency';
 
-export default function FinancialChart({ points = [], title = 'Tren Keuangan' }) {
+export default function FinancialChart({ points = [], title = 'Tren Keuangan & Arus Kas' }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
   if (!points || points.length === 0) {
     return (
-      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[300px] text-slate-400">
+      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 flex flex-col items-center justify-center min-h-[300px] text-[#8EA6AF] shadow-xs">
         <span className="text-4xl mb-2">📊</span>
-        <p className="text-sm">Belum ada data transaksi pada periode ini.</p>
+        <p className="text-sm font-medium">Belum ada data transaksi pada periode ini.</p>
       </div>
     );
   }
 
-  // Cari nilai maksimum untuk normalisasi skala Y
   const maxVal = Math.max(
     ...points.map((p) => Math.max(p.income || 0, p.expense || 0)),
     100000
   );
 
   const chartHeight = 220;
-  const paddingBottom = 40;
+  const paddingBottom = 35;
   const paddingTop = 20;
   const usableHeight = chartHeight - paddingBottom - paddingTop;
 
   return (
-    <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 backdrop-blur shadow-xl relative">
+    <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs relative">
       {/* Header & Legend */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <h3 className="text-sm font-bold text-[#10262E] flex items-center gap-2">
             <span>📈</span> {title}
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Perbandingan pemasukan, pengeluaran, dan tren pergerakan kas toko
+          <p className="text-xs text-[#577782] mt-0.5">
+            Perbandingan pemasukan, pengeluaran operasional, dan arus kas toko
           </p>
         </div>
 
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-4 text-xs font-semibold">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-emerald-500"></span>
-            <span className="text-slate-300">Pemasukan</span>
+            <span className="w-3 h-3 rounded-md bg-[#36B878]"></span>
+            <span className="text-[#577782]">Pemasukan</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-rose-500"></span>
-            <span className="text-slate-300">Pengeluaran</span>
+            <span className="w-3 h-3 rounded-md bg-[#E66D79]"></span>
+            <span className="text-[#577782]">Pengeluaran</span>
           </div>
         </div>
       </div>
 
       {/* SVG Chart Area */}
       <div className="relative overflow-x-auto no-scrollbar">
-        <div style={{ minWidth: Math.max(points.length * 48, 500) }}>
+        <div style={{ minWidth: Math.max(points.length * 52, 500) }}>
           <svg
             viewBox={`0 0 ${Math.max(points.length * 60, 600)} ${chartHeight}`}
             className="w-full h-56 overflow-visible"
           >
-            {/* Grid horizontal lines */}
+            {/* Horizontal Grid lines */}
             {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
               const y = paddingTop + usableHeight * (1 - ratio);
               return (
@@ -66,15 +65,16 @@ export default function FinancialChart({ points = [], title = 'Tren Keuangan' })
                     y1={y}
                     x2="100%"
                     y2={y}
-                    stroke="#334155"
+                    stroke="#EBF5F8"
                     strokeDasharray="4 4"
-                    strokeWidth="1"
+                    strokeWidth="1.2"
                   />
                   <text
                     x="4"
                     y={y - 4}
-                    fill="#64748b"
+                    fill="#8EA6AF"
                     fontSize="10"
+                    fontWeight="500"
                     fontFamily="monospace"
                   >
                     {formatRupiah(maxVal * ratio)}
@@ -105,48 +105,48 @@ export default function FinancialChart({ points = [], title = 'Tren Keuangan' })
                   onMouseEnter={() => setHoveredIdx(idx)}
                   onMouseLeave={() => setHoveredIdx(null)}
                 >
-                  {/* Hover Column Background */}
+                  {/* Column Hover Background */}
                   {isHovered && (
                     <rect
                       x={idx * colWidth + 4}
                       y={paddingTop}
                       width={colWidth - 8}
                       height={usableHeight}
-                      fill="#1e293b"
-                      opacity="0.6"
-                      rx="6"
+                      fill="#EAF8FA"
+                      opacity="0.8"
+                      rx="8"
                     />
                   )}
 
-                  {/* Income Bar (Emerald) */}
+                  {/* Income Bar (Green Accent #36B878) */}
                   <rect
                     x={xCenter - barWidth - 2}
                     y={incomeY}
                     width={barWidth}
                     height={incomeH}
-                    fill="#10b981"
-                    rx="3"
+                    fill="#36B878"
+                    rx="4"
                     className="transition-all duration-300"
                   />
 
-                  {/* Expense Bar (Rose) */}
+                  {/* Expense Bar (Red Accent #E66D79) */}
                   <rect
                     x={xCenter + 2}
                     y={expenseY}
                     width={barWidth}
                     height={expenseH}
-                    fill="#f43f5e"
-                    rx="3"
+                    fill="#E66D79"
+                    rx="4"
                     className="transition-all duration-300"
                   />
 
-                  {/* X-Axis Label */}
+                  {/* X-Axis Date Label */}
                   <text
                     x={xCenter}
-                    y={chartHeight - 12}
-                    fill={isHovered ? '#f8fafc' : '#94a3b8'}
+                    y={chartHeight - 10}
+                    fill={isHovered ? '#10262E' : '#8EA6AF'}
                     fontSize="11"
-                    fontWeight={isHovered ? 'bold' : 'normal'}
+                    fontWeight={isHovered ? '700' : '500'}
                     textAnchor="middle"
                   >
                     {pt.label}
@@ -159,34 +159,32 @@ export default function FinancialChart({ points = [], title = 'Tren Keuangan' })
 
         {/* Hover Tooltip Overlay */}
         {hoveredIdx !== null && points[hoveredIdx] && (
-          <div
-            className="absolute top-2 right-4 bg-slate-900/95 border border-slate-700 p-3 rounded-xl shadow-2xl text-xs z-10 pointer-events-none backdrop-blur animate-in fade-in duration-150"
-          >
-            <div className="font-bold text-white border-b border-slate-800 pb-1 mb-2">
+          <div className="absolute top-2 right-4 bg-white border border-[#D7EBEF] p-3 rounded-2xl shadow-xl text-xs z-10 pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+            <div className="font-bold text-[#10262E] border-b border-[#EBF5F8] pb-1.5 mb-2">
               📅 {points[hoveredIdx].label} ({points[hoveredIdx].date})
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between gap-4">
-                <span className="text-emerald-400 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Pemasukan:
+                <span className="text-[#36B878] font-semibold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#36B878]"></span> Pemasukan:
                 </span>
-                <span className="font-mono font-semibold text-white">
+                <span className="font-mono font-bold text-[#10262E]">
                   {formatRupiah(points[hoveredIdx].income)}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <span className="text-rose-400 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-rose-400"></span> Pengeluaran:
+                <span className="text-[#E66D79] font-semibold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#E66D79]"></span> Pengeluaran:
                 </span>
-                <span className="font-mono font-semibold text-white">
+                <span className="font-mono font-bold text-[#10262E]">
                   {formatRupiah(points[hoveredIdx].expense)}
                 </span>
               </div>
-              <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-800/80 font-bold">
-                <span className="text-slate-300">Laba Bersih:</span>
+              <div className="flex items-center justify-between gap-4 pt-1.5 border-t border-[#EBF5F8] font-bold">
+                <span className="text-[#577782]">Arus Kas Bersih:</span>
                 <span
                   className={`font-mono ${
-                    points[hoveredIdx].profit >= 0 ? 'text-teal-400' : 'text-rose-400'
+                    points[hoveredIdx].profit >= 0 ? 'text-[#167A93]' : 'text-[#E66D79]'
                   }`}
                 >
                   {formatRupiah(points[hoveredIdx].profit)}

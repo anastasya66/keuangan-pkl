@@ -10,6 +10,7 @@ import productService from '../../services/productService';
 import unitService from '../../services/unitService';
 import { formatRupiah } from '../../utils/currency';
 import ProductModal from './ProductModal';
+import { IconBox } from '../../components/common/Icons';
 
 export function ProductPage() {
   const { user } = useAuth();
@@ -170,7 +171,7 @@ export function ProductPage() {
     { header: 'Kode / SKU', className: 'w-32' },
     { header: 'Nama Produk & Kategori', className: 'w-1/3' },
     { header: 'Satuan', className: 'text-center' },
-    { header: 'Harga Beli', className: 'text-right' },
+    { header: 'Harga Beli (Cost)', className: 'text-right' },
     { header: 'Harga Jual', className: 'text-right' },
     { header: 'Status', className: 'text-center' },
     ...(isAdmin ? [{ header: 'Aksi', className: 'text-right' }] : []),
@@ -181,20 +182,20 @@ export function ProductPage() {
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`p-4 rounded-xl border flex items-center justify-between text-sm shadow-xl transition-all ${
+          className={`p-4 rounded-2xl border flex items-center justify-between text-xs font-semibold shadow-md transition-all animate-toast ${
             toast.type === 'error'
-              ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+              ? 'bg-rose-50 border-rose-200 text-rose-700'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-700'
           }`}
         >
           <div className="flex items-center gap-2">
             <span>{toast.type === 'error' ? '⚠️' : '✅'}</span>
-            <span className="font-medium">{toast.message}</span>
+            <span>{toast.message}</span>
           </div>
           <button
             type="button"
             onClick={() => setToast(null)}
-            className="text-xs text-slate-400 hover:text-white"
+            className="text-xs text-[#8EA6AF] hover:text-[#16323B] cursor-pointer btn-press"
           >
             ✕
           </button>
@@ -204,11 +205,14 @@ export function ProductPage() {
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span>📦</span> Manajemen Master Produk
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#10262E] flex items-center gap-2.5">
+            <span className="p-2 rounded-xl bg-white border border-[#D7EBEF] text-[#27C5E5] shadow-2xs">
+              <IconBox className="w-5 h-5" />
+            </span>
+            <span>Katalog Barang Toko</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Katalog barang toko, penetapan harga modal (beli), dan harga jual kasir
+          <p className="text-xs text-[#577782] mt-1">
+            Kelola daftar barang, harga modal beli, dan harga jual tokomu dengan mudah
           </p>
         </div>
 
@@ -219,15 +223,15 @@ export function ProductPage() {
               setSelectedProduct(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold text-sm transition-all shadow-lg shadow-emerald-900/30 cursor-pointer self-start sm:self-auto"
+            className="px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer flex items-center gap-2 self-start sm:self-auto btn-press"
           >
-            <span>+</span> Tambah Produk
+            <span>+ Tambah Barang Baru</span>
           </button>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+      <div className="bg-white p-4 rounded-3xl border border-[#D7EBEF] shadow-xs">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <form
             onSubmit={(e) => {
@@ -246,14 +250,13 @@ export function ProductPage() {
 
           {/* Filter Dropdowns */}
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Category Filter */}
             <select
               value={categoryIdFilter}
               onChange={(e) => {
                 setCategoryIdFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              className="px-3 py-2 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs focus:ring-2 focus:ring-[#38BFE0]/25 focus:outline-none"
             >
               <option value="">Semua Kategori</option>
               {categories.map((c) => (
@@ -263,14 +266,13 @@ export function ProductPage() {
               ))}
             </select>
 
-            {/* Unit Filter */}
             <select
               value={unitIdFilter}
               onChange={(e) => {
                 setUnitIdFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              className="px-3 py-2 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs focus:ring-2 focus:ring-[#38BFE0]/25 focus:outline-none"
             >
               <option value="">Semua Satuan</option>
               {units.map((u) => (
@@ -280,7 +282,6 @@ export function ProductPage() {
               ))}
             </select>
 
-            {/* Status Filter (Admin Only) */}
             {isAdmin && (
               <select
                 value={statusFilter}
@@ -288,7 +289,7 @@ export function ProductPage() {
                   setStatusFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="px-3 py-2 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs focus:ring-2 focus:ring-[#38BFE0]/25 focus:outline-none"
               >
                 <option value="">Semua Status</option>
                 <option value="true">Hanya Aktif</option>
@@ -296,15 +297,14 @@ export function ProductPage() {
               </select>
             )}
 
-            {/* Reset Filter Button */}
             {(search || categoryIdFilter || unitIdFilter || statusFilter) && (
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 transition-colors cursor-pointer"
+                className="px-3 py-2 rounded-xl bg-[#F3FBFC] hover:bg-[#EAF8FA] text-[#577782] text-xs border border-[#D7EBEF] transition-colors cursor-pointer font-semibold"
                 title="Reset seluruh filter"
               >
-                Reset Filter
+                Reset
               </button>
             )}
           </div>
@@ -318,14 +318,14 @@ export function ProductPage() {
         isLoading={isLoading}
         emptyMessage="Belum ada data produk yang cocok dengan pencarian atau filter Anda."
         renderRow={(prod) => (
-          <tr key={prod.id} className="hover:bg-slate-800/40 transition-colors">
+          <tr key={prod.id} className="hover:bg-[#F3FBFC] transition-colors">
             {/* SKU & Barcode */}
             <td className="px-4 py-3.5 whitespace-nowrap">
-              <div className="font-mono text-xs font-bold text-emerald-400">
+              <div className="font-mono text-xs font-bold text-[#167A93]">
                 {prod.sku}
               </div>
               {prod.barcode && (
-                <div className="font-mono text-[10px] text-slate-400 mt-0.5">
+                <div className="font-mono text-[10px] text-[#8EA6AF] mt-0.5">
                   🏷️ {prod.barcode}
                 </div>
               )}
@@ -333,15 +333,15 @@ export function ProductPage() {
 
             {/* Name & Category */}
             <td className="px-4 py-3.5">
-              <div className="font-semibold text-white">
+              <div className="font-bold text-[#10262E]">
                 {prod.name}
               </div>
               <div className="inline-flex items-center gap-1.5 mt-1">
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF] font-medium">
                   {prod.category?.name || 'Tanpa Kategori'}
                 </span>
                 {prod.description && (
-                  <span className="text-[11px] text-slate-400 truncate max-w-xs">
+                  <span className="text-[11px] text-[#8EA6AF] truncate max-w-xs">
                     • {prod.description}
                   </span>
                 )}
@@ -350,18 +350,18 @@ export function ProductPage() {
 
             {/* Unit */}
             <td className="px-4 py-3.5 text-center">
-              <span className="px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+              <span className="px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-[#EAF8FA] text-[#167A93] border border-[#38BFE0]/30">
                 {prod.unit?.symbol || '-'}
               </span>
             </td>
 
             {/* Purchase Price */}
-            <td className="px-4 py-3.5 text-right font-mono text-xs text-slate-300 whitespace-nowrap">
+            <td className="px-4 py-3.5 text-right font-mono text-xs text-[#577782] whitespace-nowrap">
               {formatRupiah(prod.purchase_price_numeric)}
             </td>
 
             {/* Selling Price */}
-            <td className="px-4 py-3.5 text-right font-mono text-xs font-bold text-emerald-400 whitespace-nowrap">
+            <td className="px-4 py-3.5 text-right font-mono text-xs font-bold text-[#36B878] whitespace-nowrap">
               {formatRupiah(prod.selling_price_numeric)}
             </td>
 
@@ -380,7 +380,7 @@ export function ProductPage() {
                       setSelectedProduct(prod);
                       setIsModalOpen(true);
                     }}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#F3FBFC] text-[#16323B] border border-[#D7EBEF] transition-colors cursor-pointer shadow-2xs"
                   >
                     Edit
                   </button>
@@ -388,10 +388,10 @@ export function ProductPage() {
                   <button
                     type="button"
                     onClick={() => handleToggleStatus(prod)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
                       prod.is_active
-                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
-                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                     }`}
                   >
                     {prod.is_active ? 'Nonaktifkan' : 'Aktifkan'}
@@ -400,7 +400,7 @@ export function ProductPage() {
                   <button
                     type="button"
                     onClick={() => setDeleteTarget(prod)}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors cursor-pointer"
                   >
                     Hapus
                   </button>
@@ -445,4 +445,3 @@ export function ProductPage() {
 }
 
 export default ProductPage;
-

@@ -126,3 +126,4 @@ class InventoryReportController extends Controller
         return $this->exportService->exportStockMovementsExcel($data);
     }
 }
+

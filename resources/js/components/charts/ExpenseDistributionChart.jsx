@@ -2,14 +2,14 @@ import React from 'react';
 import { formatRupiah } from '../../utils/currency';
 
 const CATEGORY_COLORS = [
-  'bg-rose-500',
-  'bg-amber-500',
-  'bg-indigo-500',
-  'bg-teal-500',
-  'bg-blue-500',
-  'bg-purple-500',
-  'bg-cyan-500',
-  'bg-pink-500',
+  'bg-[#E66D79]', // soft red
+  'bg-[#F0B75A]', // soft amber
+  'bg-[#38BFE0]', // brand primary blue
+  'bg-[#36B878]', // soft green
+  'bg-[#79CFE0]', // soft cyan
+  'bg-[#8B5CF6]', // purple
+  'bg-[#EC4899]', // pink
+  'bg-[#64748B]', // slate
 ];
 
 export default function ExpenseDistributionChart({
@@ -19,34 +19,34 @@ export default function ExpenseDistributionChart({
 
   if (!categories || categories.length === 0 || total_expense === 0) {
     return (
-      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[300px] text-slate-400">
+      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 flex flex-col items-center justify-center min-h-[300px] text-[#8EA6AF] shadow-xs">
         <span className="text-4xl mb-2">💸</span>
-        <p className="text-sm">Belum ada pengeluaran pada periode ini.</p>
+        <p className="text-sm font-medium">Belum ada data pengeluaran pada periode ini.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 backdrop-blur shadow-xl">
+    <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <h3 className="text-sm font-bold text-[#10262E] flex items-center gap-2">
             <span>🏷️</span> Distribusi Pengeluaran
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Komposisi biaya berdasarkan kategori transaksi
+          <p className="text-xs text-[#577782] mt-0.5">
+            Komposisi biaya per kategori transaksi
           </p>
         </div>
         <div className="text-right">
-          <span className="text-xs text-slate-400">Total Pengeluaran</span>
-          <div className="text-sm font-mono font-bold text-rose-400">
+          <span className="text-[11px] text-[#8EA6AF] font-medium">Total Beban</span>
+          <div className="text-xs font-mono font-bold text-[#E66D79]">
             {formatRupiah(total_expense)}
           </div>
         </div>
       </div>
 
       {/* Segmented Progress Bar */}
-      <div className="h-4 w-full bg-slate-900 rounded-full overflow-hidden flex mb-6 p-0.5 gap-0.5">
+      <div className="h-3.5 w-full bg-[#F3FBFC] rounded-full overflow-hidden flex mb-5 p-0.5 gap-0.5 border border-[#D7EBEF]">
         {categories.map((cat, idx) => {
           const color = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
           return (
@@ -61,26 +61,26 @@ export default function ExpenseDistributionChart({
       </div>
 
       {/* Categories List */}
-      <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+      <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1 no-scrollbar">
         {categories.map((cat, idx) => {
           const color = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
           return (
             <div
               key={cat.category_id || idx}
-              className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/50 hover:bg-slate-900 transition-colors"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-[#F8FDFF] hover:bg-[#F0FAFC] border border-[#EBF5F8] transition-colors"
             >
               <div className="flex items-center gap-3">
-                <span className={`w-3 h-3 rounded-full ${color} shrink-0`}></span>
+                <span className={`w-3 h-3 rounded-md ${color} shrink-0`}></span>
                 <div>
-                  <div className="text-xs font-semibold text-white">
+                  <div className="text-xs font-bold text-[#10262E]">
                     {cat.category_name}
                   </div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-[11px] text-[#577782]">
                     {cat.transaction_count} transaksi ({cat.percentage}%)
                   </div>
                 </div>
               </div>
-              <div className="text-xs font-mono font-bold text-slate-200">
+              <div className="text-xs font-mono font-bold text-[#10262E]">
                 {formatRupiah(cat.amount)}
               </div>
             </div>

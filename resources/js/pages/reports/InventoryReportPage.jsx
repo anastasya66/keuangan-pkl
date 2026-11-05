@@ -83,17 +83,17 @@ export default function InventoryReportPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 backdrop-blur shadow-xl">
+      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EAF8FA] text-[#27C5E5] border border-[#A9DDE7] mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#27C5E5]"></span>
               Manajemen Persediaan & Valuasi
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#16323B]">
               Laporan Stok & Valuasi Persediaan
             </h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-[#5A7C85]">
               Menampilkan kuantitas fisik persediaan, harga perolehan (cost price), status ketersediaan, dan total nilai aset barang.
             </p>
           </div>
@@ -103,7 +103,7 @@ export default function InventoryReportPage() {
             <button
               onClick={handleExportPdf}
               disabled={exportingPdf || loading}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white font-semibold text-xs transition-all shadow-lg shadow-rose-900/30 disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-xs transition-all shadow-xs disabled:opacity-50 cursor-pointer"
             >
               <span>📄</span>
               {exportingPdf ? 'Mengunduh...' : 'Ekspor PDF'}
@@ -112,7 +112,7 @@ export default function InventoryReportPage() {
             <button
               onClick={handleExportExcel}
               disabled={exportingExcel || loading}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-white font-semibold text-xs transition-all shadow-lg shadow-emerald-900/30 disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold text-xs transition-all shadow-xs disabled:opacity-50 cursor-pointer"
             >
               <span>📊</span>
               {exportingExcel ? 'Mengunduh...' : 'Ekspor Excel'}
@@ -123,16 +123,16 @@ export default function InventoryReportPage() {
         {/* Filter Bar */}
         <form
           onSubmit={handleFilterSubmit}
-          className="mt-6 pt-4 border-t border-slate-700/80 flex flex-wrap items-end gap-3"
+          className="mt-6 pt-4 border-t border-[#D7EBEF] flex flex-wrap items-end gap-3"
         >
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">
+            <label className="block text-xs font-semibold text-[#16323B] mb-1">
               Filter Kategori
             </label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
+              className="bg-[#F3FBFC] border border-[#D7EBEF] rounded-xl px-3 py-1.5 text-xs text-[#16323B] focus:bg-white focus:outline-none focus:border-[#38BFE0] focus:ring-2 focus:ring-[#38BFE0]/20 transition-all"
             >
               <option value="">Semua Kategori</option>
               {categories.map((c) => (
@@ -144,13 +144,13 @@ export default function InventoryReportPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">
+            <label className="block text-xs font-semibold text-[#16323B] mb-1">
               Status Ketersediaan
             </label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
+              className="bg-[#F3FBFC] border border-[#D7EBEF] rounded-xl px-3 py-1.5 text-xs text-[#16323B] focus:bg-white focus:outline-none focus:border-[#38BFE0] focus:ring-2 focus:ring-[#38BFE0]/20 transition-all"
             >
               <option value="">Semua Status</option>
               <option value="available">Stok Aman (&gt; 10)</option>
@@ -161,7 +161,7 @@ export default function InventoryReportPage() {
 
           <button
             type="submit"
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white transition-all cursor-pointer"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#27C5E5] hover:bg-[#38BFE0] text-white transition-all cursor-pointer shadow-md shadow-[#27C5E5]/20"
           >
             Terapkan Filter
           </button>
@@ -170,45 +170,45 @@ export default function InventoryReportPage() {
 
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 backdrop-blur shadow-xl">
-          <div className="text-xs font-semibold text-slate-400 uppercase">Total SKU Terdaftar</div>
-          <div className="text-2xl font-bold font-mono text-white mt-2">
+        <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs">
+          <div className="text-xs font-semibold text-[#5A7C85] uppercase">Total SKU Terdaftar</div>
+          <div className="text-2xl font-extrabold font-mono text-[#16323B] mt-2">
             {loading ? '...' : (data?.summary?.total_products || 0) + ' Produk'}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Item aktif di etalase/gudang</div>
+          <div className="text-[11px] text-[#5A7C85] mt-1">Item aktif di etalase/gudang</div>
         </div>
 
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 backdrop-blur shadow-xl">
-          <div className="text-xs font-semibold text-slate-400 uppercase">Total Kuantitas Fisik</div>
-          <div className="text-2xl font-bold font-mono text-cyan-400 mt-2">
+        <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs">
+          <div className="text-xs font-semibold text-[#5A7C85] uppercase">Total Kuantitas Fisik</div>
+          <div className="text-2xl font-extrabold font-mono text-[#27C5E5] mt-2">
             {loading ? '...' : (data?.summary?.total_units || 0) + ' Unit'}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Akumulasi seluruh stok barang</div>
+          <div className="text-[11px] text-[#5A7C85] mt-1">Akumulasi seluruh stok barang</div>
         </div>
 
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 backdrop-blur shadow-xl">
-          <div className="text-xs font-semibold text-slate-400 uppercase">Valuasi Persediaan (Cost)</div>
-          <div className="text-2xl font-bold font-mono text-emerald-400 mt-2">
+        <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs">
+          <div className="text-xs font-semibold text-[#5A7C85] uppercase">Valuasi Persediaan (Cost)</div>
+          <div className="text-2xl font-extrabold font-mono text-[#36B878] mt-2">
             {loading ? '...' : formatRupiah(data?.summary?.total_valuation || 0)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Kuantitas &times; Harga Beli</div>
+          <div className="text-[11px] text-[#5A7C85] mt-1">Kuantitas &times; Harga Beli</div>
         </div>
       </div>
 
       {/* Product Stock Table Card */}
-      <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 backdrop-blur shadow-xl">
+      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs">
         {loading ? (
-          <div className="text-center py-16 text-slate-400">
-            <span className="text-3xl animate-spin inline-block mb-3">⏳</span>
+          <div className="text-center py-16 text-[#5A7C85]">
+            <div className="inline-block w-8 h-8 border-2 border-[#27C5E5] border-t-transparent rounded-full animate-spin mb-3"></div>
             <p className="text-sm">Memuat data inventaris stok...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-12 text-rose-400 text-sm">{error}</div>
+          <div className="text-center py-12 text-rose-600 font-semibold text-sm">{error}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-700 text-slate-400 uppercase tracking-wider text-[10px]">
+              <thead className="bg-[#F3FBFC] text-[#5A7C85] font-semibold border-b border-[#D7EBEF]">
+                <tr className="uppercase tracking-wider text-[10px]">
                   <th className="py-3 px-3">No</th>
                   <th className="py-3 px-3">SKU</th>
                   <th className="py-3 px-3">Nama Produk</th>
@@ -219,37 +219,37 @@ export default function InventoryReportPage() {
                   <th className="py-3 px-3 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-[#D7EBEF]/60">
                 {data?.items?.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="py-8 text-center text-slate-400">
+                    <td colSpan="8" className="py-8 text-center text-[#5A7C85]">
                       Tidak ada produk ditemukan sesuai kriteria filter.
                     </td>
                   </tr>
                 ) : (
                   data?.items?.map((item, idx) => (
-                    <tr key={item.id} className="hover:bg-slate-700/30 transition-colors">
-                      <td className="py-3 px-3 text-slate-500">{idx + 1}</td>
-                      <td className="py-3 px-3 font-mono font-semibold text-slate-300">{item.sku}</td>
-                      <td className="py-3 px-3 font-medium text-white">{item.name}</td>
-                      <td className="py-3 px-3 text-slate-400">{item.category || '-'}</td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-white">
+                    <tr key={item.id} className="hover:bg-[#F3FBFC]/50 transition-colors">
+                      <td className="py-3 px-3 text-[#5A7C85]">{idx + 1}</td>
+                      <td className="py-3 px-3 font-mono font-semibold text-[#27C5E5]">{item.sku}</td>
+                      <td className="py-3 px-3 font-semibold text-[#16323B]">{item.name}</td>
+                      <td className="py-3 px-3 text-[#5A7C85]">{item.category || '-'}</td>
+                      <td className="py-3 px-3 text-right font-mono font-bold text-[#16323B]">
                         {item.stock} {item.unit}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono text-slate-300">
+                      <td className="py-3 px-3 text-right font-mono text-[#5A7C85]">
                         {formatRupiah(item.purchase_price)}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">
+                      <td className="py-3 px-3 text-right font-mono font-bold text-[#36B878]">
                         {formatRupiah(item.valuation)}
                       </td>
                       <td className="py-3 px-3 text-center">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
                             item.status === 'out_of_stock'
-                              ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                              ? 'bg-rose-50 text-rose-700 border-rose-200'
                               : item.status === 'low_stock'
-                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                              : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           }`}
                         >
                           {item.status_label}

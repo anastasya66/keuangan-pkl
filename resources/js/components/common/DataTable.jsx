@@ -1,3 +1,5 @@
+import React from 'react';
+
 export function DataTable({
   columns = [],
   data = [],
@@ -6,10 +8,10 @@ export function DataTable({
   renderRow,
 }) {
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 backdrop-blur shadow-xl">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-200">
-          <thead className="bg-slate-800/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700/60">
+    <div className="w-full overflow-hidden rounded-2xl border border-[#D7EBEF] bg-white shadow-xs">
+      <div className="overflow-x-auto no-scrollbar">
+        <table className="w-full text-left text-sm text-[#16323B]">
+          <thead className="bg-[#F3FBFC] text-xs font-semibold uppercase tracking-wider text-[#577782] border-b border-[#D7EBEF]">
             <tr>
               {columns.map((col, index) => (
                 <th
@@ -23,14 +25,14 @@ export function DataTable({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-[#EBF5F8]">
             {isLoading ? (
               // Skeleton loading rows
               Array.from({ length: 5 }).map((_, idx) => (
                 <tr key={idx} className="animate-pulse">
                   {columns.map((_, colIdx) => (
                     <td key={colIdx} className="px-4 py-4">
-                      <div className="h-4 bg-slate-800 rounded-md w-3/4"></div>
+                      <div className="h-4 bg-[#E5F5F8] rounded-md w-3/4"></div>
                     </td>
                   ))}
                 </tr>
@@ -40,11 +42,11 @@ export function DataTable({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-12 text-center text-slate-400"
+                  className="px-6 py-12 text-center text-[#8EA6AF]"
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
                     <span className="text-3xl">📦</span>
-                    <p className="text-sm font-medium">{emptyMessage}</p>
+                    <p className="text-sm font-medium text-[#577782]">{emptyMessage}</p>
                   </div>
                 </td>
               </tr>
@@ -60,4 +62,3 @@ export function DataTable({
 }
 
 export default DataTable;
-
