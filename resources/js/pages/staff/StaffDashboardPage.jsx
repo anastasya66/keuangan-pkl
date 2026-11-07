@@ -42,10 +42,6 @@ export function StaffDashboardPage() {
       <div className="bg-gradient-to-r from-white via-[#F8FDFF] to-[#EBF8FB] border border-[#D7EBEF] rounded-3xl p-6 sm:p-8 shadow-xs relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E3F6FA] text-[#167A93] border border-[#38BFE0]/30 mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#27C5E5] animate-pulse"></span>
-              Portal Staf Toko
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#10262E] tracking-tight">
               Halo, {user?.name}! 👋
             </h1>

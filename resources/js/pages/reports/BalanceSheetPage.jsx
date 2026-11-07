@@ -62,10 +62,6 @@ export default function BalanceSheetPage() {
       <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EAF8FA] text-[#27C5E5] border border-[#A9DDE7] mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#27C5E5]"></span>
-              Posisi Keuangan Neraca
-            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#16323B]">
               Laporan Neraca (Balance Sheet)
             </h1>
@@ -141,23 +137,6 @@ export default function BalanceSheetPage() {
                 <p className="text-xs text-[#5A7C85] mt-1 font-mono">
                   Posisi Keuangan per tanggal: {data?.as_of_date}
                 </p>
-              </div>
-
-              <div>
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
-                    data?.is_balanced
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-rose-50 text-rose-700 border-rose-200'
-                  }`}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      data?.is_balanced ? 'bg-emerald-500' : 'bg-rose-500'
-                    }`}
-                  ></span>
-                  {data?.is_balanced ? 'Neraca Seimbang (Equilibrium)' : 'Belum Seimbang'}
-                </span>
               </div>
             </div>
 

@@ -263,17 +263,12 @@ export function UserManagementPage() {
                     </td>
                     <td className="px-6 py-3.5 text-center">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                           u.is_active
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-rose-50 text-rose-700 border-rose-200'
                         }`}
                       >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            u.is_active ? 'bg-emerald-500' : 'bg-rose-500'
-                          }`}
-                        ></span>
                         {u.is_active ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </td>

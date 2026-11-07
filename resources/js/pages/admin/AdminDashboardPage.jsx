@@ -89,10 +89,6 @@ export function AdminDashboardPage() {
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E3F6FA] text-[#167A93] border border-[#38BFE0]/30 mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#27C5E5] animate-pulse"></span>
-              Beranda Ringkasan Toko
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#10262E] tracking-tight">
               Halo, {user?.name}! 👋
             </h1>
@@ -205,9 +201,8 @@ export function AdminDashboardPage() {
           <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
             {loading ? '...' : formatRupiah(summary?.total_income || 0)}
           </div>
-          <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-[#36B878]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#36B878]"></span>
-            <span>Kas masuk tercatat</span>
+          <div className="mt-2 text-xs font-semibold text-[#36B878]">
+            Kas masuk tercatat
           </div>
         </div>
 
@@ -224,9 +219,8 @@ export function AdminDashboardPage() {
           <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
             {loading ? '...' : formatRupiah(summary?.total_expense || 0)}
           </div>
-          <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-[#E66D79]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#E66D79]"></span>
-            <span>Biaya &amp; belanja toko</span>
+          <div className="mt-2 text-xs font-semibold text-[#E66D79]">
+            Biaya &amp; belanja toko
           </div>
         </div>
 
@@ -286,23 +280,6 @@ export function AdminDashboardPage() {
               </p>
             </div>
           </div>
-
-          {summary && (
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-                summary.is_equity_balanced
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-rose-50 text-rose-700 border-rose-200'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  summary.is_equity_balanced ? 'bg-emerald-500' : 'bg-rose-500'
-                }`}
-              ></span>
-              {summary.is_equity_balanced ? 'Saldo Pas & Seimbang (Balance)' : 'Belum Seimbang'}
-            </span>
-          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

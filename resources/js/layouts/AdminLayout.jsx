@@ -250,8 +250,7 @@ export function AdminLayout({ children }) {
             {/* Right Controls: Today's Date & User Profile Dropdown */}
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Date Chip */}
-              <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3FBFC] border border-[#D7EBEF] text-xs font-semibold text-[#577782]">
-                <span className="w-2 h-2 rounded-full bg-[#27C5E5] animate-pulse"></span>
+              <div className="hidden sm:flex items-center px-3.5 py-1.5 rounded-full bg-[#F3FBFC] border border-[#D7EBEF] text-xs font-semibold text-[#577782]">
                 <span>{todayFormatted}</span>
               </div>
 

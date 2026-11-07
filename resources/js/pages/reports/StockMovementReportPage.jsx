@@ -78,10 +78,6 @@ export default function StockMovementReportPage() {
       <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EAF8FA] text-[#27C5E5] border border-[#A9DDE7] mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#27C5E5]"></span>
-              Audit Trail Persediaan
-            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#16323B]">
               Laporan Riwayat Mutasi Persediaan
             </h1>
