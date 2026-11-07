@@ -2,6 +2,9 @@
 setlocal enabledelayedexpansion
 title FinToko - Instalasi dan Setup Otomatis
 
+:: Pastikan selalu berada di folder project FinToko
+cd /d "%~dp0"
+
 echo ====================================================
 echo        FinToko - Instalasi dan Setup Otomatis
 echo ====================================================
