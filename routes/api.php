@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\Api\AccountingIntegrationController;
+use App\Http\Controllers\Api\AccountingPeriodController;
+use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ChartOfAccountController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\DocumentSequenceController;
 use App\Http\Controllers\Api\FinancialTransactionController;
 use App\Http\Controllers\Api\GeneralLedgerController;
 use App\Http\Controllers\Api\HealthController;
@@ -14,6 +18,7 @@ use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\InventoryMovementController;
 use App\Http\Controllers\Api\InventoryValuationController;
 use App\Http\Controllers\Api\JournalEntryController;
+use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
@@ -21,6 +26,8 @@ use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\Reports\BalanceSheetController;
 use App\Http\Controllers\Api\Reports\IncomeStatementController;
 use App\Http\Controllers\Api\Reports\InventoryReportController;
+use App\Http\Controllers\Api\RolePermissionController;
+use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\StockCardController;
 use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\TransactionCategoryController;
@@ -40,6 +47,9 @@ use Illuminate\Support\Facades\Route;
 
 // Public Health Check Endpoint
 Route::get('/health', [HealthController::class, 'index']);
+
+// Public Store & Application Settings
+Route::get('/settings/public', [SettingsController::class, 'publicSettings']);
 
 // Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -61,7 +71,13 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::get('/profile', [ProfileController::class, 'show']);
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::put('/change-password', [ProfileController::class, 'changePassword']);
+        Route::get('/preferences', [ProfileController::class, 'preferences']);
+        Route::put('/preferences', [ProfileController::class, 'updatePreferences']);
+        Route::get('/login-histories', [ProfileController::class, 'loginHistories']);
     });
+
+    // Active Payment Methods (Bisa diakses kasir dan staff)
+    Route::get('payment-methods', [PaymentMethodController::class, 'index']);
 
     // Master Data: Categories
     Route::apiResource('categories', CategoryController::class);
@@ -223,4 +239,36 @@ Route::middleware(['auth:sanctum', 'active', 'role:admin'])->prefix('admin')->gr
     Route::apiResource('users', AdminUserController::class);
     Route::patch('users/{user}/role', [AdminUserController::class, 'updateRole']);
     Route::patch('users/{user}/status', [AdminUserController::class, 'updateStatus']);
+
+    // Centralized Settings Management API
+    Route::get('settings', [SettingsController::class, 'index']);
+    Route::put('settings', [SettingsController::class, 'update']);
+
+    // Roles & Granular Permissions API
+    Route::get('roles', [RolePermissionController::class, 'index']);
+    Route::put('roles/{roleId}/permissions', [RolePermissionController::class, 'update'])->whereNumber('roleId');
+
+    // Document Sequences API
+    Route::get('document-sequences', [DocumentSequenceController::class, 'index']);
+    Route::put('document-sequences/{id}', [DocumentSequenceController::class, 'update'])->whereNumber('id');
+
+    // Accounting Periods & Fiscal Year Locking API
+    Route::get('accounting-periods', [AccountingPeriodController::class, 'index']);
+    Route::patch('accounting-periods/{id}/lock', [AccountingPeriodController::class, 'toggleLock'])->whereNumber('id');
+    Route::post('accounting-periods/{id}/close', [AccountingPeriodController::class, 'close'])->whereNumber('id');
+
+    // Payment Methods Management API
+    Route::get('payment-methods', [PaymentMethodController::class, 'index']);
+    Route::post('payment-methods', [PaymentMethodController::class, 'store']);
+    Route::put('payment-methods/{id}', [PaymentMethodController::class, 'update'])->whereNumber('id');
+    Route::patch('payment-methods/{id}/status', [PaymentMethodController::class, 'toggleStatus'])->whereNumber('id');
+
+    // Database Backup & Restore API
+    Route::get('backups', [BackupController::class, 'index']);
+    Route::post('backups', [BackupController::class, 'create']);
+    Route::get('backups/{id}/download', [BackupController::class, 'download'])->whereNumber('id');
+    Route::post('backups/{id}/restore', [BackupController::class, 'restore'])->whereNumber('id');
+
+    // Audit Trail / Activity Logs API
+    Route::get('activity-logs', [ActivityLogController::class, 'index']);
 });

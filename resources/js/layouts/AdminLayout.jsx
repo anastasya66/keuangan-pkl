@@ -22,6 +22,7 @@ import {
   IconSupplier,
   IconStockCard,
   IconValuation,
+  IconSettings,
 } from '../components/common/Icons';
 
 export function AdminLayout({ children }) {
@@ -100,6 +101,7 @@ export function AdminLayout({ children }) {
       group: 'TIM & PENGATURAN',
       items: [
         { to: '/admin/users', label: 'Kelola Tim Toko', icon: IconUsers },
+        { to: '/admin/settings', label: 'Pengaturan Sistem', icon: IconSettings },
         { to: '/profile', label: 'Profil Saya', icon: IconUser },
       ],
     },

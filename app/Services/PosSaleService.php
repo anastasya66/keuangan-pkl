@@ -204,6 +204,16 @@ class PosSaleService
             // 4. Catat jurnal akuntansi penjualan otomatis (Kas vs Penjualan, HPP vs Persediaan)
             $this->accountingService->createJournalForSale($sale, $cashierId, true);
 
+            try {
+                app(ActivityLogService::class)->log(
+                    action: 'create',
+                    module: 'pos',
+                    description: "Penjualan kasir POS #{$transactionNumber} senilai Rp " . number_format($sale->grand_total, 0, ',', '.'),
+                    subjectType: Sale::class,
+                    subjectId: (string) $sale->id
+                );
+            } catch (\Throwable $e) {}
+
             return $this->getSale($sale->id);
         });
     }
@@ -265,11 +275,15 @@ class PosSaleService
     public function getReceiptData(int $id): array
     {
         $sale = $this->getSale($id);
+        $settings = app(SettingsService::class);
 
         return [
-            'store_name' => config('app.name', 'FinToko'),
-            'store_address' => 'Jl. Merdeka No. 123, Indonesia',
-            'store_phone' => '0812-3456-7890',
+            'store_name' => $settings->get('store_name', config('app.name', 'FinToko')),
+            'store_address' => $settings->get('store_address', 'Jl. Pemuda No. 45, Semarang'),
+            'store_phone' => $settings->get('store_phone', '0812-3456-7890'),
+            'store_email' => $settings->get('store_email', 'info@fintoko.id'),
+            'receipt_header' => $settings->get('receipt_header', ''),
+            'printer_width' => $settings->get('pos_receipt_printer_width', '58mm'),
             'transaction_number' => $sale->transaction_number,
             'sale_date' => $sale->sale_date->format('d/m/Y'),
             'sale_time' => $sale->created_at->format('H:i:s'),
@@ -293,7 +307,7 @@ class PosSaleService
             'change_amount' => (float) $sale->change_amount,
             'payment_method' => strtoupper($sale->payment_method),
             'status' => $sale->status,
-            'footer_message' => 'Terima kasih telah berbelanja di FinToko!',
+            'footer_message' => $settings->get('receipt_footer', 'Terima kasih telah berbelanja di FinToko!'),
         ];
     }
 
@@ -348,6 +362,16 @@ class PosSaleService
             $sale->cancelled_by = $userId;
             $sale->cancellation_reason = $reason ?: 'Pembatalan transaksi';
             $sale->save();
+
+            try {
+                app(ActivityLogService::class)->log(
+                    action: 'cancel',
+                    module: 'pos',
+                    description: "Membatalkan penjualan kasir #{$sale->transaction_number}: " . ($reason ?: 'Retur / Pembatalan'),
+                    subjectType: Sale::class,
+                    subjectId: (string) $sale->id
+                );
+            } catch (\Throwable $e) {}
 
             return $this->getSale($sale->id);
         });

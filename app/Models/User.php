@@ -22,7 +22,10 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
+        'phone',
+        'avatar',
         'role',
         'is_active',
         'password',
@@ -74,6 +77,48 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return (bool) $this->is_active;
+    }
+
+    /**
+     * Periksa apakah pengguna memiliki hak akses (permission) tertentu.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        // Admin selalu memiliki akses penuh ke seluruh sistem
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $role = Role::where('name', $this->role)->first();
+        if (! $role) {
+            return false;
+        }
+
+        return $role->permissions()->where('name', $permission)->exists();
+    }
+
+    /**
+     * Relasi ke preferensi pengguna.
+     */
+    public function preference(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(UserPreference::class);
+    }
+
+    /**
+     * Relasi ke riwayat login pengguna.
+     */
+    public function loginHistories(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LoginHistory::class);
+    }
+
+    /**
+     * Relasi ke log audit aktivitas pengguna.
+     */
+    public function activityLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
     }
 
     /**

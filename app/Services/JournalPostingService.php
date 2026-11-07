@@ -20,6 +20,7 @@ class JournalPostingService
      */
     public function createDraft(array $data, int $userId): JournalEntry
     {
+        app(AccountingPeriodService::class)->validateDateNotLocked($data['journal_date'], 'Jurnal');
         $this->validateJournalItems($data['items']);
 
         return DB::transaction(function () use ($data, $userId) {
@@ -134,6 +135,8 @@ class JournalPostingService
      */
     public function postJournal(JournalEntry $journal, int $userId): JournalEntry
     {
+        app(AccountingPeriodService::class)->validateDateNotLocked($journal->journal_date, 'Jurnal');
+
         if ($journal->status !== 'draft') {
             throw ValidationException::withMessages([
                 'status' => "Hanya jurnal berstatus draft yang dapat diposting. Status saat ini: {$journal->status}.",

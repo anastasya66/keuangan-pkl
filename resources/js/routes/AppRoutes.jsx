@@ -29,6 +29,7 @@ import PurchasePage from '../pages/purchases/PurchasePage';
 import PurchaseDetailPage from '../pages/purchases/PurchaseDetailPage';
 import StockCardPage from '../pages/inventory/StockCardPage';
 import InventoryValuationPage from '../pages/inventory/InventoryValuationPage';
+import SettingsPage from '../pages/settings/SettingsPage';
 
 // Wrapper for Profile page to render with the user's role layout
 function ProfileWrapper() {
@@ -91,6 +92,7 @@ export function AppRoutes() {
         <Route path="categories" element={<CategoryPage />} />
         <Route path="units" element={<UnitPage />} />
         <Route path="users" element={<UserManagementPage />} />
+        <Route path="settings" element={<SettingsPage />} />
         {/* POS & Kasir Routes (Admin) */}
         <Route path="pos" element={<PosPage />} />
         <Route path="pos/sales" element={<SalesHistoryPage />} />

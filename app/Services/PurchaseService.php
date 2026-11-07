@@ -171,6 +171,16 @@ class PurchaseService
                 $this->processGoodsReceipt($purchase, $userId);
             }
 
+            try {
+                app(\App\Services\ActivityLogService::class)->log(
+                    action: 'create',
+                    module: 'purchases',
+                    description: "Membuat transaksi pembelian #{$purchase->invoice_number} senilai Rp " . number_format($purchase->grand_total, 0, ',', '.'),
+                    subjectType: Purchase::class,
+                    subjectId: (string) $purchase->id
+                );
+            } catch (\Throwable $e) {}
+
             return $this->getPurchase($purchase->id);
         });
     }

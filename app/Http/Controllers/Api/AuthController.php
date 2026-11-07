@@ -57,6 +57,31 @@ class AuthController extends Controller
         // Issue fresh Sanctum Personal Access Token
         $token = $user->createToken('fintoko_auth_token')->plainTextToken;
 
+        // Catat riwayat login
+        try {
+            \App\Models\LoginHistory::create([
+                'user_id' => $user->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => substr((string) $request->userAgent(), 0, 255),
+                'login_at' => now(),
+                'status' => 'success',
+                'created_at' => now(),
+            ]);
+
+            app(\App\Services\ActivityLogService::class)->log(
+                action: 'login',
+                module: 'auth',
+                description: "Pengguna '{$user->name}' ({$user->role}) berhasil masuk ke sistem",
+                user: $user
+            );
+        } catch (\Throwable $e) {
+            // Abaikan jika pencatatan log terkendala
+        }
+
+        $permissions = $user->isAdmin()
+            ? ['*']
+            : ($user->role ? \App\Models\Role::where('name', $user->role)->first()?->permissions()->pluck('name')->all() ?? [] : []);
+
         return response()->json([
             'success' => true,
             'message' => 'Login berhasil',
@@ -64,9 +89,13 @@ class AuthController extends Controller
                 'user' => [
                     'id' => $user->id,
                     'name' => $user->name,
+                    'username' => $user->username,
                     'email' => $user->email,
+                    'phone' => $user->phone,
+                    'avatar' => $user->avatar,
                     'role' => $user->role,
                     'is_active' => (bool) $user->is_active,
+                    'permissions' => $permissions,
                 ],
                 'token' => $token,
                 'token_type' => 'Bearer',
@@ -83,6 +112,15 @@ class AuthController extends Controller
 
         if ($user && $user->currentAccessToken()) {
             $user->currentAccessToken()->delete();
+
+            try {
+                app(\App\Services\ActivityLogService::class)->log(
+                    action: 'logout',
+                    module: 'auth',
+                    description: "Pengguna '{$user->name}' keluar dari sistem",
+                    user: $user
+                );
+            } catch (\Throwable $e) {}
         }
 
         return response()->json([
