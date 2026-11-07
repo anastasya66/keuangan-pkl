@@ -82,105 +82,13 @@ export function InventoryValuationPage() {
   };
 
   const columns = [
-    {
-      key: 'sku',
-      label: 'Kode SKU',
-      render: (item) => (
-        <div>
-          <span className="font-mono text-xs font-bold text-white bg-[#167A93] px-2.5 py-0.5 rounded shadow-2xs whitespace-nowrap inline-block">
-            {item.sku}
-          </span>
-          {item.barcode && (
-            <div className="font-mono text-[10px] text-[#577782] mt-0.5">{item.barcode}</div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'name',
-      label: 'Nama Produk',
-      render: (item) => (
-        <div>
-          <div className="font-semibold text-[#16323B]">{item.name}</div>
-          <div className="text-[11px] text-[#577782]">{item.category?.name || '-'}</div>
-        </div>
-      ),
-    },
-    {
-      key: 'stock',
-      label: 'Stok Fisik',
-      align: 'right',
-      render: (item) => {
-        const stock = Number(item.stock) || 0;
-        const minStock = Number(item.min_stock) || 5;
-        const isOut = stock <= 0;
-        const isLow = stock > 0 && stock <= minStock;
-
-        return (
-          <div className="text-right whitespace-nowrap">
-            <span
-              className={`font-mono font-bold text-xs px-2.5 py-0.5 rounded-md shadow-xs whitespace-nowrap ${
-                isOut
-                  ? 'bg-rose-600 text-white'
-                  : isLow
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-[#167A93] text-white'
-              }`}
-            >
-              {stock.toLocaleString('id-ID')} {item.unit?.symbol || 'pcs'}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'average_cost',
-      label: 'HPP Rata-rata (MWA)',
-      align: 'right',
-      render: (item) => {
-        const avg = Number(item.average_cost) > 0 ? Number(item.average_cost) : Number(item.purchase_price);
-        return <div className="font-mono text-xs font-semibold text-[#16323B] whitespace-nowrap">{formatRupiah(avg)}</div>;
-      },
-    },
-    {
-      key: 'inventory_value',
-      label: 'Total Nilai Aset (HPP)',
-      align: 'right',
-      render: (item) => {
-        const stock = Math.max(0, Number(item.stock) || 0);
-        const avg = Number(item.average_cost) > 0 ? Number(item.average_cost) : Number(item.purchase_price);
-        const val = stock * avg;
-        return (
-          <div className="font-mono text-xs font-bold text-[#167A93] whitespace-nowrap">
-            {formatRupiah(val)}
-          </div>
-        );
-      },
-    },
-    {
-      key: 'selling_price',
-      label: 'Harga Jual',
-      align: 'right',
-      render: (item) => (
-        <div className="font-mono text-xs text-[#577782] whitespace-nowrap">{formatRupiah(item.selling_price)}</div>
-      ),
-    },
-    {
-      key: 'potential_profit',
-      label: 'Potensi Laba',
-      align: 'right',
-      render: (item) => {
-        const stock = Math.max(0, Number(item.stock) || 0);
-        const avg = Number(item.average_cost) > 0 ? Number(item.average_cost) : Number(item.purchase_price);
-        const sell = Number(item.selling_price) || 0;
-        const profit = stock * (sell - avg);
-        return (
-          <div className="font-mono text-xs font-bold text-emerald-600 whitespace-nowrap">
-            {formatRupiah(profit)}
-          </div>
-        );
-      },
-    },
+    { header: 'Kode SKU', className: 'w-36' },
+    { header: 'Nama Produk', className: 'w-1/4' },
+    { header: 'Stok Fisik', className: 'text-right' },
+    { header: 'HPP Rata-rata (MWA)', className: 'text-right' },
+    { header: 'Total Nilai Aset (HPP)', className: 'text-right' },
+    { header: 'Harga Jual', className: 'text-right' },
+    { header: 'Potensi Laba', className: 'text-right' },
   ];
 
   return (
@@ -364,15 +272,64 @@ export function InventoryValuationPage() {
           data={data?.products || []}
           isLoading={isLoading}
           emptyMessage="Tidak ada data produk persediaan."
+          renderRow={(item) => {
+            const stock = Number(item.stock) || 0;
+            const minStock = Number(item.min_stock) || 5;
+            const isOut = stock <= 0;
+            const isLow = stock > 0 && stock <= minStock;
+            const avg = Number(item.average_cost) > 0 ? Number(item.average_cost) : Number(item.purchase_price);
+            const val = Math.max(0, stock) * avg;
+            const sell = Number(item.selling_price) || 0;
+            const profit = Math.max(0, stock) * (sell - avg);
+
+            return (
+              <tr key={item.id} className="hover:bg-[#F3FBFC] transition-colors">
+                <td className="px-4 py-3.5 whitespace-nowrap">
+                  <span className="font-mono text-xs font-bold text-white bg-[#167A93] px-2.5 py-0.5 rounded shadow-2xs whitespace-nowrap inline-block">
+                    {item.sku}
+                  </span>
+                  {item.barcode && (
+                    <div className="font-mono text-[10px] text-[#577782] mt-0.5">{item.barcode}</div>
+                  )}
+                </td>
+                <td className="px-4 py-3.5">
+                  <div className="font-semibold text-[#16323B]">{item.name}</div>
+                  <div className="text-[11px] text-[#577782]">{item.category?.name || '-'}</div>
+                </td>
+                <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                  <span
+                    className={`font-mono font-bold text-xs px-2.5 py-0.5 rounded-md shadow-xs whitespace-nowrap inline-block ${
+                      isOut
+                        ? 'bg-rose-600 text-white'
+                        : isLow
+                        ? 'bg-amber-600 text-white'
+                        : 'bg-[#167A93] text-white'
+                    }`}
+                  >
+                    {stock.toLocaleString('id-ID')} {item.unit?.symbol || 'pcs'}
+                  </span>
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono text-xs font-semibold text-[#16323B] whitespace-nowrap">
+                  {formatRupiah(avg)}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono text-xs font-bold text-[#167A93] whitespace-nowrap">
+                  {formatRupiah(val)}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono text-xs text-[#577782] whitespace-nowrap">
+                  {formatRupiah(item.selling_price)}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono text-xs font-bold text-emerald-600 whitespace-nowrap">
+                  {formatRupiah(profit)}
+                </td>
+              </tr>
+            );
+          }}
         />
 
         {pagination && pagination.total > pagination.per_page && (
           <div className="mt-4 pt-4 border-t border-[#EAF4F6]">
             <Pagination
-              currentPage={pagination.current_page}
-              lastPage={pagination.last_page}
-              total={pagination.total}
-              perPage={pagination.per_page}
+              pagination={pagination}
               onPageChange={(page) => setCurrentPage(page)}
             />
           </div>

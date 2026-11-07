@@ -19,7 +19,7 @@ export function DataTable({
                   scope="col"
                   className={`px-4 py-3.5 ${col.className || ''}`}
                 >
-                  {col.header}
+                  {col.header || col.label}
                 </th>
               ))}
             </tr>
@@ -50,9 +50,25 @@ export function DataTable({
                   </div>
                 </td>
               </tr>
-            ) : (
-              // Data Rows
+            ) : typeof renderRow === 'function' ? (
+              // Custom Data Rows
               data.map((item, index) => renderRow(item, index))
+            ) : (
+              // Declarative Fallback Data Rows
+              data.map((item, index) => (
+                <tr key={item.id || index} className="hover:bg-[#F3FBFC] transition-colors">
+                  {columns.map((col, colIdx) => (
+                    <td
+                      key={colIdx}
+                      className={`px-4 py-3.5 ${col.className || (col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : '')}`}
+                    >
+                      {typeof col.render === 'function'
+                        ? col.render(item, index)
+                        : (item[col.key || col.field] ?? '-')}
+                    </td>
+                  ))}
+                </tr>
+              ))
             )}
           </tbody>
         </table>
