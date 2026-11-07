@@ -12,12 +12,17 @@ use App\Http\Controllers\Api\GeneralLedgerController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\InventoryMovementController;
+use App\Http\Controllers\Api\InventoryValuationController;
 use App\Http\Controllers\Api\JournalEntryController;
+use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\Reports\BalanceSheetController;
 use App\Http\Controllers\Api\Reports\IncomeStatementController;
 use App\Http\Controllers\Api\Reports\InventoryReportController;
+use App\Http\Controllers\Api\StockCardController;
+use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\TransactionCategoryController;
 use App\Http\Controllers\Api\TrialBalanceController;
 use App\Http\Controllers\Api\UnitController;
@@ -70,6 +75,29 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::apiResource('products', ProductController::class);
     Route::patch('products/{product}/status', [ProductController::class, 'updateStatus']);
 
+    // Master Data: Suppliers
+    Route::get('suppliers/active', [SupplierController::class, 'active']);
+    Route::apiResource('suppliers', SupplierController::class);
+
+    // Modul Pembelian / Kulakan Barang (Purchases)
+    Route::get('purchases', [PurchaseController::class, 'index']);
+    Route::post('purchases', [PurchaseController::class, 'store']);
+    Route::get('purchases/{id}', [PurchaseController::class, 'show'])->whereNumber('id');
+    Route::post('purchases/{id}/receive', [PurchaseController::class, 'receive'])->whereNumber('id');
+    Route::post('purchases/{id}/cancel', [PurchaseController::class, 'cancel'])->whereNumber('id');
+    Route::post('purchases/{id}/pay-debt', [PurchaseController::class, 'payDebt'])->whereNumber('id');
+
+    // Modul Penjualan POS Kasir
+    Route::prefix('pos')->group(function () {
+        Route::get('products', [PosController::class, 'products']);
+        Route::get('products/barcode/{barcode}', [PosController::class, 'barcode']);
+        Route::post('checkout', [PosController::class, 'checkout']);
+        Route::get('sales', [PosController::class, 'sales']);
+        Route::get('sales/{id}', [PosController::class, 'showSale'])->whereNumber('id');
+        Route::get('sales/{id}/receipt', [PosController::class, 'receipt'])->whereNumber('id');
+        Route::post('sales/{id}/cancel', [PosController::class, 'cancel'])->whereNumber('id');
+    });
+
     // Financial Management: Transaction Categories
     Route::apiResource('transaction-categories', TransactionCategoryController::class);
     Route::patch('transaction-categories/{transaction_category}/status', [TransactionCategoryController::class, 'updateStatus']);
@@ -109,6 +137,14 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         // Inventory Stock Overview & Product Stock Detail
         Route::get('/', [InventoryController::class, 'index']);
         Route::get('{product}', [InventoryController::class, 'show'])->whereNumber('product');
+
+        // Kartu Stok (Stock Card per Product)
+        Route::get('stock-card/{productId}', [StockCardController::class, 'show'])->whereNumber('productId');
+
+        // Nilai Persediaan (Moving Weighted Average Inventory Valuation)
+        Route::get('valuation', [InventoryValuationController::class, 'index']);
+        Route::get('valuation/export/excel', [InventoryValuationController::class, 'exportExcel']);
+        Route::get('valuation/export/pdf', [InventoryValuationController::class, 'exportPdf']);
     });
 
     // Accounting Module (Double-Entry Bookkeeping)
@@ -171,6 +207,11 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::get('stock-movements', [InventoryReportController::class, 'stockMovements']);
         Route::get('stock-movements/export/pdf', [InventoryReportController::class, 'stockMovementsExportPdf']);
         Route::get('stock-movements/export/excel', [InventoryReportController::class, 'stockMovementsExportExcel']);
+
+        // Inventory Valuation Report (Nilai Persediaan Moving Weighted Average)
+        Route::get('inventory-valuation', [InventoryValuationController::class, 'index']);
+        Route::get('inventory-valuation/export/pdf', [InventoryValuationController::class, 'exportPdf']);
+        Route::get('inventory-valuation/export/excel', [InventoryValuationController::class, 'exportExcel']);
     });
 });
 

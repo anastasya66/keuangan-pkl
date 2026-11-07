@@ -52,6 +52,24 @@ class AccountingMappingSeeder extends Seeder
                 'account_code' => '4200',
                 'description' => 'Akun pendapatan lain akibat selisih lebih opname fisik barang',
             ],
+            [
+                'mapping_code' => 'cogs_default',
+                'name' => 'Akun Beban Pokok Penjualan (HPP)',
+                'account_code' => '5110',
+                'description' => 'Akun beban pokok penjualan untuk mencatat HPP saat penjualan POS',
+            ],
+            [
+                'mapping_code' => 'payable_default',
+                'name' => 'Akun Utang Usaha / Supplier',
+                'account_code' => '2110',
+                'description' => 'Akun utang usaha untuk pembelian barang dagang secara tempo',
+            ],
+            [
+                'mapping_code' => 'bank_default',
+                'name' => 'Akun Bank Operasional',
+                'account_code' => '1120',
+                'description' => 'Akun bank untuk pembayaran non-tunai atau transfer',
+            ],
         ];
 
         foreach ($mappings as $item) {

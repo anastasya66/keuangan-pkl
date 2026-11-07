@@ -8,6 +8,9 @@ use App\Models\FinancialTransaction;
 use App\Models\InventoryMovement;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryDetail;
+use App\Models\Purchase;
+use App\Models\Sale;
+use App\Models\SupplierDebtPayment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -257,6 +260,279 @@ class AccountingService
                 'debit' => 0.00,
                 'credit' => $valuationAmount,
             ]);
+
+            return $journal->load(['details.account', 'creator']);
+        });
+    }
+
+    /**
+     * Buat jurnal otomatis dari transaksi Pembelian Barang (Purchase).
+     */
+    public function createJournalForPurchase(Purchase $purchase, int $userId, bool $autoPost = true): JournalEntry
+    {
+        $existing = JournalEntry::where('source_type', 'purchase')
+            ->where('source_id', $purchase->id)
+            ->where('status', '!=', 'reversed')
+            ->first();
+
+        if ($existing) {
+            throw ValidationException::withMessages([
+                'purchase_id' => "Pembelian {$purchase->invoice_number} sudah memiliki jurnal akuntansi aktif ({$existing->journal_number}).",
+            ]);
+        }
+
+        if ($purchase->status !== 'received') {
+            throw ValidationException::withMessages([
+                'status' => "Jurnal hanya dapat dibuat untuk pembelian yang berstatus received (barang telah diterima).",
+            ]);
+        }
+
+        $grandTotal = (float) $purchase->grand_total;
+        if ($grandTotal <= 0) {
+            throw ValidationException::withMessages([
+                'amount' => "Nominal pembelian harus lebih besar dari 0.",
+            ]);
+        }
+
+        $inventoryAssetAccount = $this->resolveAccount('inventory_asset', 'assets', '1130');
+        $cashAccount = $this->resolveAccount('cash_default', 'assets', '1110');
+        $bankAccount = $this->resolveAccount('bank_default', 'assets', '1120');
+        $payableAccount = $this->resolveAccount('payable_default', 'liabilities', '2110');
+
+        $paymentAcc = $purchase->payment_method === 'transfer' ? $bankAccount : $cashAccount;
+
+        return DB::transaction(function () use ($purchase, $userId, $autoPost, $grandTotal, $inventoryAssetAccount, $paymentAcc, $payableAccount) {
+            $journalNumber = JournalEntry::generateJournalNumber($purchase->purchase_date->format('Y-m-d'));
+            $desc = "Pembelian Persediaan Barang: {$purchase->invoice_number}" . ($purchase->supplier ? " ({$purchase->supplier->name})" : '');
+
+            $journal = JournalEntry::create([
+                'journal_number' => $journalNumber,
+                'journal_date' => $purchase->purchase_date->format('Y-m-d'),
+                'description' => $desc,
+                'reference_number' => $purchase->invoice_number,
+                'source_type' => 'purchase',
+                'source_id' => $purchase->id,
+                'status' => $autoPost ? 'posted' : 'draft',
+                'total_debit' => $grandTotal,
+                'total_credit' => $grandTotal,
+                'created_by' => $userId,
+                'posted_by' => $autoPost ? $userId : null,
+                'posted_at' => $autoPost ? now() : null,
+            ]);
+
+            // 1. Debit: Persediaan Barang Dagang
+            JournalEntryDetail::create([
+                'journal_id' => $journal->id,
+                'account_id' => $inventoryAssetAccount->id,
+                'description' => $desc,
+                'debit' => $grandTotal,
+                'credit' => 0.00,
+            ]);
+
+            // 2. Kredit: Kas/Bank atau Utang Usaha (atau split jika tempo dengan uang muka)
+            if ($purchase->payment_method === 'tempo') {
+                $paid = (float) $purchase->paid_amount;
+                $unpaid = round($grandTotal - $paid, 2);
+
+                if ($paid > 0) {
+                    JournalEntryDetail::create([
+                        'journal_id' => $journal->id,
+                        'account_id' => $paymentAcc->id,
+                        'description' => "Uang Muka/Pembayaran Awal Pembelian {$purchase->invoice_number}",
+                        'debit' => 0.00,
+                        'credit' => $paid,
+                    ]);
+                }
+
+                if ($unpaid > 0) {
+                    JournalEntryDetail::create([
+                        'journal_id' => $journal->id,
+                        'account_id' => $payableAccount->id,
+                        'description' => "Utang Usaha Tempo Pembelian {$purchase->invoice_number}",
+                        'debit' => 0.00,
+                        'credit' => $unpaid,
+                    ]);
+                }
+            } else {
+                JournalEntryDetail::create([
+                    'journal_id' => $journal->id,
+                    'account_id' => $paymentAcc->id,
+                    'description' => $desc,
+                    'debit' => 0.00,
+                    'credit' => $grandTotal,
+                ]);
+            }
+
+            return $journal->load(['details.account', 'creator']);
+        });
+    }
+
+    /**
+     * Buat jurnal otomatis dari transaksi pembayaran utang tempo supplier.
+     */
+    public function createJournalForDebtPayment(SupplierDebtPayment $payment, int $userId, bool $autoPost = true): JournalEntry
+    {
+        $existing = JournalEntry::where('source_type', 'supplier_debt_payment')
+            ->where('source_id', $payment->id)
+            ->where('status', '!=', 'reversed')
+            ->first();
+
+        if ($existing) {
+            throw ValidationException::withMessages([
+                'payment_id' => "Pembayaran {$payment->payment_number} sudah memiliki jurnal akuntansi aktif ({$existing->journal_number}).",
+            ]);
+        }
+
+        $amount = (float) $payment->amount;
+        if ($amount <= 0) {
+            throw ValidationException::withMessages([
+                'amount' => "Nominal pembayaran utang harus lebih besar dari 0.",
+            ]);
+        }
+
+        $payableAccount = $this->resolveAccount('payable_default', 'liabilities', '2110');
+        $cashAccount = $this->resolveAccount('cash_default', 'assets', '1110');
+        $bankAccount = $this->resolveAccount('bank_default', 'assets', '1120');
+        $paymentAcc = $payment->payment_method === 'transfer' ? $bankAccount : $cashAccount;
+
+        return DB::transaction(function () use ($payment, $userId, $autoPost, $amount, $payableAccount, $paymentAcc) {
+            $journalNumber = JournalEntry::generateJournalNumber($payment->payment_date->format('Y-m-d'));
+            $desc = "Pelunasan Utang Usaha: {$payment->payment_number} (Ref: {$payment->purchase->invoice_number})";
+
+            $journal = JournalEntry::create([
+                'journal_number' => $journalNumber,
+                'journal_date' => $payment->payment_date->format('Y-m-d'),
+                'description' => $desc,
+                'reference_number' => $payment->payment_number,
+                'source_type' => 'supplier_debt_payment',
+                'source_id' => $payment->id,
+                'status' => $autoPost ? 'posted' : 'draft',
+                'total_debit' => $amount,
+                'total_credit' => $amount,
+                'created_by' => $userId,
+                'posted_by' => $autoPost ? $userId : null,
+                'posted_at' => $autoPost ? now() : null,
+            ]);
+
+            // Debit: Utang Usaha
+            JournalEntryDetail::create([
+                'journal_id' => $journal->id,
+                'account_id' => $payableAccount->id,
+                'description' => $desc,
+                'debit' => $amount,
+                'credit' => 0.00,
+            ]);
+
+            // Kredit: Kas/Bank
+            JournalEntryDetail::create([
+                'journal_id' => $journal->id,
+                'account_id' => $paymentAcc->id,
+                'description' => $desc,
+                'debit' => 0.00,
+                'credit' => $amount,
+            ]);
+
+            return $journal->load(['details.account', 'creator']);
+        });
+    }
+
+    /**
+     * Buat jurnal otomatis dari transaksi Penjualan Kasir (POS).
+     */
+    public function createJournalForSale(Sale $sale, int $userId, bool $autoPost = true): JournalEntry
+    {
+        $existing = JournalEntry::where('source_type', 'sale')
+            ->where('source_id', $sale->id)
+            ->where('status', '!=', 'reversed')
+            ->first();
+
+        if ($existing) {
+            throw ValidationException::withMessages([
+                'sale_id' => "Penjualan {$sale->transaction_number} sudah memiliki jurnal akuntansi aktif ({$existing->journal_number}).",
+            ]);
+        }
+
+        if ($sale->status !== 'completed') {
+            throw ValidationException::withMessages([
+                'status' => "Jurnal hanya dapat dibuat untuk penjualan yang berstatus completed.",
+            ]);
+        }
+
+        $grandTotal = (float) $sale->grand_total;
+        $cogsTotal = (float) $sale->cogs_total;
+
+        if ($grandTotal <= 0) {
+            throw ValidationException::withMessages([
+                'amount' => "Nominal penjualan harus lebih besar dari 0.",
+            ]);
+        }
+
+        $cashAccount = $this->resolveAccount('cash_default', 'assets', '1110');
+        $bankAccount = $this->resolveAccount('bank_default', 'assets', '1120');
+        $revenueAccount = $this->resolveAccount('revenue_default', 'revenue', '4100');
+        $cogsAccount = $this->resolveAccount('cogs_default', 'expenses', '5110');
+        $inventoryAssetAccount = $this->resolveAccount('inventory_asset', 'assets', '1130');
+
+        $paymentAcc = ($sale->payment_method === 'transfer' || $sale->payment_method === 'qris') ? $bankAccount : $cashAccount;
+
+        $totalBalance = round($grandTotal + $cogsTotal, 2);
+
+        return DB::transaction(function () use ($sale, $userId, $autoPost, $grandTotal, $cogsTotal, $totalBalance, $paymentAcc, $revenueAccount, $cogsAccount, $inventoryAssetAccount) {
+            $journalNumber = JournalEntry::generateJournalNumber($sale->sale_date->format('Y-m-d'));
+            $desc = "Penjualan Kasir POS: {$sale->transaction_number}" . ($sale->customer_name ? " ({$sale->customer_name})" : '');
+
+            $journal = JournalEntry::create([
+                'journal_number' => $journalNumber,
+                'journal_date' => $sale->sale_date->format('Y-m-d'),
+                'description' => $desc,
+                'reference_number' => $sale->transaction_number,
+                'source_type' => 'sale',
+                'source_id' => $sale->id,
+                'status' => $autoPost ? 'posted' : 'draft',
+                'total_debit' => $totalBalance,
+                'total_credit' => $totalBalance,
+                'created_by' => $userId,
+                'posted_by' => $autoPost ? $userId : null,
+                'posted_at' => $autoPost ? now() : null,
+            ]);
+
+            // 1. Debit: Kas/Bank Penerimaan Penjualan
+            JournalEntryDetail::create([
+                'journal_id' => $journal->id,
+                'account_id' => $paymentAcc->id,
+                'description' => $desc,
+                'debit' => $grandTotal,
+                'credit' => 0.00,
+            ]);
+
+            // 2. Kredit: Pendapatan Penjualan Toko
+            JournalEntryDetail::create([
+                'journal_id' => $journal->id,
+                'account_id' => $revenueAccount->id,
+                'description' => $desc,
+                'debit' => 0.00,
+                'credit' => $grandTotal,
+            ]);
+
+            // 3. Debit: Beban Pokok Penjualan (HPP) (jika ada HPP)
+            if ($cogsTotal > 0) {
+                JournalEntryDetail::create([
+                    'journal_id' => $journal->id,
+                    'account_id' => $cogsAccount->id,
+                    'description' => "HPP Penjualan {$sale->transaction_number}",
+                    'debit' => $cogsTotal,
+                    'credit' => 0.00,
+                ]);
+
+                // 4. Kredit: Persediaan Barang Dagang
+                JournalEntryDetail::create([
+                    'journal_id' => $journal->id,
+                    'account_id' => $inventoryAssetAccount->id,
+                    'description' => "Pengurangan Persediaan Penjualan {$sale->transaction_number}",
+                    'debit' => 0.00,
+                    'credit' => $cogsTotal,
+                ]);
+            }
 
             return $journal->load(['details.account', 'creator']);
         });

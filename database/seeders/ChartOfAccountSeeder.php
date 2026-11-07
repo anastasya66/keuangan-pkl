@@ -127,6 +127,14 @@ class ChartOfAccountSeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'account_code' => '5110',
+                'account_name' => 'Beban Pokok Penjualan (HPP)',
+                'account_type' => 'expenses',
+                'normal_balance' => 'debit',
+                'description' => 'Harga pokok persediaan barang dagangan yang terjual',
+                'is_active' => true,
+            ],
+            [
                 'account_code' => '5200',
                 'account_name' => 'Beban Kerugian Selisih Persediaan',
                 'account_type' => 'expenses',

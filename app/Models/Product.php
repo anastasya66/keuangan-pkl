@@ -26,7 +26,9 @@ class Product extends Model
         'description',
         'purchase_price',
         'selling_price',
+        'average_cost',
         'stock',
+        'min_stock',
         'is_active',
     ];
 
@@ -41,7 +43,9 @@ class Product extends Model
             'is_active' => 'boolean',
             'purchase_price' => 'decimal:2',
             'selling_price' => 'decimal:2',
+            'average_cost' => 'decimal:2',
             'stock' => 'decimal:2',
+            'min_stock' => 'decimal:2',
         ];
     }
 
@@ -67,6 +71,50 @@ class Product extends Model
     public function movements(): HasMany
     {
         return $this->hasMany(InventoryMovement::class);
+    }
+
+    /**
+     * Item pembelian produk ini.
+     */
+    public function purchaseItems(): HasMany
+    {
+        return $this->hasMany(PurchaseItem::class);
+    }
+
+    /**
+     * Item penjualan produk ini.
+     */
+    public function saleItems(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
+    /**
+     * Harga pokok persediaan efektif (Moving Average Cost, fallback ke purchase_price).
+     */
+    public function getEffectiveCostAttribute(): float
+    {
+        $avg = (float) $this->average_cost;
+        if ($avg > 0) {
+            return $avg;
+        }
+        return (float) $this->purchase_price;
+    }
+
+    /**
+     * Total nilai persediaan untuk produk ini (Stok * Effective Cost).
+     */
+    public function getInventoryValueAttribute(): float
+    {
+        return round(max(0.0, (float) $this->stock) * $this->effective_cost, 2);
+    }
+
+    /**
+     * Status stok apakah menipis (dibawah atau sama dengan stok minimum).
+     */
+    public function getIsLowStockAttribute(): bool
+    {
+        return (float) $this->stock <= (float) $this->min_stock;
     }
 
     /**

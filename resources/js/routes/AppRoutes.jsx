@@ -22,6 +22,13 @@ import InventoryReportPage from '../pages/reports/InventoryReportPage';
 import StockMovementReportPage from '../pages/reports/StockMovementReportPage';
 import StaffDashboardPage from '../pages/staff/StaffDashboardPage';
 import UnitPage from '../pages/units/UnitPage';
+import PosPage from '../pages/pos/PosPage';
+import SalesHistoryPage from '../pages/pos/SalesHistoryPage';
+import SupplierPage from '../pages/suppliers/SupplierPage';
+import PurchasePage from '../pages/purchases/PurchasePage';
+import PurchaseDetailPage from '../pages/purchases/PurchaseDetailPage';
+import StockCardPage from '../pages/inventory/StockCardPage';
+import InventoryValuationPage from '../pages/inventory/InventoryValuationPage';
 
 // Wrapper for Profile page to render with the user's role layout
 function ProfileWrapper() {
@@ -84,6 +91,16 @@ export function AppRoutes() {
         <Route path="categories" element={<CategoryPage />} />
         <Route path="units" element={<UnitPage />} />
         <Route path="users" element={<UserManagementPage />} />
+        {/* POS & Kasir Routes (Admin) */}
+        <Route path="pos" element={<PosPage />} />
+        <Route path="pos/sales" element={<SalesHistoryPage />} />
+        {/* Purchases & Suppliers (Admin) */}
+        <Route path="suppliers" element={<SupplierPage />} />
+        <Route path="purchases" element={<PurchasePage />} />
+        <Route path="purchases/:id" element={<PurchaseDetailPage />} />
+        {/* Inventory Stock Card & Valuation (Admin) */}
+        <Route path="inventory/stock-card" element={<StockCardPage />} />
+        <Route path="inventory/valuation" element={<InventoryValuationPage />} />
         {/* Accounting Routes (Admin) */}
         <Route path="accounting/accounts" element={<ChartOfAccountsPage />} />
         <Route path="accounting/journals" element={<GeneralJournalPage />} />
@@ -111,6 +128,11 @@ export function AppRoutes() {
         <Route path="products" element={<ProductPage />} />
         <Route path="categories" element={<CategoryPage />} />
         <Route path="units" element={<UnitPage />} />
+        {/* POS & Kasir Routes (Staff) */}
+        <Route path="pos" element={<PosPage />} />
+        <Route path="pos/sales" element={<SalesHistoryPage />} />
+        {/* Inventory Stock Card (Staff) */}
+        <Route path="inventory/stock-card" element={<StockCardPage />} />
         {/* Accounting Routes (Staff) */}
         <Route path="accounting/accounts" element={<ChartOfAccountsPage />} />
         <Route path="accounting/journals" element={<GeneralJournalPage />} />

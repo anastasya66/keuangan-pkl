@@ -22,11 +22,14 @@ class InventoryMovement extends Model
         'product_id',
         'movement_type',
         'quantity',
+        'cost_price',
         'stock_before',
         'stock_after',
         'adjustment_reason',
         'description',
         'reference_number',
+        'reference_type',
+        'reference_id',
         'movement_date',
         'created_by',
     ];
@@ -40,6 +43,7 @@ class InventoryMovement extends Model
     {
         return [
             'quantity' => 'decimal:2',
+            'cost_price' => 'decimal:2',
             'stock_before' => 'decimal:2',
             'stock_after' => 'decimal:2',
             'movement_date' => 'date',
