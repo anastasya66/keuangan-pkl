@@ -614,3 +614,4 @@ export function PurchaseDetailPage() {
 }
 
 export default PurchaseDetailPage;
+

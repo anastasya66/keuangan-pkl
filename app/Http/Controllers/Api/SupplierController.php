@@ -146,3 +146,4 @@ class SupplierController extends Controller
         ], Response::HTTP_OK);
     }
 }
+

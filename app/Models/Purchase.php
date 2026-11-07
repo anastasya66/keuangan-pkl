@@ -134,3 +134,4 @@ class Purchase extends Model
         return sprintf('%s%04d', $prefix, $nextNumber);
     }
 }
+

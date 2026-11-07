@@ -8,3 +8,4 @@ export const stockCardService = {
 };
 
 export default stockCardService;
+

@@ -788,3 +788,4 @@ export function PosPage() {
 }
 
 export default PosPage;
+

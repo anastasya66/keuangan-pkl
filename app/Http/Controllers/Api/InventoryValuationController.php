@@ -67,3 +67,4 @@ class InventoryValuationController extends Controller
         return $pdf->download($filename);
     }
 }
+

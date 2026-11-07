@@ -134,3 +134,4 @@ class InventoryValuationService
         return $this->getValuationOverview($filters, null);
     }
 }
+

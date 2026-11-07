@@ -31,3 +31,4 @@ class StockCardController extends Controller
         ], Response::HTTP_OK);
     }
 }
+

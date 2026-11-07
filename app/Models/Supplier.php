@@ -64,3 +64,4 @@ class Supplier extends Model
         return sprintf('SUP-%04d', $nextNumber);
     }
 }
+

@@ -165,3 +165,4 @@ class PurchaseController extends Controller
         ], Response::HTTP_OK);
     }
 }
+

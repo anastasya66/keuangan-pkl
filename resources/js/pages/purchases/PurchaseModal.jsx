@@ -452,3 +452,4 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
 }
 
 export default PurchaseModal;
+

@@ -354,3 +354,4 @@ export function StockCardPage() {
 }
 
 export default StockCardPage;
+

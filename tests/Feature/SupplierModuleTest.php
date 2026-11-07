@@ -137,3 +137,4 @@ class SupplierModuleTest extends TestCase
         $updateResponse->assertForbidden();
     }
 }
+

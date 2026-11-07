@@ -157,3 +157,4 @@ class PosController extends Controller
         ], Response::HTTP_OK);
     }
 }
+

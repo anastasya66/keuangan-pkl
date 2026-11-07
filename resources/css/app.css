@@ -183,3 +183,41 @@ body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   overflow-x: hidden;
 }
+
+/* POS Thermal Printer Support */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Sembunyikan seluruh elemen saat proses print berlangsung */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Hanya tampilkan struk kasir yang memiliki id printable-receipt */
+  #printable-receipt,
+  #printable-receipt * {
+    visibility: visible;
+  }
+
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  @page {
+    size: auto;
+    margin: 4mm;
+  }
+}

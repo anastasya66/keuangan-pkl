@@ -23,6 +23,16 @@ export default function FinancialChart({ points = [], title = 'Tren Keuangan & A
   const paddingTop = 20;
   const usableHeight = chartHeight - paddingBottom - paddingTop;
 
+  // Gutter & layout calculations to prevent Y-axis text collision and right-edge clipping
+  const gutterLeft = 90; // Dedicated margin for Y-axis currency labels (e.g., "Rp 1.250.000")
+  const gutterRight = 30; // Dedicated right margin so the last date label (e.g., "15 Nov") is never truncated
+  const minChartWidth = 650;
+
+  const contentWidthNeeded = points.length * 56;
+  const totalSvgWidth = Math.max(gutterLeft + contentWidthNeeded + gutterRight, minChartWidth);
+  const chartDrawableWidth = totalSvgWidth - gutterLeft - gutterRight;
+  const colWidth = chartDrawableWidth / points.length;
+
   return (
     <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs relative">
       {/* Header & Legend */}
@@ -50,32 +60,33 @@ export default function FinancialChart({ points = [], title = 'Tren Keuangan & A
 
       {/* SVG Chart Area */}
       <div className="relative overflow-x-auto no-scrollbar">
-        <div style={{ minWidth: Math.max(points.length * 52, 500) }}>
+        <div style={{ minWidth: totalSvgWidth }}>
           <svg
-            viewBox={`0 0 ${Math.max(points.length * 60, 600)} ${chartHeight}`}
+            viewBox={`0 0 ${totalSvgWidth} ${chartHeight}`}
             className="w-full h-56 overflow-visible"
           >
-            {/* Horizontal Grid lines */}
+            {/* Horizontal Grid lines & Y-Axis Currency Labels */}
             {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
               const y = paddingTop + usableHeight * (1 - ratio);
               return (
                 <g key={i}>
                   <line
-                    x1="0"
+                    x1={gutterLeft}
                     y1={y}
-                    x2="100%"
+                    x2={totalSvgWidth - gutterRight}
                     y2={y}
                     stroke="#EBF5F8"
                     strokeDasharray="4 4"
                     strokeWidth="1.2"
                   />
                   <text
-                    x="4"
-                    y={y - 4}
+                    x={gutterLeft - 10}
+                    y={y + 3}
                     fill="#8EA6AF"
                     fontSize="10"
                     fontWeight="500"
                     fontFamily="monospace"
+                    textAnchor="end"
                   >
                     {formatRupiah(maxVal * ratio)}
                   </text>
@@ -85,9 +96,8 @@ export default function FinancialChart({ points = [], title = 'Tren Keuangan & A
 
             {/* Bars */}
             {points.map((pt, idx) => {
-              const totalWidth = Math.max(points.length * 60, 600);
-              const colWidth = totalWidth / points.length;
-              const xCenter = idx * colWidth + colWidth / 2;
+              const xColStart = gutterLeft + idx * colWidth;
+              const xCenter = xColStart + colWidth / 2;
               const barWidth = Math.min(colWidth * 0.35, 18);
 
               const incomeH = (pt.income / maxVal) * usableHeight;
@@ -108,9 +118,9 @@ export default function FinancialChart({ points = [], title = 'Tren Keuangan & A
                   {/* Column Hover Background */}
                   {isHovered && (
                     <rect
-                      x={idx * colWidth + 4}
+                      x={xColStart + 2}
                       y={paddingTop}
-                      width={colWidth - 8}
+                      width={colWidth - 4}
                       height={usableHeight}
                       fill="#EAF8FA"
                       opacity="0.8"

@@ -2,13 +2,38 @@
 setlocal enabledelayedexpansion
 title FinToko - Instalasi dan Setup Otomatis
 
-:: Pastikan selalu berada di folder project FinToko
+:: 0. Pindah ke direktori tempat script setup.bat berada
 cd /d "%~dp0"
+
+:: Jika dijalankan di luar folder (misal di www), coba masuk ke subfolder keuangan-pkl
+if not exist "artisan" (
+    if exist "keuangan-pkl\artisan" (
+        cd /d "%~dp0keuangan-pkl"
+    )
+)
 
 echo ====================================================
 echo        FinToko - Instalasi dan Setup Otomatis
 echo ====================================================
+echo Folder project: %CD%
 echo.
+
+:: Validasi apakah berada di dalam folder project FinToko
+if not exist "artisan" (
+    echo ====================================================
+    echo [ERROR] File 'artisan' tidak ditemukan di folder ini!
+    echo.
+    echo Anda saat ini berada di: %CD%
+    echo.
+    echo SOLUSI:
+    echo 1. Di terminal Laragon / Cmder, ketik:
+    echo      cd keuangan-pkl
+    echo 2. Lalu ketik:
+    echo      setup.bat
+    echo ====================================================
+    pause
+    exit /b 1
+)
 
 :: 1. Deteksi path Laragon secara otomatis
 set "LARAGON_DIR="
@@ -47,7 +72,9 @@ if %ERRORLEVEL% neq 0 (
     echo SOLUSI:
     echo 1. Buka aplikasi Laragon.
     echo 2. Klik tombol "Terminal" di jendela utama Laragon.
-    echo 3. Di dalam terminal Laragon, ketik: setup.bat
+    echo 3. Di terminal Laragon, ketik:
+    echo      cd keuangan-pkl
+    echo      setup.bat
     echo.
     pause
     exit /b 1
@@ -61,17 +88,17 @@ if %ERRORLEVEL% neq 0 (
     echo SOLUSI:
     echo 1. Buka aplikasi Laragon.
     echo 2. Klik tombol "Terminal" di jendela utama Laragon.
-    echo 3. Di dalam terminal Laragon, ketik: setup.bat
+    echo 3. Di terminal Laragon, ketik:
+    echo      cd keuangan-pkl
+    echo      setup.bat
     echo.
     pause
     exit /b 1
 )
 
-:: Pindah ke folder script berada
-cd /d "%~dp0"
-
 echo [1/6] Mengunduh dependensi PHP (composer install)...
-call composer install
+echo [INFO] Harap tunggu, proses ini mengunduh pustaka Laravel dari internet (bisa butuh 1-3 menit)...
+call composer install --no-interaction --prefer-dist --ansi
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [PERINGATAN] Gagal menjalankan composer install.
@@ -102,7 +129,8 @@ echo.
 echo [5/6] Mengunduh dependensi frontend (npm install)...
 where npm >nul 2>nul
 if %ERRORLEVEL% equ 0 (
-    call npm install
+    echo [INFO] Harap tunggu sebentar, mengunduh pustaka JavaScript...
+    call npm install --no-audit --no-fund
     echo.
     echo [6/6] Melakukan kompilasi aset frontend (npm run build)...
     call npm run build
@@ -113,12 +141,19 @@ if %ERRORLEVEL% equ 0 (
 echo.
 echo ====================================================
 echo        FinToko Berhasil Disetup dan Siap Digunakan!
+echo ====================================================
 echo.
 echo   Cara menjalankan aplikasi:
-echo   1. Buka Laragon, klik "Start All"
-echo   2. Buka browser: http://localhost/keuangan-pkl/public
-echo      atau jalankan perintah: php artisan serve
+echo   1. Pastikan di Laragon tombol "Start All" sudah aktif
+echo   2. Buka browser:
+echo      http://localhost/keuangan-pkl/public
+echo      atau jalankan di terminal:
+echo      php artisan serve
 echo      lalu buka browser: http://127.0.0.1:8000
+echo.
+echo   Akun login bawaan:
+echo   - Admin : admin@fintoko.id / password
+echo   - Staff : kasir@fintoko.id / password
 echo ====================================================
 echo.
 pause
