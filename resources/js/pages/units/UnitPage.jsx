@@ -123,12 +123,12 @@ export function UnitPage() {
 
   const columns = [
     { header: 'Nama Satuan', className: 'w-1/4' },
-    { header: 'Simbol', className: 'text-center' },
+    { header: 'Simbol', className: 'text-center whitespace-nowrap' },
     { header: 'Deskripsi', className: 'w-1/3' },
-    { header: 'Jumlah Produk', className: 'text-center' },
-    { header: 'Status', className: 'text-center' },
-    { header: 'Dibuat Pada', className: 'hidden md:table-cell' },
-    ...(isAdmin ? [{ header: 'Aksi', className: 'text-right' }] : []),
+    { header: 'Jumlah Produk', className: 'text-center whitespace-nowrap' },
+    { header: 'Status', className: 'text-center whitespace-nowrap' },
+    { header: 'Dibuat Pada', className: 'hidden md:table-cell whitespace-nowrap' },
+    ...(isAdmin ? [{ header: 'Aksi', className: 'text-right whitespace-nowrap' }] : []),
   ];
 
   return (
@@ -244,13 +244,13 @@ export function UnitPage() {
               {unit.description || <span className="text-[#8EA6AF] italic">Tidak ada deskripsi</span>}
             </td>
 
-            <td className="px-4 py-3.5 text-center text-xs font-semibold text-[#577782]">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#EAF8FA] border border-[#38BFE0]/30 text-[#167A93]">
+            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-[#EAF8FA] border border-[#38BFE0]/30 text-[#167A93] text-xs font-semibold whitespace-nowrap">
                 {unit.products_count ?? 0} produk
               </span>
             </td>
 
-            <td className="px-4 py-3.5 text-center">
+            <td className="px-4 py-3.5 text-center whitespace-nowrap">
               <StatusBadge isActive={unit.is_active} />
             </td>
 

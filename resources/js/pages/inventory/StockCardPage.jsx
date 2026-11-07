@@ -297,10 +297,9 @@ export function StockCardPage() {
                     {/* Movement Rows */}
                     {stockCardData.movements.map((mov) => (
                       <tr key={mov.id} className="hover:bg-[#F8FDFE] transition">
-                        <td className="py-2.5 px-3 whitespace-nowrap">{mov.movement_date}</td>
-                        <td className="py-2.5 px-3">
+                        <td className="py-2.5 px-3 whitespace-nowrap">
                           <span
-                            className={`px-2 py-0.5 text-[10px] font-bold rounded border ${getMovementBadgeClass(
+                            className={`px-2 py-0.5 text-[10px] font-bold rounded border whitespace-nowrap inline-block ${getMovementBadgeClass(
                               mov.movement_type
                             )}`}
                           >

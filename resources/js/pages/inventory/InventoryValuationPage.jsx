@@ -117,9 +117,9 @@ export function InventoryValuationPage() {
         const isLow = stock > 0 && stock <= minStock;
 
         return (
-          <div className="text-right">
+          <div className="text-right whitespace-nowrap">
             <span
-              className={`font-mono font-bold text-xs px-2 py-0.5 rounded ${
+              className={`font-mono font-bold text-xs px-2 py-0.5 rounded whitespace-nowrap ${
                 isOut
                   ? 'bg-rose-50 text-rose-600 font-bold'
                   : isLow
@@ -139,7 +139,7 @@ export function InventoryValuationPage() {
       align: 'right',
       render: (item) => {
         const avg = Number(item.average_cost) > 0 ? Number(item.average_cost) : Number(item.purchase_price);
-        return <div className="font-mono text-xs font-semibold text-[#16323B]">{formatRupiah(avg)}</div>;
+        return <div className="font-mono text-xs font-semibold text-[#16323B] whitespace-nowrap">{formatRupiah(avg)}</div>;
       },
     },
     {
@@ -151,7 +151,7 @@ export function InventoryValuationPage() {
         const avg = Number(item.average_cost) > 0 ? Number(item.average_cost) : Number(item.purchase_price);
         const val = stock * avg;
         return (
-          <div className="font-mono text-xs font-bold text-[#167A93]">
+          <div className="font-mono text-xs font-bold text-[#167A93] whitespace-nowrap">
             {formatRupiah(val)}
           </div>
         );
@@ -162,7 +162,7 @@ export function InventoryValuationPage() {
       label: 'Harga Jual',
       align: 'right',
       render: (item) => (
-        <div className="font-mono text-xs text-[#577782]">{formatRupiah(item.selling_price)}</div>
+        <div className="font-mono text-xs text-[#577782] whitespace-nowrap">{formatRupiah(item.selling_price)}</div>
       ),
     },
     {
@@ -175,7 +175,7 @@ export function InventoryValuationPage() {
         const sell = Number(item.selling_price) || 0;
         const profit = stock * (sell - avg);
         return (
-          <div className="font-mono text-xs font-bold text-emerald-600">
+          <div className="font-mono text-xs font-bold text-emerald-600 whitespace-nowrap">
             {formatRupiah(profit)}
           </div>
         );

@@ -229,18 +229,18 @@ export default function InventoryReportPage() {
                       <td className="py-3 px-3 font-mono font-semibold text-[#27C5E5]">{item.sku}</td>
                       <td className="py-3 px-3 font-semibold text-[#16323B]">{item.name}</td>
                       <td className="py-3 px-3 text-[#5A7C85]">{item.category || '-'}</td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-[#16323B]">
+                      <td className="py-3 px-3 text-right font-mono font-bold text-[#16323B] whitespace-nowrap">
                         {item.stock} {item.unit}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono text-[#5A7C85]">
+                      <td className="py-3 px-3 text-right font-mono text-[#5A7C85] whitespace-nowrap">
                         {formatRupiah(item.purchase_price)}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-[#36B878]">
+                      <td className="py-3 px-3 text-right font-mono font-bold text-[#36B878] whitespace-nowrap">
                         {formatRupiah(item.valuation)}
                       </td>
-                      <td className="py-3 px-3 text-center">
+                      <td className="py-3 px-3 text-center whitespace-nowrap">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border whitespace-nowrap ${
                             item.status === 'out_of_stock'
                               ? 'bg-rose-50 text-rose-700 border-rose-200'
                               : item.status === 'low_stock'

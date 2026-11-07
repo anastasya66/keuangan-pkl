@@ -159,7 +159,7 @@ export function PurchasePage() {
       key: 'items_count',
       label: 'Jumlah Item',
       render: (item) => (
-        <span className="text-xs text-[#16323B] font-medium">
+        <span className="text-xs text-[#16323B] font-medium whitespace-nowrap">
           {item.items?.length || 0} macam
         </span>
       ),
@@ -170,20 +170,20 @@ export function PurchasePage() {
       render: (item) => {
         if (item.status === 'received') {
           return (
-            <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap inline-block">
               ✓ Diterima
             </span>
           );
         }
         if (item.status === 'draft') {
           return (
-            <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+            <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap inline-block">
               ⏳ Draft
             </span>
           );
         }
         return (
-          <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-rose-50 text-rose-700 border border-rose-200">
+          <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap inline-block">
             ✕ Batal
           </span>
         );
@@ -198,7 +198,7 @@ export function PurchasePage() {
         return (
           <div>
             <span
-              className={`px-2 py-0.5 text-[11px] font-bold rounded-md ${
+              className={`px-2 py-0.5 text-[11px] font-bold rounded-md whitespace-nowrap inline-block ${
                 isPaid
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                   : isPartial
@@ -208,7 +208,7 @@ export function PurchasePage() {
             >
               {isPaid ? 'Lunas' : isPartial ? 'Sebagian (DP)' : 'Belum Bayar'}
             </span>
-            <div className="text-[10px] text-[#577782] mt-0.5 capitalize">
+            <div className="text-[10px] text-[#577782] mt-0.5 capitalize whitespace-nowrap">
               {item.payment_method}
             </div>
           </div>

@@ -250,9 +250,9 @@ export function UserManagementPage() {
                       <div className="font-bold text-[#10262E]">{u.name}</div>
                       <div className="text-[11px] text-[#577782] font-mono mt-0.5">{u.email}</div>
                     </td>
-                    <td className="px-6 py-3.5">
+                    <td className="px-6 py-3.5 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
                           u.role === 'admin'
                             ? 'bg-purple-50 text-purple-700 border-purple-200'
                             : 'bg-[#EAF8FA] text-[#167A93] border-[#38BFE0]/30'
@@ -261,9 +261,9 @@ export function UserManagementPage() {
                         {u.role.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 text-center">
+                    <td className="px-6 py-3.5 text-center whitespace-nowrap">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
                           u.is_active
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-rose-50 text-rose-700 border-rose-200'

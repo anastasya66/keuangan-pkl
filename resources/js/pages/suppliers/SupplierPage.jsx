@@ -152,8 +152,8 @@ export function SupplierPage() {
       key: 'purchases_count',
       label: 'Transaksi',
       render: (item) => (
-        <span className="text-xs font-semibold text-[#16323B]">
-          {item.purchases_count ?? 0} kali
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EAF8FA] border border-[#38BFE0]/30 text-[#167A93] text-xs font-semibold whitespace-nowrap">
+          {item.purchases_count ?? 0} transaksi
         </span>
       ),
     },

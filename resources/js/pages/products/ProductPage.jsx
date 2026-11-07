@@ -349,8 +349,8 @@ export function ProductPage() {
             </td>
 
             {/* Unit */}
-            <td className="px-4 py-3.5 text-center">
-              <span className="px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-[#EAF8FA] text-[#167A93] border border-[#38BFE0]/30">
+            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+              <span className="inline-block px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-[#EAF8FA] text-[#167A93] border border-[#38BFE0]/30 whitespace-nowrap">
                 {prod.unit?.symbol || '-'}
               </span>
             </td>

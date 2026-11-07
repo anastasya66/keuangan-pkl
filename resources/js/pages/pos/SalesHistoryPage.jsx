@@ -139,14 +139,14 @@ export function SalesHistoryPage() {
       key: 'items_count',
       label: 'Item',
       render: (item) => (
-        <span className="text-xs text-[#16323B] font-medium">{item.items?.length || 0} barang</span>
+        <span className="text-xs text-[#16323B] font-medium whitespace-nowrap">{item.items?.length || 0} barang</span>
       ),
     },
     {
       key: 'payment_method',
       label: 'Metode',
       render: (item) => (
-        <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-[#F0F9FB] text-[#167A93] uppercase">
+        <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-[#F0F9FB] text-[#167A93] uppercase whitespace-nowrap inline-block">
           {item.payment_method}
         </span>
       ),
@@ -156,7 +156,7 @@ export function SalesHistoryPage() {
       label: 'Total Belanja',
       align: 'right',
       render: (item) => (
-        <div className="font-mono text-xs font-bold text-[#16323B]">
+        <div className="font-mono text-xs font-bold text-[#16323B] whitespace-nowrap">
           {formatRupiah(item.grand_total)}
         </div>
       ),
@@ -167,13 +167,13 @@ export function SalesHistoryPage() {
       render: (item) => {
         if (item.status === 'completed') {
           return (
-            <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap inline-block">
               ✓ Berhasil
             </span>
           );
         }
         return (
-          <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-rose-50 text-rose-700 border border-rose-200">
+          <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap inline-block">
             ✕ Dibatalkan
           </span>
         );

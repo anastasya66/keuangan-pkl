@@ -417,12 +417,12 @@ export function AdminDashboardPage() {
                       </td>
                       <td className="py-2.5 px-3 font-medium text-[#10262E]">{prod.name}</td>
                       <td className="py-2.5 px-3 text-[#577782]">{prod.category || '-'}</td>
-                      <td className="py-2.5 px-3 text-right font-mono font-bold text-[#E66D79]">
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-[#E66D79] whitespace-nowrap">
                         {prod.stock} {prod.unit}
                       </td>
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-2.5 px-3 text-center whitespace-nowrap">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
                             prod.stock <= 0
                               ? 'bg-rose-50 text-rose-700 border border-rose-200'
                               : 'bg-amber-50 text-amber-700 border border-amber-200'

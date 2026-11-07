@@ -218,8 +218,8 @@ export function TrialBalancePage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-center">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${getTypeBadge(row.account_type)}`}>
+                    <td className="px-5 py-3 text-center whitespace-nowrap">
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap ${getTypeBadge(row.account_type)}`}>
                         {row.account_type}
                       </span>
                     </td>

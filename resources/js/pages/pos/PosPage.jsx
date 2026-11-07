@@ -425,7 +425,7 @@ export function PosPage() {
           <div className="p-4 border-b border-[#EAF4F6] flex items-center justify-between bg-[#F8FDFE] rounded-t-2xl">
             <div className="flex items-center gap-2">
               <span className="font-bold text-sm text-[#16323B]">Keranjang Belanja</span>
-              <span className="px-2 py-0.5 bg-[#EAF8FA] text-[#167A93] font-bold text-xs rounded-full border border-[#38BFE0]/30">
+              <span className="inline-flex items-center px-2 py-0.5 bg-[#EAF8FA] text-[#167A93] font-bold text-xs rounded-full border border-[#38BFE0]/30 whitespace-nowrap">
                 {cart.reduce((sum, i) => sum + i.quantity, 0)} item
               </span>
             </div>

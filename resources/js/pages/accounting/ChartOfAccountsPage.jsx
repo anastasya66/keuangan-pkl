@@ -244,17 +244,17 @@ export function ChartOfAccountsPage() {
                 <p className="text-xs text-[#577782] line-clamp-1 mt-0.5">{acc.description}</p>
               )}
             </td>
-            <td className="px-4 py-3.5 text-center">
-              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getTypeBadge(acc.account_type)}`}>
+            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${getTypeBadge(acc.account_type)}`}>
                 {acc.account_type_label}
               </span>
             </td>
-            <td className="px-4 py-3.5 text-center">
-              <span className="font-mono text-xs text-[#167A93] font-bold uppercase px-2 py-0.5 bg-[#EAF8FA] rounded-md border border-[#38BFE0]/30">
+            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+              <span className="font-mono text-xs text-[#167A93] font-bold uppercase px-2 py-0.5 bg-[#EAF8FA] rounded-md border border-[#38BFE0]/30 whitespace-nowrap">
                 {acc.normal_balance}
               </span>
             </td>
-            <td className="px-4 py-3.5 text-center">
+            <td className="px-4 py-3.5 text-center whitespace-nowrap">
               <StatusBadge isActive={acc.is_active} />
             </td>
             {isAdmin && (

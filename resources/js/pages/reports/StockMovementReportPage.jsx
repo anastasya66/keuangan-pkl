@@ -206,7 +206,7 @@ export default function StockMovementReportPage() {
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border whitespace-nowrap ${
                             m.type === 'stock_in'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : m.type === 'stock_out'
