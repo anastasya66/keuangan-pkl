@@ -67,7 +67,7 @@ class SettingsSeeder extends Seeder
             // Notification Settings
             ['key' => 'notify_low_stock', 'value' => '1', 'group' => 'notification', 'type' => 'boolean', 'description' => 'Notifikasi saat stok barang menipis', 'is_public' => true],
             ['key' => 'notify_out_of_stock', 'value' => '1', 'group' => 'notification', 'type' => 'boolean', 'description' => 'Notifikasi saat stok barang habis', 'is_public' => true],
-            ['key' => 'notify_purchase_received', 'value' => '1', 'group' => 'notification', 'type' => 'boolean', 'description' => 'Notifikasi saat barang kulakan diterima', 'is_public' => true],
+            ['key' => 'notify_purchase_received', 'value' => '1', 'group' => 'notification', 'type' => 'boolean', 'description' => 'Notifikasi saat barang pembelian toko diterima', 'is_public' => true],
             ['key' => 'notify_sale_completed', 'value' => '0', 'group' => 'notification', 'type' => 'boolean', 'description' => 'Notifikasi setiap penjualan kasir selesai', 'is_public' => true],
             ['key' => 'notify_debt_due', 'value' => '1', 'group' => 'notification', 'type' => 'boolean', 'description' => 'Peringatan utang supplier mendekati jatuh tempo', 'is_public' => true],
             ['key' => 'notify_backup_alert', 'value' => '1', 'group' => 'notification', 'type' => 'boolean', 'description' => 'Notifikasi status backup database berkala', 'is_public' => true],
@@ -130,10 +130,10 @@ class SettingsSeeder extends Seeder
             ['name' => 'pos.reprint', 'group' => 'pos', 'display_name' => 'Cetak Ulang Struk', 'description' => 'Mencetak ulang struk penjualan'],
 
             // Pembelian
-            ['name' => 'purchases.view', 'group' => 'purchases', 'display_name' => 'Lihat Data Pembelian', 'description' => 'Melihat riwayat dan detail kulakan'],
-            ['name' => 'purchases.create', 'group' => 'purchases', 'display_name' => 'Buat Transaksi Pembelian', 'description' => 'Membuat draft transaksi kulakan'],
+            ['name' => 'purchases.view', 'group' => 'purchases', 'display_name' => 'Lihat Data Pembelian', 'description' => 'Melihat riwayat dan detail pembelian toko'],
+            ['name' => 'purchases.create', 'group' => 'purchases', 'display_name' => 'Buat Transaksi Pembelian', 'description' => 'Membuat draft transaksi pembelian toko'],
             ['name' => 'purchases.receive', 'group' => 'purchases', 'display_name' => 'Konfirmasi Barang Masuk', 'description' => 'Menerima barang & menambah stok'],
-            ['name' => 'purchases.cancel', 'group' => 'purchases', 'display_name' => 'Batalkan Pembelian', 'description' => 'Membatalkan transaksi kulakan'],
+            ['name' => 'purchases.cancel', 'group' => 'purchases', 'display_name' => 'Batalkan Pembelian', 'description' => 'Membatalkan transaksi pembelian toko'],
             ['name' => 'purchases.pay_debt', 'group' => 'purchases', 'display_name' => 'Bayar Utang Tempo', 'description' => 'Membayar sisa tagihan utang supplier'],
 
             // Inventory

@@ -43,7 +43,7 @@ class TransactionCategorySeeder extends Seeder
             [
                 'name' => 'Pembelian Stok',
                 'type' => 'expense',
-                'description' => 'Pengeluaran untuk kulakan atau restok barang dagangan dari supplier.',
+                'description' => 'Pengeluaran untuk pembelian toko atau restok barang dagangan dari supplier.',
                 'is_active' => true,
             ],
             [

@@ -280,7 +280,7 @@ export function PurchasePage() {
             <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
               <IconPurchase className="w-5 h-5" />
             </span>
-            Pembelian &amp; Kulakan Barang
+            Pembelian Toko
           </h1>
           <p className="text-xs text-[#577782] mt-1">
             Pencatatan faktur barang masuk dari supplier, kalkulasi HPP rata-rata, dan utang tempo

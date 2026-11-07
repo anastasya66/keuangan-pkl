@@ -377,7 +377,7 @@ export function SettingsPage() {
               <div className="border-b border-[#EAF4F6] pb-4">
                 <h3 className="text-base font-bold text-[#16323B]">Identitas & Informasi Toko</h3>
                 <p className="text-xs text-[#577782] mt-0.5">
-                  Informasi ini dicetak pada struk kasir thermal, invoice kulakan, dan laporan resmi
+                  Informasi ini dicetak pada struk kasir thermal, invoice pembelian toko, dan laporan resmi
                 </p>
               </div>
 
@@ -581,7 +581,7 @@ export function SettingsPage() {
                   <div>
                     <div className="font-bold text-[#16323B]">Izinkan Pembatalan Transaksi</div>
                     <div className="text-[11px] text-[#577782]">
-                      Izinkan pembatalan penjualan atau kulakan dengan reversal otomatis
+                      Izinkan pembatalan penjualan atau pembelian toko dengan reversal otomatis
                     </div>
                   </div>
                   <input
@@ -622,7 +622,7 @@ export function SettingsPage() {
                 <div>
                   <h3 className="text-base font-bold text-[#16323B]">Metode Pembayaran Kasir & Transaksi</h3>
                   <p className="text-xs text-[#577782] mt-0.5">
-                    Daftar cara pembayaran yang dapat dipilih di kasir POS dan kulakan
+                    Daftar cara pembayaran yang dapat dipilih di kasir POS dan pembelian toko
                   </p>
                 </div>
                 <button
@@ -696,7 +696,7 @@ export function SettingsPage() {
               <div className="border-b border-[#EAF4F6] pb-4">
                 <h3 className="text-base font-bold text-[#16323B]">Penomoran Dokumen Otomatis Terpadu</h3>
                 <p className="text-xs text-[#577782] mt-0.5">
-                  Aturan format nomor transaksi kasir, invoice kulakan, jurnal, dan kas untuk mencegah nomor duplikat
+                  Aturan format nomor transaksi kasir, invoice pembelian toko, jurnal, dan kas untuk mencegah nomor duplikat
                 </p>
               </div>
 
@@ -846,7 +846,7 @@ export function SettingsPage() {
                     className="w-full px-3 py-2 bg-slate-100 border border-[#D7EBEF] rounded-xl text-xs text-slate-600 font-semibold cursor-not-allowed"
                   />
                   <span className="text-[11px] text-[#577782] mt-1 block">
-                    Metode standar akuntansi toko untuk menghitung HPP secara real-time saat kulakan masuk
+                    Metode standar akuntansi toko untuk menghitung HPP secara real-time saat pembelian toko masuk
                   </span>
                 </div>
 
@@ -936,7 +936,7 @@ export function SettingsPage() {
                   <div>
                     <div className="font-bold text-[#16323B]">Otomasi Jurnal Akuntansi</div>
                     <div className="text-[11px] text-[#577782]">
-                      Otomatis catat jurnal debit/kredit saat penjualan kasir dan penerimaan kulakan barang
+                      Otomatis catat jurnal debit/kredit saat penjualan kasir dan penerimaan pembelian barang toko
                     </div>
                   </div>
                   <input
@@ -1235,7 +1235,7 @@ export function SettingsPage() {
                 <div>
                   <h3 className="text-base font-bold text-[#16323B]">Audit Trail & Log Aktivitas Sistem</h3>
                   <p className="text-xs text-[#577782] mt-0.5">
-                    Catatan append-only yang merekam seluruh aksi penting pengguna (login, transaksi, kulakan, pengaturan)
+                    Catatan append-only yang merekam seluruh aksi penting pengguna (login, transaksi, pembelian toko, pengaturan)
                   </p>
                 </div>
 
@@ -1261,7 +1261,7 @@ export function SettingsPage() {
                     <option value="">Semua Modul</option>
                     <option value="auth">Autentikasi</option>
                     <option value="pos">POS Kasir</option>
-                    <option value="purchases">Kulakan</option>
+                    <option value="purchases">Pembelian Toko</option>
                     <option value="inventory">Persediaan</option>
                     <option value="accounting">Akuntansi</option>
                     <option value="settings">Pengaturan</option>

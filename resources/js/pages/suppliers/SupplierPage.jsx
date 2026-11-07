@@ -215,7 +215,7 @@ export function SupplierPage() {
             Data Mitra Supplier
           </h1>
           <p className="text-xs text-[#577782] mt-1">
-            Kelola data distributor dan pemasok barang kulakan toko
+            Kelola data distributor dan pemasok barang pembelian toko
           </p>
         </div>
 

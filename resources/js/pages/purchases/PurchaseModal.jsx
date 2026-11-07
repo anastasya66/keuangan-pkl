@@ -144,7 +144,7 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
         <div className="px-6 py-4 border-b border-[#EAF4F6] flex items-center justify-between bg-[#F8FDFE]">
           <div>
             <h3 className="text-base font-bold text-[#16323B]">
-              Buat Transaksi Pembelian (Kulakan)
+              Buat Transaksi Pembelian Toko
             </h3>
             <p className="text-xs text-[#577782]">
               Catat pembelian stok barang masuk dari distributor atau pemasok

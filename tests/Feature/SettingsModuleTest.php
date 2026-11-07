@@ -142,18 +142,18 @@ class SettingsModuleTest extends TestCase
         $seq = DocumentSequence::where('document_type', 'purchase')->first();
 
         $response = $this->actingAs($this->admin)->putJson("/api/v1/admin/document-sequences/{$seq->id}", [
-            'prefix' => 'KULAKAN',
+            'prefix' => 'BELI',
             'format' => '{PREFIX}-{YYYY}{MM}-{SEQ}',
             'padding' => 5,
             'reset_frequency' => 'monthly',
         ]);
 
         $response->assertOk()
-            ->assertJsonPath('data.prefix', 'KULAKAN')
+            ->assertJsonPath('data.prefix', 'BELI')
             ->assertJsonPath('data.padding', 5);
 
         $nextNum = app(DocumentSequenceService::class)->getNextNumber('purchase');
-        $this->assertStringStartsWith('KULAKAN-', $nextNum);
+        $this->assertStringStartsWith('BELI-', $nextNum);
     }
 
     public function test_accounting_period_lock_blocks_journal_posting(): void

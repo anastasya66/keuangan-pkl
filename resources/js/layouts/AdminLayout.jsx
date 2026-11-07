@@ -65,7 +65,7 @@ export function AdminLayout({ children }) {
     {
       group: 'PEMBELIAN & SUPPLIER',
       items: [
-        { to: '/admin/purchases', label: 'Pembelian (Kulakan)', icon: IconPurchase },
+        { to: '/admin/purchases', label: 'Pembelian Toko', icon: IconPurchase },
         { to: '/admin/suppliers', label: 'Data Supplier', icon: IconSupplier },
       ],
     },

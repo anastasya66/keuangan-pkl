@@ -73,7 +73,7 @@ class FinancialTransactionSeeder extends Seeder
                 'category_id' => $catStok?->id,
                 'amount' => 650000.00,
                 'transaction_date' => '2026-11-02',
-                'description' => 'Kulakan beras dan minyak goreng ke agen distributor',
+                'description' => 'Pembelian toko beras dan minyak goreng ke agen distributor',
                 'created_by' => $admin?->id,
                 'status' => 'completed',
             ],

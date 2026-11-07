@@ -95,7 +95,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('suppliers/active', [SupplierController::class, 'active']);
     Route::apiResource('suppliers', SupplierController::class);
 
-    // Modul Pembelian / Kulakan Barang (Purchases)
+    // Modul Pembelian Toko (Purchases)
     Route::get('purchases', [PurchaseController::class, 'index']);
     Route::post('purchases', [PurchaseController::class, 'store']);
     Route::get('purchases/{id}', [PurchaseController::class, 'show'])->whereNumber('id');
