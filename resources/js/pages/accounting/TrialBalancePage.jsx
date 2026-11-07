@@ -40,13 +40,13 @@ export function TrialBalancePage() {
 
   const getTypeBadge = (type) => {
     const badges = {
-      assets: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      liabilities: 'bg-amber-50 text-amber-700 border-amber-200',
-      equity: 'bg-purple-50 text-purple-700 border-purple-200',
-      revenue: 'bg-sky-50 text-sky-700 border-sky-200',
-      expenses: 'bg-rose-50 text-rose-700 border-rose-200',
+      assets: 'bg-blue-600 text-white',
+      liabilities: 'bg-amber-600 text-white',
+      equity: 'bg-purple-600 text-white',
+      revenue: 'bg-emerald-600 text-white',
+      expenses: 'bg-rose-600 text-white',
     };
-    return badges[type] || 'bg-slate-100 text-slate-700 border-slate-200';
+    return badges[type] || 'bg-slate-700 text-white';
   };
 
   return (
@@ -213,13 +213,13 @@ export function TrialBalancePage() {
                     <td className="px-5 py-3 font-semibold text-[#16323B]">
                       {row.account_name}
                       {!row.is_active && (
-                        <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
+                        <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-500 text-white font-bold">
                           Nonaktif
                         </span>
                       )}
                     </td>
                     <td className="px-5 py-3 text-center whitespace-nowrap">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap ${getTypeBadge(row.account_type)}`}>
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-xs whitespace-nowrap ${getTypeBadge(row.account_type)}`}>
                         {row.account_type}
                       </span>
                     </td>

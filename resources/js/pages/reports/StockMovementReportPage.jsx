@@ -206,14 +206,14 @@ export default function StockMovementReportPage() {
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border whitespace-nowrap ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${
                             m.type === 'stock_in'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              ? 'bg-emerald-600 text-white'
                               : m.type === 'stock_out'
-                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              ? 'bg-rose-600 text-white'
                               : m.type === 'adjustment_in'
-                              ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
-                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                              ? 'bg-teal-600 text-white'
+                              : 'bg-amber-600 text-white'
                           }`}
                         >
                           {m.type_label}

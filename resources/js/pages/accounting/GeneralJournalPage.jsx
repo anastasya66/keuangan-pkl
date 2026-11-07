@@ -123,11 +123,11 @@ export function GeneralJournalPage() {
 
   const getStatusBadge = (status) => {
     const badges = {
-      draft: 'bg-slate-100 text-slate-600 border-slate-200',
-      posted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      reversed: 'bg-rose-50 text-rose-700 border-rose-200',
+      draft: 'bg-amber-600 text-white',
+      posted: 'bg-emerald-600 text-white',
+      reversed: 'bg-rose-600 text-white',
     };
-    return badges[status] || 'bg-slate-100 text-slate-600 border-slate-200';
+    return badges[status] || 'bg-slate-700 text-white';
   };
 
   const columns = [
@@ -293,7 +293,7 @@ export function GeneralJournalPage() {
               {formatRupiah(jrn.total_debit)}
             </td>
             <td className="px-4 py-3.5 text-center whitespace-nowrap">
-              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(jrn.status)}`}>
+              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${getStatusBadge(jrn.status)}`}>
                 {jrn.status_label}
               </span>
             </td>

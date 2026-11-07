@@ -31,7 +31,7 @@ export function Pagination({ pagination, onPageChange }) {
           &larr; Sebelumnya
         </button>
 
-        <span className="px-3 py-1.5 rounded-lg bg-[#EAF8FA] border border-[#38BFE0]/30 text-[#167A93] font-bold">
+        <span className="px-3 py-1.5 rounded-lg bg-[#167A93] text-white font-bold shadow-xs">
           Hal {current_page} / {last_page}
         </span>
 

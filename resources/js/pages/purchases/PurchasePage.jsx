@@ -170,20 +170,20 @@ export function PurchasePage() {
       render: (item) => {
         if (item.status === 'received') {
           return (
-            <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap inline-block">
+            <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-emerald-600 text-white whitespace-nowrap inline-block shadow-2xs">
               ✓ Diterima
             </span>
           );
         }
         if (item.status === 'draft') {
           return (
-            <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap inline-block">
+            <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-amber-600 text-white whitespace-nowrap inline-block shadow-2xs">
               ⏳ Draft
             </span>
           );
         }
         return (
-          <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap inline-block">
+          <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-rose-600 text-white whitespace-nowrap inline-block shadow-2xs">
             ✕ Batal
           </span>
         );
@@ -198,17 +198,17 @@ export function PurchasePage() {
         return (
           <div>
             <span
-              className={`px-2 py-0.5 text-[11px] font-bold rounded-md whitespace-nowrap inline-block ${
+              className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md whitespace-nowrap inline-block shadow-2xs ${
                 isPaid
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  ? 'bg-emerald-600 text-white'
                   : isPartial
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                  : 'bg-rose-50 text-rose-700 border border-rose-200'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-rose-600 text-white'
               }`}
             >
               {isPaid ? 'Lunas' : isPartial ? 'Sebagian (DP)' : 'Belum Bayar'}
             </span>
-            <div className="text-[10px] text-[#577782] mt-0.5 capitalize whitespace-nowrap">
+            <div className="text-[10px] text-[#577782] mt-0.5 capitalize whitespace-nowrap font-medium">
               {item.payment_method}
             </div>
           </div>
@@ -277,7 +277,7 @@ export function PurchasePage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-            <span className="p-2 bg-[#EAF8FA] text-[#167A93] rounded-xl border border-[#38BFE0]/30">
+            <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
               <IconPurchase className="w-5 h-5" />
             </span>
             Pembelian &amp; Kulakan Barang

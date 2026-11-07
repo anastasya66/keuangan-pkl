@@ -111,7 +111,7 @@ export function SupplierPage() {
       key: 'code',
       label: 'Kode',
       render: (item) => (
-        <span className="font-mono text-xs font-bold text-[#167A93] bg-[#EAF8FA] px-2 py-0.5 rounded-md border border-[#38BFE0]/30">
+        <span className="font-mono text-xs font-bold text-white bg-[#167A93] px-2.5 py-0.5 rounded-md shadow-2xs whitespace-nowrap inline-block">
           {item.code}
         </span>
       ),
@@ -152,7 +152,7 @@ export function SupplierPage() {
       key: 'purchases_count',
       label: 'Transaksi',
       render: (item) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EAF8FA] border border-[#38BFE0]/30 text-[#167A93] text-xs font-semibold whitespace-nowrap">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#167A93] text-white text-xs font-bold whitespace-nowrap shadow-2xs">
           {item.purchases_count ?? 0} transaksi
         </span>
       ),
@@ -209,7 +209,7 @@ export function SupplierPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-            <span className="p-2 bg-[#EAF8FA] text-[#167A93] rounded-xl border border-[#38BFE0]/30">
+            <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
               <IconSupplier className="w-5 h-5" />
             </span>
             Data Mitra Supplier

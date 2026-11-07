@@ -87,7 +87,7 @@ export function InventoryValuationPage() {
       label: 'Kode SKU',
       render: (item) => (
         <div>
-          <span className="font-mono text-xs font-bold text-[#167A93] bg-[#EAF8FA] px-2 py-0.5 rounded border border-[#38BFE0]/30">
+          <span className="font-mono text-xs font-bold text-white bg-[#167A93] px-2.5 py-0.5 rounded shadow-2xs whitespace-nowrap inline-block">
             {item.sku}
           </span>
           {item.barcode && (
@@ -119,12 +119,12 @@ export function InventoryValuationPage() {
         return (
           <div className="text-right whitespace-nowrap">
             <span
-              className={`font-mono font-bold text-xs px-2 py-0.5 rounded whitespace-nowrap ${
+              className={`font-mono font-bold text-xs px-2.5 py-0.5 rounded-md shadow-xs whitespace-nowrap ${
                 isOut
-                  ? 'bg-rose-50 text-rose-600 font-bold'
+                  ? 'bg-rose-600 text-white'
                   : isLow
-                  ? 'bg-amber-50 text-amber-700'
-                  : 'text-[#16323B]'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-[#167A93] text-white'
               }`}
             >
               {stock.toLocaleString('id-ID')} {item.unit?.symbol || 'pcs'}
@@ -203,7 +203,7 @@ export function InventoryValuationPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-            <span className="p-2 bg-[#EAF8FA] text-[#167A93] rounded-xl border border-[#38BFE0]/30">
+            <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
               <IconValuation className="w-5 h-5" />
             </span>
             Valuasi Nilai Persediaan Barang

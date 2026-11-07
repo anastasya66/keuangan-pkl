@@ -146,7 +146,7 @@ export function SalesHistoryPage() {
       key: 'payment_method',
       label: 'Metode',
       render: (item) => (
-        <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-[#F0F9FB] text-[#167A93] uppercase whitespace-nowrap inline-block">
+        <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-[#167A93] text-white uppercase whitespace-nowrap inline-block shadow-2xs">
           {item.payment_method}
         </span>
       ),
@@ -167,13 +167,13 @@ export function SalesHistoryPage() {
       render: (item) => {
         if (item.status === 'completed') {
           return (
-            <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap inline-block">
+            <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-emerald-600 text-white whitespace-nowrap inline-block shadow-2xs">
               ✓ Berhasil
             </span>
           );
         }
         return (
-          <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap inline-block">
+          <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-rose-600 text-white whitespace-nowrap inline-block shadow-2xs">
             ✕ Dibatalkan
           </span>
         );
@@ -228,7 +228,7 @@ export function SalesHistoryPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-            <span className="p-2 bg-[#EAF8FA] text-[#167A93] rounded-xl border border-[#38BFE0]/30">
+            <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
               <IconPos className="w-5 h-5" />
             </span>
             Riwayat Transaksi Penjualan Kasir

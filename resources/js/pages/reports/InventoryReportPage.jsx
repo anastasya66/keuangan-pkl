@@ -240,12 +240,12 @@ export default function InventoryReportPage() {
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border whitespace-nowrap ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${
                             item.status === 'out_of_stock'
-                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              ? 'bg-rose-600 text-white'
                               : item.status === 'low_stock'
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              ? 'bg-amber-600 text-white'
+                              : 'bg-emerald-600 text-white'
                           }`}
                         >
                           {item.status_label}

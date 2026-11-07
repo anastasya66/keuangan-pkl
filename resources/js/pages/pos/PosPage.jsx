@@ -382,14 +382,14 @@ export function PosPage() {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-1 text-[10px] text-[#577782] mb-1">
-                        <span className="font-mono">{p.sku}</span>
+                        <span className="font-mono font-bold text-[#167A93]">{p.sku}</span>
                         <span
-                          className={`px-1.5 py-0.5 rounded font-bold ${
+                          className={`px-1.5 py-0.5 rounded font-bold shadow-2xs ${
                             isOutOfStock
-                              ? 'bg-rose-50 text-rose-600'
+                              ? 'bg-rose-600 text-white'
                               : isLow
-                              ? 'bg-amber-50 text-amber-700'
-                              : 'bg-emerald-50 text-emerald-700'
+                              ? 'bg-amber-600 text-white'
+                              : 'bg-emerald-600 text-white'
                           }`}
                         >
                           {isOutOfStock ? 'Habis' : `${stock} ${p.unit?.symbol || 'pcs'}`}
@@ -555,9 +555,9 @@ export function PosPage() {
 
             <form onSubmit={handleCheckoutSubmit} className="space-y-4">
               {/* Grand Total Display */}
-              <div className="bg-[#EAF8FA] border border-[#38BFE0]/30 rounded-xl p-4 text-center">
-                <span className="text-xs font-semibold text-[#577782]">Total yang Harus Dibayar:</span>
-                <div className="text-2xl font-bold font-mono text-[#167A93] mt-0.5">
+              <div className="bg-[#167A93] text-white rounded-xl p-4 text-center shadow-xs">
+                <span className="text-xs font-semibold text-[#D7EBEF]">Total yang Harus Dibayar:</span>
+                <div className="text-2xl font-bold font-mono text-white mt-0.5">
                   {formatRupiah(grandTotal)}
                 </div>
               </div>

@@ -393,7 +393,7 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
           </div>
 
           {/* Totals Section */}
-          <div className="bg-[#EAF8FA] border border-[#38BFE0]/30 rounded-xl p-4 flex flex-col md:flex-row justify-between items-end gap-4">
+          <div className="bg-[#F3FBFC] border border-[#D7EBEF] rounded-xl p-4 flex flex-col md:flex-row justify-between items-end gap-4">
             <div className="w-full md:w-1/2 space-y-2">
               <div className="flex items-center gap-3">
                 <label className="text-xs font-semibold text-[#16323B] w-24">Diskon (Rp):</label>

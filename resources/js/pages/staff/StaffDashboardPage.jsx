@@ -148,10 +148,10 @@ export function StaffDashboardPage() {
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${
                           prod.stock <= 0
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-amber-600 text-white'
                         }`}
                       >
                         {prod.status_label || (prod.stock <= 0 ? 'Habis' : 'Menipis')}

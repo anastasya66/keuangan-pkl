@@ -422,10 +422,10 @@ export function AdminDashboardPage() {
                       </td>
                       <td className="py-2.5 px-3 text-center whitespace-nowrap">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${
                             prod.stock <= 0
-                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              ? 'bg-rose-600 text-white'
+                              : 'bg-amber-600 text-white'
                           }`}
                         >
                           {prod.status_label || (prod.stock <= 0 ? 'Habis' : 'Menipis')}
@@ -491,12 +491,12 @@ export function AdminDashboardPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-[#10262E]">{act.title}</span>
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold shadow-xs whitespace-nowrap ${
                           act.type === 'income'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            ? 'bg-emerald-600 text-white'
                             : act.type === 'expense'
-                            ? 'bg-rose-50 text-rose-700 border-rose-200'
-                            : 'bg-cyan-50 text-cyan-700 border-cyan-200'
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-[#167A93] text-white'
                         }`}
                       >
                         {act.type_label}

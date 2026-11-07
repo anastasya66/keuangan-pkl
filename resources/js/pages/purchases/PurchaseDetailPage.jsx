@@ -161,7 +161,7 @@ export function PurchaseDetailPage() {
             <span className="font-mono text-[#16323B] font-semibold">{purchase.invoice_number}</span>
           </div>
           <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-            <span className="p-2 bg-[#EAF8FA] text-[#167A93] rounded-xl border border-[#38BFE0]/30">
+            <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
               <IconPurchase className="w-5 h-5" />
             </span>
             Detail Pembelian {purchase.invoice_number}
@@ -209,15 +209,15 @@ export function PurchaseDetailPage() {
           <div className="text-[11px] font-semibold text-[#577782]">Status Fisik Barang</div>
           <div className="mt-1">
             {purchase.status === 'received' ? (
-              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-600 text-white shadow-2xs whitespace-nowrap inline-block">
                 ✓ Diterima di Toko
               </span>
             ) : purchase.status === 'draft' ? (
-              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-50 text-amber-700 border border-amber-200">
+              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-600 text-white shadow-2xs whitespace-nowrap inline-block">
                 ⏳ Draft (Menunggu Barang)
               </span>
             ) : (
-              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-200">
+              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-600 text-white shadow-2xs whitespace-nowrap inline-block">
                 ✕ Dibatalkan
               </span>
             )}
@@ -233,15 +233,15 @@ export function PurchaseDetailPage() {
           <div className="text-[11px] font-semibold text-[#577782]">Status Pembayaran</div>
           <div className="mt-1">
             {purchase.payment_status === 'paid' ? (
-              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-600 text-white shadow-2xs whitespace-nowrap inline-block">
                 ✓ Lunas
               </span>
             ) : purchase.payment_status === 'partial' ? (
-              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-2xs whitespace-nowrap inline-block">
                 Sebagian (DP)
               </span>
             ) : (
-              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-200">
+              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-600 text-white shadow-2xs whitespace-nowrap inline-block">
                 Belum Bayar
               </span>
             )}
@@ -457,7 +457,7 @@ export function PurchaseDetailPage() {
                   <div>
                     <span className="font-mono font-bold text-[#167A93]">{j.journal_number}</span> &bull; Tanggal: {j.journal_date}
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${j.status === 'posted' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold shadow-2xs ${j.status === 'posted' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>
                     {j.status.toUpperCase()}
                   </span>
                 </div>

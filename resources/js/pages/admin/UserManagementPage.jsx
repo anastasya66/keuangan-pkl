@@ -252,10 +252,10 @@ export function UserManagementPage() {
                     </td>
                     <td className="px-6 py-3.5 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap shadow-2xs ${
                           u.role === 'admin'
-                            ? 'bg-purple-50 text-purple-700 border-purple-200'
-                            : 'bg-[#EAF8FA] text-[#167A93] border-[#38BFE0]/30'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-[#167A93] text-white'
                         }`}
                       >
                         {u.role.toUpperCase()}
@@ -263,10 +263,10 @@ export function UserManagementPage() {
                     </td>
                     <td className="px-6 py-3.5 text-center whitespace-nowrap">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap shadow-2xs ${
                           u.is_active
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-rose-50 text-rose-700 border-rose-200'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-rose-600 text-white'
                         }`}
                       >
                         {u.is_active ? 'Aktif' : 'Nonaktif'}

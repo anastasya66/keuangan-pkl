@@ -110,13 +110,13 @@ export function ChartOfAccountsPage() {
 
   const getTypeBadge = (type) => {
     const badges = {
-      assets: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-      liabilities: 'bg-amber-50 text-amber-700 border-amber-200',
-      equity: 'bg-purple-50 text-purple-700 border-purple-200',
-      revenue: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      expenses: 'bg-rose-50 text-rose-700 border-rose-200',
+      assets: 'bg-blue-600 text-white',
+      liabilities: 'bg-amber-600 text-white',
+      equity: 'bg-purple-600 text-white',
+      revenue: 'bg-emerald-600 text-white',
+      expenses: 'bg-rose-600 text-white',
     };
-    return badges[type] || 'bg-slate-100 text-slate-600 border-slate-200';
+    return badges[type] || 'bg-slate-700 text-white';
   };
 
   const columns = [
@@ -245,12 +245,12 @@ export function ChartOfAccountsPage() {
               )}
             </td>
             <td className="px-4 py-3.5 text-center whitespace-nowrap">
-              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${getTypeBadge(acc.account_type)}`}>
+              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${getTypeBadge(acc.account_type)}`}>
                 {acc.account_type_label}
               </span>
             </td>
             <td className="px-4 py-3.5 text-center whitespace-nowrap">
-              <span className="font-mono text-xs text-[#167A93] font-bold uppercase px-2 py-0.5 bg-[#EAF8FA] rounded-md border border-[#38BFE0]/30 whitespace-nowrap">
+              <span className="font-mono text-xs text-white font-bold uppercase px-2 py-0.5 bg-[#167A93] rounded-md shadow-xs whitespace-nowrap">
                 {acc.normal_balance}
               </span>
             </td>

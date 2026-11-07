@@ -99,12 +99,12 @@ export function JournalDetailPage() {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'posted':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-600 text-white';
       case 'reversed':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-rose-600 text-white';
       case 'draft':
       default:
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-600 text-white';
     }
   };
 
@@ -212,7 +212,7 @@ export function JournalDetailPage() {
               <h1 className="text-2xl font-extrabold tracking-tight text-[#16323B] font-mono">
                 {journal.journal_number}
               </h1>
-              <span className={`px-3 py-0.5 rounded-full text-xs font-semibold border ${getStatusBadge(journal.status)}`}>
+              <span className={`px-3 py-0.5 rounded-full text-xs font-bold shadow-xs whitespace-nowrap ${getStatusBadge(journal.status)}`}>
                 {journal.status_label}
               </span>
             </div>

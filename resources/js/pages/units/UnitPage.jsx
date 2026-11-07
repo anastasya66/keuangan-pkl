@@ -234,8 +234,8 @@ export function UnitPage() {
               {unit.name}
             </td>
 
-            <td className="px-4 py-3.5 text-center">
-              <span className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-[#EAF8FA] text-[#167A93] border border-[#38BFE0]/30">
+            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+              <span className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-[#167A93] text-white whitespace-nowrap shadow-2xs">
                 {unit.symbol}
               </span>
             </td>
@@ -245,7 +245,7 @@ export function UnitPage() {
             </td>
 
             <td className="px-4 py-3.5 text-center whitespace-nowrap">
-              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-[#EAF8FA] border border-[#38BFE0]/30 text-[#167A93] text-xs font-semibold whitespace-nowrap">
+              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-[#167A93] text-white text-xs font-bold whitespace-nowrap shadow-2xs">
                 {unit.products_count ?? 0} produk
               </span>
             </td>

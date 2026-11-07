@@ -69,19 +69,19 @@ export function StockCardPage() {
       case 'purchase':
       case 'stock_in':
       case 'initial_stock':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-600 text-white font-bold';
       case 'sale':
       case 'stock_out':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-blue-600 text-white font-bold';
       case 'adjustment_in':
-        return 'bg-teal-50 text-teal-700 border-teal-200';
+        return 'bg-teal-600 text-white font-bold';
       case 'adjustment_out':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-600 text-white font-bold';
       case 'purchase_reversal':
       case 'sale_return':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
+        return 'bg-purple-600 text-white font-bold';
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+        return 'bg-slate-600 text-white font-bold';
     }
   };
 
@@ -104,7 +104,7 @@ export function StockCardPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-          <span className="p-2 bg-[#EAF8FA] text-[#167A93] rounded-xl border border-[#38BFE0]/30">
+          <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
             <IconStockCard className="w-5 h-5" />
           </span>
           Kartu Stok Barang (Stock Card)
@@ -164,7 +164,7 @@ export function StockCardPage() {
           <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-[#167A93] bg-[#EAF8FA] px-2 py-0.5 rounded border border-[#38BFE0]/30">
+                <span className="font-mono text-xs font-bold text-white bg-[#167A93] px-2.5 py-0.5 rounded-md shadow-xs">
                   {stockCardData.product.sku}
                 </span>
                 {stockCardData.product.barcode && (
@@ -194,9 +194,9 @@ export function StockCardPage() {
                   {formatRupiah(stockCardData.product.selling_price)}
                 </div>
               </div>
-              <div className="px-3 py-1.5 bg-[#EAF8FA] rounded-xl border border-[#38BFE0]/30 text-right">
-                <span className="text-[11px] font-semibold text-[#167A93]">Stok Saat Ini</span>
-                <div className="text-base font-bold font-mono text-[#16323B]">
+              <div className="px-3.5 py-1.5 bg-[#167A93] text-white rounded-xl text-right shadow-xs">
+                <span className="text-[11px] font-semibold text-[#D7EBEF] block">Stok Saat Ini</span>
+                <div className="text-base font-bold font-mono text-white">
                   {stockCardData.product.current_stock} {stockCardData.product.unit_symbol}
                 </div>
               </div>
@@ -280,7 +280,7 @@ export function StockCardPage() {
                     <tr className="bg-[#FAFDFE] font-semibold">
                       <td className="py-2 px-3 text-[#577782]">{stockCardData.period.start_date}</td>
                       <td className="py-2 px-3">
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-700">
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-700 text-white whitespace-nowrap inline-block">
                           SALDO AWAL
                         </span>
                       </td>
@@ -297,9 +297,12 @@ export function StockCardPage() {
                     {/* Movement Rows */}
                     {stockCardData.movements.map((mov) => (
                       <tr key={mov.id} className="hover:bg-[#F8FDFE] transition">
+                        <td className="py-2.5 px-3 text-[#577782] whitespace-nowrap">
+                          {mov.movement_date}
+                        </td>
                         <td className="py-2.5 px-3 whitespace-nowrap">
                           <span
-                            className={`px-2 py-0.5 text-[10px] font-bold rounded border whitespace-nowrap inline-block ${getMovementBadgeClass(
+                            className={`px-2.5 py-0.5 text-[10px] font-bold rounded-md shadow-xs whitespace-nowrap inline-block ${getMovementBadgeClass(
                               mov.movement_type
                             )}`}
                           >
