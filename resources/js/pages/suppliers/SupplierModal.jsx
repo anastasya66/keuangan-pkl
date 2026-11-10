@@ -62,7 +62,7 @@ export function SupplierModal({ isOpen, onClose, onSubmit, supplier = null, isLo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10262E]/40 backdrop-blur-xs animate-backdrop">
-      <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] animate-modal-pop">
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-[#EAF4F6] flex items-center justify-between bg-[#F8FDFE]">
           <div>

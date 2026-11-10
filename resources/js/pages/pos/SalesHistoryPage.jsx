@@ -373,7 +373,7 @@ export function SalesHistoryPage() {
       {/* Reprint Receipt Modal */}
       {isReceiptModalOpen && receiptData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10262E]/60 backdrop-blur-xs animate-backdrop">
-          <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-2xl w-full max-w-sm p-5 space-y-4 max-h-[95vh] flex flex-col">
+          <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-2xl w-full max-w-sm p-5 space-y-4 max-h-[95vh] flex flex-col animate-modal-pop">
             <div className="flex items-center justify-between border-b border-[#EAF4F6] pb-2">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#16323B]">
                 Struk Pembelian Kasir
@@ -479,7 +479,7 @@ export function SalesHistoryPage() {
       {/* Cancel Confirm Dialog */}
       {cancelTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10262E]/40 backdrop-blur-xs animate-backdrop">
-          <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-xl w-full max-w-md p-6 space-y-4 animate-modal-pop">
             <h3 className="text-base font-bold text-rose-600">Batalkan / Retur Penjualan?</h3>
             <p className="text-xs text-[#577782]">
               Transaksi <strong className="font-mono">{cancelTarget.transaction_number}</strong> akan dibatalkan, stok barang akan dikembalikan ke gudang, dan pencatatan akuntansi akan di-reverse.

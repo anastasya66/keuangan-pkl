@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import {
   IconDashboard,
@@ -28,6 +28,7 @@ import {
 export function AdminLayout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -311,9 +312,11 @@ export function AdminLayout({ children }) {
           </div>
         </header>
 
-        {/* Content Area */}
+        {/* Content Area with Smooth Page Transition Motion */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 overflow-x-hidden">
-          {children || <Outlet />}
+          <div key={location.pathname} className="animate-page-enter">
+            {children || <Outlet />}
+          </div>
         </main>
 
         {/* Footer Minimalist */}

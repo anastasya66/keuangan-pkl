@@ -370,7 +370,7 @@ export function SettingsPage() {
           Memuat data pengaturan sistem...
         </div>
       ) : (
-        <>
+        <div key={activeTab} className="animate-page-enter">
           {/* TAB 1: PROFIL TOKO & STRUK */}
           {activeTab === 'store' && (
             <div className="bg-white border border-[#D7EBEF] rounded-2xl p-6 shadow-xs space-y-6">
@@ -756,8 +756,8 @@ export function SettingsPage() {
 
               {/* Edit Sequence Modal */}
               {editingSequence && (
-                <div className="fixed inset-0 bg-[#10262E]/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                  <div className="bg-white rounded-2xl border border-[#D7EBEF] max-w-md w-full p-6 shadow-xl space-y-4">
+                <div className="fixed inset-0 bg-[#10262E]/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-backdrop">
+                  <div className="bg-white rounded-2xl border border-[#D7EBEF] max-w-md w-full p-6 shadow-xl space-y-4 animate-modal-pop">
                     <h4 className="font-bold text-[#16323B] text-sm">
                       Ubah Format: {editingSequence.name}
                     </h4>
@@ -1196,8 +1196,8 @@ export function SettingsPage() {
 
               {/* Restore Confirmation Modal with Admin Password */}
               {restoreModal.open && (
-                <div className="fixed inset-0 bg-[#10262E]/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                  <div className="bg-white rounded-2xl border border-rose-200 max-w-md w-full p-6 shadow-2xl space-y-4">
+                <div className="fixed inset-0 bg-[#10262E]/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-backdrop">
+                  <div className="bg-white rounded-2xl border border-rose-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-modal-pop">
                     <div className="flex items-center gap-3 text-rose-600 font-bold text-base">
                       <span className="p-2 bg-rose-100 rounded-xl">⚠️</span>
                       <span>Konfirmasi Pemulihan Database</span>
@@ -1355,7 +1355,7 @@ export function SettingsPage() {
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

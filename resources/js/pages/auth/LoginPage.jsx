@@ -84,7 +84,7 @@ export function LoginPage() {
       {/* =========================================================================
           TOP NAVIGATION BAR (Responsive on all laptop & mobile screens)
           ========================================================================= */}
-      <header className="max-w-7xl w-full mx-auto flex items-center justify-between z-20 shrink-0 pt-0.5">
+      <header className="max-w-7xl w-full mx-auto flex items-center justify-between z-20 shrink-0 pt-0.5 animate-slide-down">
         {/* Brand Left */}
         <div className="flex items-center gap-3">
           <img
@@ -156,7 +156,7 @@ export function LoginPage() {
           {/* =====================================================================
               LEFT ARTWORK: Dotted Pillar + Growth Arrow Box + Floating Speech Box
               ===================================================================== */}
-          <div className="hidden lg:flex lg:col-span-3 xl:col-span-3 justify-center items-end h-[340px] xl:h-[390px] 2xl:h-[430px] relative pb-6 xl:pb-10">
+          <div className="hidden lg:flex lg:col-span-3 xl:col-span-3 justify-center items-end h-[340px] xl:h-[390px] 2xl:h-[430px] relative pb-6 xl:pb-10 animate-float">
             <svg
               className="w-full h-full max-h-[320px] xl:max-h-[370px] 2xl:max-h-[410px] overflow-visible"
               viewBox="0 0 240 360"
@@ -250,14 +250,14 @@ export function LoginPage() {
               CENTER LOGIN CARD (Pure White rounded-[28px]/[32px] card)
               ===================================================================== */}
           <div className="lg:col-span-6 xl:col-span-6 flex justify-center z-20 w-full px-2">
-            <div className="w-full max-w-[400px] xl:max-w-[425px] bg-white border border-[#E0EFF2] rounded-2xl sm:rounded-3xl lg:rounded-[28px] xl:rounded-[32px] p-5 sm:p-7 lg:p-6 xl:p-8 shadow-xl shadow-[#16323B]/8 backdrop-blur animate-modal-pop">
+            <div className="w-full max-w-[400px] xl:max-w-[425px] bg-white border border-[#E0EFF2] rounded-2xl sm:rounded-3xl lg:rounded-[28px] xl:rounded-[32px] p-5 sm:p-7 lg:p-6 xl:p-8 shadow-xl shadow-[#16323B]/8 backdrop-blur animate-card-enter hover:shadow-2xl hover:shadow-[#27C5E5]/10 transition-all duration-300">
               
               {/* Header Title & Subtitle */}
               <div className="text-center mb-4 sm:mb-5 flex flex-col items-center">
                 <img
                   src="/images/fintoko-mark.png"
                   alt="FinToko"
-                  className="w-12 h-12 object-contain mb-2"
+                  className="w-12 h-12 object-contain mb-2 hover:scale-110 active:rotate-6 transition-all duration-300 cursor-pointer"
                 />
                 <h1 className="text-xl sm:text-2xl xl:text-[26px] font-black text-[#10262E] tracking-tight">
                   Agent Login
@@ -345,16 +345,18 @@ export function LoginPage() {
                   </button>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit Button with Interactive Motion Feedback */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full mt-1.5 py-3 sm:py-3.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#27C5E5]/25 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 btn-press"
+                  className={`w-full mt-1.5 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-[#27C5E5] to-[#38BFE0] hover:from-[#1eb5d4] hover:to-[#27C5E5] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#27C5E5]/25 transition-all cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2 btn-press ${
+                    isSubmitting ? 'animate-pulse scale-[0.99] shadow-lg shadow-[#27C5E5]/40' : 'hover:scale-[1.01]'
+                  }`}
                 >
                   {isSubmitting ? (
                     <>
-                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Memproses...</span>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Mengautentikasi Sesi...</span>
                     </>
                   ) : (
                     <span>Sign in</span>
@@ -379,7 +381,7 @@ export function LoginPage() {
           {/* =====================================================================
               RIGHT ARTWORK: Woman sitting on white cube with laptop + Dotted Pillar
               ===================================================================== */}
-          <div className="hidden lg:flex lg:col-span-3 xl:col-span-3 justify-center items-end h-[340px] xl:h-[390px] 2xl:h-[430px] relative pb-6 xl:pb-10">
+          <div className="hidden lg:flex lg:col-span-3 xl:col-span-3 justify-center items-end h-[340px] xl:h-[390px] 2xl:h-[430px] relative pb-6 xl:pb-10 animate-float" style={{ animationDelay: '1.2s' }}>
             <svg
               className="w-full h-full max-h-[320px] xl:max-h-[370px] 2xl:max-h-[410px] overflow-visible"
               viewBox="0 0 280 360"

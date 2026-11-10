@@ -568,7 +568,7 @@ export function PurchaseDetailPage() {
       {/* Modal Bayar Sisa Utang */}
       {isPayDebtOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10262E]/40 backdrop-blur-xs animate-backdrop">
-          <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-xl w-full max-w-md p-6 space-y-4 animate-modal-pop">
             <h3 className="text-base font-bold text-[#16323B]">Bayar Sisa Utang Supplier</h3>
             <p className="text-xs text-[#577782]">
               Sisa utang untuk invoice ini: <strong className="text-rose-600 font-mono">{formatRupiah(remainingDebt)}</strong>
@@ -641,7 +641,7 @@ export function PurchaseDetailPage() {
       {/* Modal Batalkan Transaksi */}
       {isCancelOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10262E]/40 backdrop-blur-xs animate-backdrop">
-          <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-white rounded-2xl border border-[#D7EBEF] shadow-xl w-full max-w-md p-6 space-y-4 animate-modal-pop">
             <h3 className="text-base font-bold text-rose-600">Batalkan Transaksi Pembelian?</h3>
             <p className="text-xs text-[#577782]">
               Jika barang sudah berstatus diterima, stok produk akan ditarik kembali dan jurnal akuntansi akan dibatalkan (reversal).
