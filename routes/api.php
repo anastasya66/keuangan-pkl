@@ -51,6 +51,9 @@ Route::get('/health', [HealthController::class, 'index']);
 // Public Store & Application Settings
 Route::get('/settings/public', [SettingsController::class, 'publicSettings']);
 
+// Public Payment Gateway Webhook
+Route::post('/webhooks/payment/midtrans', [PosController::class, 'handleMidtransWebhook']);
+
 // Authentication Routes
 Route::prefix('auth')->group(function () {
     // Rate-limited login (10 attempts per minute)
@@ -112,6 +115,11 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::get('sales/{id}', [PosController::class, 'showSale'])->whereNumber('id');
         Route::get('sales/{id}/receipt', [PosController::class, 'receipt'])->whereNumber('id');
         Route::post('sales/{id}/cancel', [PosController::class, 'cancel'])->whereNumber('id');
+        Route::post('payments/qris', [PosController::class, 'createQris']);
+        Route::get('payments/{orderId}/status', [PosController::class, 'checkPaymentStatus']);
+        Route::post('payments/{orderId}/simulate-pay', [PosController::class, 'simulatePayment']);
+        Route::post('payments/{orderId}/cancel', [PosController::class, 'cancelPayment']);
+        Route::get('bank-accounts', [PosController::class, 'bankAccounts']);
     });
 
     // Financial Management: Transaction Categories

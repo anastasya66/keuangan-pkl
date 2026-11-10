@@ -243,3 +243,4 @@ export function SalesPurchaseChart({
 }
 
 export default SalesPurchaseChart;
+

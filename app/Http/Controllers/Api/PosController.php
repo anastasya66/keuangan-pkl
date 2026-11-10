@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChartOfAccount;
 use App\Models\Sale;
+use App\Services\Payment\QrisPaymentService;
 use App\Services\PosSaleService;
+use App\Services\SettingsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +15,8 @@ use Symfony\Component\HttpFoundation\Response;
 class PosController extends Controller
 {
     public function __construct(
-        protected PosSaleService $posSaleService
+        protected PosSaleService $posSaleService,
+        protected QrisPaymentService $qrisPaymentService
     ) {}
 
     /**
@@ -65,6 +69,7 @@ class PosController extends Controller
             'paid_amount' => ['required', 'numeric', 'min:0'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'tax_amount' => ['nullable', 'numeric', 'min:0'],
+            'order_id' => ['nullable', 'string', 'max:64'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'exists:products,id'],
@@ -156,5 +161,173 @@ class PosController extends Controller
             'data' => $cancelled,
         ], Response::HTTP_OK);
     }
-}
 
+    /**
+     * Inisiasi QRIS Dinamis untuk kasir.
+     */
+    public function createQris(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:1'],
+            'customer_name' => ['nullable', 'string', 'max:100'],
+            'items_count' => ['nullable', 'integer'],
+        ]);
+
+        $transaction = $this->qrisPaymentService->initiateQris(
+            amount: (float) $validated['amount'],
+            userId: $request->user()?->id,
+            customerName: $validated['customer_name'] ?? null,
+            metadata: [
+                'items_count' => $validated['items_count'] ?? 0,
+                'source' => 'pos_checkout',
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kode QRIS dinamis berhasil dibuat',
+            'data' => [
+                'order_id' => $transaction->order_id,
+                'gross_amount' => (float) $transaction->gross_amount,
+                'status' => $transaction->status,
+                'qr_string' => $transaction->qr_string,
+                'qr_image_url' => $transaction->qr_image_url,
+                'expires_at' => $transaction->expires_at?->toIso8601String(),
+                'expires_in_seconds' => $transaction->expires_at ? max(0, now()->diffInSeconds($transaction->expires_at, false)) : 900,
+            ],
+        ], Response::HTTP_CREATED);
+    }
+
+    /**
+     * Cek status pembayaran transaksi QRIS secara real-time.
+     */
+    public function checkPaymentStatus(string $orderId): JsonResponse
+    {
+        $transaction = $this->qrisPaymentService->checkStatus($orderId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status pembayaran berhasil diperiksa',
+            'data' => [
+                'order_id' => $transaction->order_id,
+                'status' => $transaction->status,
+                'is_paid' => $transaction->isPaid(),
+                'is_pending' => $transaction->isPending(),
+                'is_expired' => $transaction->isExpired(),
+                'paid_at' => $transaction->paid_at?->toIso8601String(),
+                'gross_amount' => (float) $transaction->gross_amount,
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * Simulasi bayar sukses QRIS (untuk pengujian / demo).
+     */
+    public function simulatePayment(string $orderId): JsonResponse
+    {
+        $transaction = $this->qrisPaymentService->simulatePayment($orderId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Simulasi pembayaran QRIS berhasil! Status lunas.',
+            'data' => [
+                'order_id' => $transaction->order_id,
+                'status' => $transaction->status,
+                'is_paid' => $transaction->isPaid(),
+                'paid_at' => $transaction->paid_at?->toIso8601String(),
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * Batalkan transaksi QRIS sebelum kedaluwarsa.
+     */
+    public function cancelPayment(string $orderId): JsonResponse
+    {
+        $transaction = $this->qrisPaymentService->cancelPayment($orderId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaksi QRIS berhasil dibatalkan',
+            'data' => [
+                'order_id' => $transaction->order_id,
+                'status' => $transaction->status,
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * Dapatkan daftar rekening bank toko untuk metode transfer bank kasir.
+     */
+    public function bankAccounts(): JsonResponse
+    {
+        // 1. Cek dari Chart of Accounts tipe bank/kas
+        $accounts = ChartOfAccount::where('account_type', 'assets')
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->where('account_name', 'like', '%bank%')
+                  ->orWhere('account_name', 'like', '%bca%')
+                  ->orWhere('account_name', 'like', '%mandiri%')
+                  ->orWhere('account_name', 'like', '%bni%')
+                  ->orWhere('account_name', 'like', '%bri%');
+            })
+            ->get();
+
+        $bankList = [];
+        if ($accounts->isNotEmpty()) {
+            foreach ($accounts as $acc) {
+                $bankList[] = [
+                    'id' => $acc->id,
+                    'bank' => preg_replace('/.*(BCA|Mandiri|BNI|BRI|BSI|Permata).*/i', '$1', $acc->account_name),
+                    'account_name' => 'FinToko Official',
+                    'account_number' => $acc->account_code === '1120' ? '8830-1928-4100' : '137-00-1928472-1',
+                    'display_name' => $acc->account_name,
+                ];
+            }
+        }
+
+        // Fallback default bank accounts if none found
+        if (empty($bankList)) {
+            $bankList = [
+                [
+                    'id' => 1,
+                    'bank' => 'BCA',
+                    'account_name' => 'FinToko Official Store',
+                    'account_number' => '8830192841',
+                    'display_name' => 'Bank BCA - FinToko Official',
+                ],
+                [
+                    'id' => 2,
+                    'bank' => 'Mandiri',
+                    'account_name' => 'FinToko Official Store',
+                    'account_number' => '1370019284721',
+                    'display_name' => 'Bank Mandiri - FinToko Retail',
+                ],
+                [
+                    'id' => 3,
+                    'bank' => 'BRI',
+                    'account_name' => 'FinToko Official Store',
+                    'account_number' => '034101002345501',
+                    'display_name' => 'Bank BRI - FinToko Minimarket',
+                ],
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar rekening bank toko berhasil dimuat',
+            'data' => $bankList,
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * Webhook receiver untuk Midtrans Payment Gateway.
+     */
+    public function handleMidtransWebhook(Request $request): JsonResponse
+    {
+        $signature = $request->header('X-Signature', $request->input('signature_key'));
+        $result = $this->qrisPaymentService->handleWebhook($request->all(), $signature);
+
+        return response()->json($result, $result['success'] ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
+    }
+}

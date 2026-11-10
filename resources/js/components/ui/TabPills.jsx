@@ -38,3 +38,4 @@ export function TabPills({ tabs = [], activeTab, onChange, className = '' }) {
 }
 
 export default TabPills;
+

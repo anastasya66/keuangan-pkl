@@ -24,3 +24,4 @@ export function SearchPill({
 }
 
 export default SearchPill;
+

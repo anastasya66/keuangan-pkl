@@ -46,3 +46,4 @@ export function StatusBadge({ status, label, className = '' }) {
 }
 
 export default StatusBadge;
+

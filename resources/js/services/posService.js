@@ -40,7 +40,31 @@ export const posService = {
     const response = await api.get('/payment-methods', { params: { active_only: 1 } });
     return response.data;
   },
+
+  async createQrisPayment(data) {
+    const response = await api.post('/pos/payments/qris', data);
+    return response.data;
+  },
+
+  async checkPaymentStatus(orderId) {
+    const response = await api.get(`/pos/payments/${encodeURIComponent(orderId)}/status`);
+    return response.data;
+  },
+
+  async simulatePayment(orderId) {
+    const response = await api.post(`/pos/payments/${encodeURIComponent(orderId)}/simulate-pay`);
+    return response.data;
+  },
+
+  async cancelPayment(orderId) {
+    const response = await api.post(`/pos/payments/${encodeURIComponent(orderId)}/cancel`);
+    return response.data;
+  },
+
+  async getBankAccounts() {
+    const response = await api.get('/pos/bank-accounts');
+    return response.data;
+  },
 };
 
 export default posService;
-

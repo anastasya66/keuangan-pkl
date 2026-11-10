@@ -242,4 +242,154 @@ class PosSaleModuleTest extends TestCase
             'status' => 'reversed',
         ]);
     }
+
+    public function test_cashier_can_create_qris_payment_and_poll_status(): void
+    {
+        $response = $this->withHeader('Authorization', "Bearer {$this->staffToken}")
+            ->postJson('/api/v1/pos/payments/qris', [
+                'amount' => 50000,
+                'customer_name' => 'Budi Santoso',
+                'items_count' => 2,
+            ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.gross_amount', 50000)
+            ->assertJsonPath('data.status', 'pending');
+
+        $orderId = $response->json('data.order_id');
+        $this->assertNotEmpty($orderId);
+        $this->assertNotEmpty($response->json('data.qr_image_url'));
+
+        // Cek status polling
+        $statusResponse = $this->withHeader('Authorization', "Bearer {$this->staffToken}")
+            ->getJson("/api/v1/pos/payments/{$orderId}/status");
+
+        $statusResponse->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.order_id', $orderId)
+            ->assertJsonPath('data.is_pending', true)
+            ->assertJsonPath('data.is_paid', false);
+    }
+
+    public function test_cashier_can_simulate_qris_payment_and_checkout_sale(): void
+    {
+        // 1. Buat QRIS
+        $qrisResponse = $this->withHeader('Authorization', "Bearer {$this->staffToken}")
+            ->postJson('/api/v1/pos/payments/qris', [
+                'amount' => 12000,
+                'customer_name' => 'Pak Joko',
+            ]);
+
+        $orderId = $qrisResponse->json('data.order_id');
+
+        // 2. Simulasi pembayaran sukses
+        $simResponse = $this->withHeader('Authorization', "Bearer {$this->staffToken}")
+            ->postJson("/api/v1/pos/payments/{$orderId}/simulate-pay");
+
+        $simResponse->assertOk()
+            ->assertJsonPath('data.is_paid', true)
+            ->assertJsonPath('data.status', 'settlement');
+
+        // 3. Checkout dengan order_id yang sudah lunas
+        $checkoutResponse = $this->withHeader('Authorization', "Bearer {$this->staffToken}")
+            ->postJson('/api/v1/pos/checkout', [
+                'customer_name' => 'Pak Joko',
+                'payment_method' => 'qris',
+                'paid_amount' => 12000,
+                'order_id' => $orderId,
+                'items' => [
+                    [
+                        'product_id' => $this->productA->id,
+                        'quantity' => 1,
+                    ],
+                ],
+            ]);
+
+        $checkoutResponse->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.payment_method', 'qris');
+
+        // Pastikan transaksi payment terhubung ke sale_id
+        $saleId = $checkoutResponse->json('data.id');
+        $this->assertDatabaseHas('payment_transactions', [
+            'order_id' => $orderId,
+            'sale_id' => $saleId,
+            'status' => 'settlement',
+        ]);
+    }
+
+    public function test_checkout_fails_if_qris_not_yet_paid(): void
+    {
+        // Buat QRIS tapi TIDAK dibayar (masih pending)
+        $qrisResponse = $this->withHeader('Authorization', "Bearer {$this->staffToken}")
+            ->postJson('/api/v1/pos/payments/qris', [
+                'amount' => 12000,
+            ]);
+
+        $orderId = $qrisResponse->json('data.order_id');
+
+        $checkoutResponse = $this->withHeader('Authorization', "Bearer {$this->staffToken}")
+            ->postJson('/api/v1/pos/checkout', [
+                'customer_name' => 'Pak Joko',
+                'payment_method' => 'qris',
+                'paid_amount' => 12000,
+                'order_id' => $orderId,
+                'items' => [
+                    [
+                        'product_id' => $this->productA->id,
+                        'quantity' => 1,
+                    ],
+                ],
+            ]);
+
+        $checkoutResponse->assertStatus(422)
+            ->assertJsonValidationErrors(['payment']);
+    }
+
+    public function test_cashier_can_retrieve_bank_accounts(): void
+    {
+        $response = $this->withHeader('Authorization', "Bearer {$this->staffToken}")
+            ->getJson('/api/v1/pos/bank-accounts');
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['data' => [['bank', 'account_number', 'account_name']]]);
+    }
+
+    public function test_can_process_midtrans_webhook_for_qris(): void
+    {
+        // 1. Buat transaksi QRIS di database
+        $qrisResponse = $this->withHeader('Authorization', "Bearer {$this->staffToken}")
+            ->postJson('/api/v1/pos/payments/qris', [
+                'amount' => 24000,
+            ]);
+
+        $orderId = $qrisResponse->json('data.order_id');
+
+        // 2. Kirim Webhook Midtrans dari gateway
+        $webhookResponse = $this->postJson('/api/v1/webhooks/payment/midtrans', [
+            'order_id' => $orderId,
+            'status_code' => '200',
+            'gross_amount' => '24000.00',
+            'payment_type' => 'qris',
+            'transaction_status' => 'settlement',
+            'settlement_time' => now()->toDateTimeString(),
+        ]);
+
+        $webhookResponse->assertOk()
+            ->assertJsonPath('success', true);
+
+        // Verifikasi payment transaction terupdate
+        $this->assertDatabaseHas('payment_transactions', [
+            'order_id' => $orderId,
+            'status' => 'settlement',
+        ]);
+
+        // Verifikasi webhook ter-audit
+        $this->assertDatabaseHas('payment_webhook_events', [
+            'order_id' => $orderId,
+            'processed' => true,
+        ]);
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\InventoryMovement;
+use App\Models\PaymentTransaction;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -145,6 +146,16 @@ class PosSaleService
                 ]);
             }
 
+            // Validasi status lunas untuk QRIS jika order_id disertakan
+            if ($paymentMethod === 'qris' && !empty($data['order_id'])) {
+                $payTx = PaymentTransaction::where('order_id', $data['order_id'])->first();
+                if ($payTx && !$payTx->isPaid()) {
+                    throw ValidationException::withMessages([
+                        'payment' => "Pembayaran QRIS untuk order {$data['order_id']} belum berstatus sukses / lunas.",
+                    ]);
+                }
+            }
+
             $changeAmount = $paymentMethod === 'cash' ? max(0.00, round($paidAmount - $grandTotal, 2)) : 0.00;
 
             // 2. Simpan master transaksi penjualan
@@ -164,6 +175,11 @@ class PosSaleService
                 'cogs_total' => $totalCogs,
                 'notes' => $data['notes'] ?? null,
             ]);
+
+            // Kaitkan transaksi gateway jika ada
+            if (!empty($data['order_id'])) {
+                PaymentTransaction::where('order_id', $data['order_id'])->update(['sale_id' => $sale->id]);
+            }
 
             // 3. Simpan detail item & kurangi stok & catat mutasi stok
             foreach ($preparedItems as $prep) {
@@ -279,6 +295,7 @@ class PosSaleService
 
         return [
             'store_name' => $settings->get('store_name', config('app.name', 'FinToko')),
+            'store_logo' => $settings->get('store_logo'),
             'store_address' => $settings->get('store_address', 'Jl. Pemuda No. 45, Semarang'),
             'store_phone' => $settings->get('store_phone', '0812-3456-7890'),
             'store_email' => $settings->get('store_email', 'info@fintoko.id'),
@@ -292,6 +309,7 @@ class PosSaleService
             'items' => $sale->items->map(function ($item) {
                 return [
                     'name' => $item->product?->name ?? 'Item',
+                    'sku' => $item->product?->sku ?? '',
                     'quantity' => (float) $item->quantity,
                     'unit' => $item->product?->unit?->symbol ?? 'pcs',
                     'unit_price' => (float) $item->unit_price,
@@ -307,6 +325,7 @@ class PosSaleService
             'change_amount' => (float) $sale->change_amount,
             'payment_method' => strtoupper($sale->payment_method),
             'status' => $sale->status,
+            'notes' => $sale->notes,
             'footer_message' => $settings->get('receipt_footer', 'Terima kasih telah berbelanja di FinToko!'),
         ];
     }

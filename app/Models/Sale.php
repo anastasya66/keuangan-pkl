@@ -91,6 +91,14 @@ class Sale extends Model
     }
 
     /**
+     * Transaksi gateway pembayaran (QRIS, transfer, dll).
+     */
+    public function paymentTransactions(): HasMany
+    {
+        return $this->hasMany(PaymentTransaction::class);
+    }
+
+    /**
      * Laba kotor dari transaksi penjualan (Grand Total - HPP).
      */
     public function getGrossProfitAttribute(): float
