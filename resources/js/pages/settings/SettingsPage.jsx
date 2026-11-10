@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import settingsService from '../../services/settingsService';
 import { formatRupiah } from '../../utils/currency';
+import PageHeader from '../../components/ui/PageHeader';
 import {
   IconSettings,
   IconShield,
@@ -328,21 +329,14 @@ export function SettingsPage() {
       )}
 
       {/* Header Bar */}
-      <div>
-        <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-          <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
-            <IconSettings className="w-5 h-5" />
-          </span>
-          Pusat Pengaturan Sistem (Settings)
-        </h1>
-        <p className="text-xs text-[#577782] mt-1">
-          Pusat kendali konfigurasi toko, hak akses granular, kasir POS, akuntansi, dan pemeliharaan database
-        </p>
-      </div>
+      <PageHeader
+        title="Pengaturan Sistem (Settings)"
+        subtitle="Pusat kendali konfigurasi toko, kasir POS, akuntansi, hak akses, dan pemeliharaan database."
+      />
 
       {/* Settings Navigation Tabs */}
-      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-1.5 shadow-xs overflow-x-auto no-scrollbar">
-        <div className="flex items-center gap-1 min-w-max">
+      <div className="bg-white border border-[#E7ECEE] rounded-2xl p-2 shadow-xs overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 min-w-max">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -350,10 +344,10 @@ export function SettingsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   isActive
-                    ? 'bg-[#167A93] text-white shadow-xs'
-                    : 'text-[#577782] hover:text-[#16323B] hover:bg-[#F3FBFC]'
+                    ? 'bg-[#20282D] text-white shadow-xs'
+                    : 'text-[#879197] hover:text-[#20282D] hover:bg-[#F1F4F5]'
                 }`}
               >
                 <Icon className="w-4 h-4" />

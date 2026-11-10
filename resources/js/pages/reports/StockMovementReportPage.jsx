@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { RefreshCw, FileText, FileSpreadsheet } from 'lucide-react';
 import reportService from '../../services/reportService';
+import PageHeader from '../../components/ui/PageHeader';
+import StatusBadge from '../../components/ui/StatusBadge';
 
 export default function StockMovementReportPage() {
   // Rentang tanggal default: 30 hari ke belakang sampai hari ini agar semua transaksi terbaru langsung tampil
@@ -140,70 +143,41 @@ export default function StockMovementReportPage() {
 
   return (
     <div className="space-y-4">
-      {/* 1. Header Bar Proporsional & Ringkas */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white border border-[#D7EBEF] rounded-2xl p-4 sm:p-5 shadow-xs">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="p-2.5 bg-[#167A93] text-white rounded-xl shadow-xs shrink-0">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-            </span>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold text-[#16323B] tracking-tight">Riwayat Keluar Masuk</h1>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Real-Time
-                </span>
-              </div>
-              <p className="text-xs text-[#577782] mt-0.5">
-                Catatan audit pergerakan keluar dan masuk inventaris toko.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons Group */}
-        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">
-          {/* Real-time Refresh */}
+      {/* 1. Header Bar */}
+      <PageHeader
+        title="Riwayat Mutasi Persediaan"
+        subtitle="Catatan audit pergerakan keluar dan masuk inventaris stok fisik toko."
+      >
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={fetchReport}
             disabled={loading}
             title="Muat ulang dan sinkronkan data mutasi terbaru"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F8FDFE] hover:bg-[#D7EBEF]/50 text-[#167A93] border border-[#D7EBEF] font-semibold text-xs transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white border border-[#E7ECEE] hover:bg-[#F1F4F5] text-[#20282D] font-bold text-xs transition shadow-xs cursor-pointer disabled:opacity-50"
           >
-            <svg className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#27C5E5]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#55BFD8]' : ''}`} />
             <span>{loading ? 'Menyinkronkan...' : 'Sinkronkan'}</span>
           </button>
 
-          {/* Export PDF */}
           <button
             onClick={handleExportPdf}
             disabled={exportingPdf || loading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-xs transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#E5F6FA] text-[#37AFCB] hover:bg-[#D0F1F8] font-bold text-xs transition shadow-xs disabled:opacity-50 cursor-pointer"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
+            <FileText className="w-3.5 h-3.5" />
             <span>{exportingPdf ? 'Mengunduh...' : 'PDF'}</span>
           </button>
 
-          {/* Export Excel */}
           <button
             onClick={handleExportExcel}
             disabled={exportingExcel || loading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold text-xs transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#EBF7F2] text-[#48B58B] hover:bg-[#D5EFE3] font-bold text-xs transition shadow-xs disabled:opacity-50 cursor-pointer"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+            <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>{exportingExcel ? 'Mengunduh...' : 'Excel'}</span>
           </button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* 2. Summary Bar Minimalis */}
       <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs">

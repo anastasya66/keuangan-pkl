@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { RefreshCw, FileText, FileSpreadsheet } from 'lucide-react';
 import categoryService from '../../services/categoryService';
 import reportService from '../../services/reportService';
 import { formatRupiah } from '../../utils/currency';
+import PageHeader from '../../components/ui/PageHeader';
+import StatusBadge from '../../components/ui/StatusBadge';
 
 export default function InventoryReportPage() {
   const [categories, setCategories] = useState([]);
@@ -123,66 +126,40 @@ export default function InventoryReportPage() {
   return (
     <div className="space-y-5">
       {/* 1. Header Section */}
-      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#D7EBEF]/60 text-[#167A93] shrink-0">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </span>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-extrabold text-[#16323B] tracking-tight">
-                  Sisa Stok Toko
-                </h1>
-                <p className="text-xs text-[#577782] mt-0.5">
-                  Informasi pergerakan inventaris fisik dari pembelian dan penjualan kasir.
-                </p>
-              </div>
-            </div>
-          </div>
+      <PageHeader
+        title="Sisa Stok Toko"
+        subtitle="Informasi pergerakan inventaris fisik dari pembelian dan penjualan kasir."
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={fetchReport}
+            disabled={loading}
+            title="Sinkronisasi data stok terbaru"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white border border-[#E7ECEE] hover:bg-[#F1F4F5] text-[#20282D] font-bold text-xs transition shadow-xs cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#55BFD8]' : ''}`} />
+            <span>{loading ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
+          </button>
 
-          {/* Action buttons */}
-          <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center shrink-0">
-            {/* Real-time Refresh Button */}
-            <button
-              onClick={fetchReport}
-              disabled={loading}
-              title="Sinkronisasi data stok terbaru"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F8FDFE] hover:bg-[#D7EBEF]/50 text-[#167A93] border border-[#D7EBEF] font-semibold text-xs transition-all shadow-2xs cursor-pointer disabled:opacity-50"
-            >
-              <svg className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#27C5E5]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span>{loading ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
-            </button>
+          <button
+            onClick={handleExportPdf}
+            disabled={exportingPdf || loading}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#E5F6FA] text-[#37AFCB] hover:bg-[#D0F1F8] font-bold text-xs transition shadow-xs disabled:opacity-50 cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>{exportingPdf ? 'Mengunduh...' : 'PDF'}</span>
+          </button>
 
-            {/* Export PDF */}
-            <button
-              onClick={handleExportPdf}
-              disabled={exportingPdf || loading}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-xs transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              <span>{exportingPdf ? 'Mengunduh...' : 'PDF'}</span>
-            </button>
-
-            {/* Export Excel */}
-            <button
-              onClick={handleExportExcel}
-              disabled={exportingExcel || loading}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold text-xs transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span>{exportingExcel ? 'Mengunduh...' : 'Excel'}</span>
-            </button>
-          </div>
+          <button
+            onClick={handleExportExcel}
+            disabled={exportingExcel || loading}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#EBF7F2] text-[#48B58B] hover:bg-[#D5EFE3] font-bold text-xs transition shadow-xs disabled:opacity-50 cursor-pointer"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>{exportingExcel ? 'Mengunduh...' : 'Excel'}</span>
+          </button>
         </div>
+      </PageHeader>
 
         {/* Real-time sync note */}
         <div className="mt-3 pt-3 border-t border-[#D7EBEF]/60 flex items-center justify-between text-[11px] text-[#577782]">
@@ -196,7 +173,6 @@ export default function InventoryReportPage() {
             </span>
           )}
         </div>
-      </div>
 
       {/* 2. Ringkasan / Summary Bar yang Rapi & Minimalis */}
       <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs">

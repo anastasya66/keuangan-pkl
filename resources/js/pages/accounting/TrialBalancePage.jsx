@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Printer } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import accountingService from '../../services/accountingService';
 import { formatRupiah } from '../../utils/currency';
+import PageHeader from '../../components/ui/PageHeader';
 
 export function TrialBalancePage() {
   const { user } = useAuth();
@@ -75,24 +77,19 @@ export function TrialBalancePage() {
       )}
 
       {/* Header Page */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-[#16323B] flex items-center gap-2">
-            <span>Neraca Saldo (Trial Balance)</span>
-          </h1>
-          <p className="text-sm text-[#5A7C85] mt-1">
-            Daftar saldo debit dan kredit seluruh akun untuk memverifikasi keseimbangan persamaan akuntansi.
-          </p>
-        </div>
-
+      <PageHeader
+        title="Neraca Saldo (Trial Balance)"
+        subtitle="Daftar saldo debit dan kredit seluruh akun untuk memverifikasi keseimbangan persamaan akuntansi."
+      >
         <button
           type="button"
           onClick={() => window.print()}
-          className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-white hover:bg-[#F3FBFC] text-[#16323B] border border-[#D7EBEF] transition-all cursor-pointer flex items-center gap-2 shadow-xs"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#F1F4F5] hover:bg-[#E7ECEE] text-[#20282D] font-bold text-xs transition cursor-pointer"
         >
-          <span>🖨️ Cetak Laporan</span>
+          <Printer className="w-3.5 h-3.5" />
+          <span>Cetak Laporan</span>
         </button>
-      </div>
+      </PageHeader>
 
       {/* Control Panel: As Of Date & Kategori */}
       <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">

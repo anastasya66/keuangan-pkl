@@ -9,30 +9,33 @@
 @theme {
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   
-  /* 60% Primary Background & Surfaces (Reference 1) */
-  --color-brand-bg: #EAF8FA;
-  --color-brand-bg-alt: #F3FBFC;
+  /* Primary Brand Palette */
+  --color-brand-primary: #55BFD8;
+  --color-brand-secondary: #79D5E8;
+  --color-brand-light: #E5F6FA;
+  --color-brand-accent: #37AFCB;
+  
+  /* Backgrounds */
+  --color-brand-bg: #F1F4F5;
+  --color-brand-sidebar: #F8FAFA;
   --color-brand-surface: #FFFFFF;
-  --color-brand-surface-subtle: #E5F5F8;
+  --color-brand-input: #FFFFFF;
   
-  /* 30% Secondary Color & Supporting Tokens */
-  --color-brand-primary: #38BFE0;
-  --color-brand-secondary: #79CFE0;
-  --color-brand-muted: #A9DDE7;
-  --color-brand-border: #D7EBEF;
-  --color-brand-border-light: #EBF5F8;
+  /* Typography */
+  --color-text-main: #20282D;
+  --color-text-heading: #20282D;
+  --color-text-secondary: #879197;
+  --color-text-muted: #A6AFB3;
   
-  /* 10% Accent Colors */
-  --color-accent-cyan: #27C5E5;
-  --color-accent-green: #36B878;
-  --color-accent-orange: #F0B75A;
-  --color-accent-red: #E66D79;
+  /* Status Colors */
+  --color-status-success: #48B58B;
+  --color-status-danger: #E47777;
+  --color-status-warning: #E9B45D;
+  --color-status-info: #55BFD8;
   
-  /* Typography Colors */
-  --color-text-main: #16323B;
-  --color-text-heading: #10262E;
-  --color-text-muted: #577782;
-  --color-text-subtle: #8EA6AF;
+  /* Borders */
+  --color-brand-border: #E7ECEE;
+  --color-brand-border-hover: #D5E3E7;
 }
 
 /* Custom Keyframe Animations for Physics-based Micro-interactions & Motion */
@@ -270,12 +273,12 @@
 
 /* Global Transitions */
 * {
-  border-color: #D7EBEF;
+  border-color: #E7ECEE;
 }
 
 body {
-  background-color: #EAF8FA;
-  color: #16323B;
+  background-color: #F1F4F5;
+  color: #20282D;
   font-family: 'Plus Jakarta Sans', sans-serif;
   overflow-x: hidden;
 }

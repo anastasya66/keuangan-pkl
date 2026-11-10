@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import accountingService from '../../services/accountingService';
 import { formatRupiah } from '../../utils/currency';
+import PageHeader from '../../components/ui/PageHeader';
 
 export function GeneralLedgerPage() {
   const { user } = useAuth();
@@ -88,14 +89,10 @@ export function GeneralLedgerPage() {
       )}
 
       {/* Header Page */}
-      <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-[#16323B] flex items-center gap-2">
-          <span>Buku Besar (General Ledger)</span>
-        </h1>
-        <p className="text-sm text-[#5A7C85] mt-1">
-          Riwayat mutasi transaksi posted dan akumulasi saldo berjalan per akun akuntansi.
-        </p>
-      </div>
+      <PageHeader
+        title="Buku Besar (General Ledger)"
+        subtitle="Riwayat mutasi transaksi posted dan akumulasi saldo berjalan per akun akuntansi."
+      />
 
       {/* Control Panel: Pilih Akun & Rentang Tanggal */}
       <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">

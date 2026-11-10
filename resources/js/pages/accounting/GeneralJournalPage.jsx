@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import DataTable from '../../components/common/DataTable';
 import Pagination from '../../components/common/Pagination';
 import SearchInput from '../../components/common/SearchInput';
+import PageHeader from '../../components/ui/PageHeader';
+import StatusBadge from '../../components/ui/StatusBadge';
 import useAuth from '../../hooks/useAuth';
 import accountingService from '../../services/accountingService';
 import { formatRupiah } from '../../utils/currency';
@@ -165,27 +168,22 @@ export function GeneralJournalPage() {
       )}
 
       {/* Header Page */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#10262E] flex items-center gap-2">
-            <span>📝</span> Jurnal Umum (General Journal)
-          </h1>
-          <p className="text-xs text-[#577782] mt-1">
-            Daftar seluruh entri jurnal akuntansi berpasangan (double-entry bookkeeping).
-          </p>
-        </div>
-
+      <PageHeader
+        title="Jurnal Umum (General Journal)"
+        subtitle="Daftar seluruh entri jurnal akuntansi berpasangan (double-entry bookkeeping)."
+      >
         <button
           type="button"
           onClick={() => {
             setSelectedJournal(null);
             setIsModalOpen(true);
           }}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#27C5E5] to-[#38BFE0] hover:from-[#1FB2D0] hover:to-[#2FB0CF] text-white font-bold text-xs shadow-md shadow-[#38BFE0]/25 transition-all cursor-pointer self-start sm:self-auto"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#20282D] hover:bg-black text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
         >
-          <span>+</span> Buat Jurnal Baru
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>Buat Jurnal Baru</span>
         </button>
-      </div>
+      </PageHeader>
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-3xl border border-[#D7EBEF] shadow-xs flex flex-col lg:flex-row gap-3 items-center justify-between">

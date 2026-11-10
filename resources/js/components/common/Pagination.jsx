@@ -9,7 +9,7 @@ export function Pagination({ pagination, onPageChange, currentPage, lastPage, to
   if (!total || total === 0) return null;
   if (last_page <= 1) {
     return (
-      <div className="flex items-center justify-between text-xs text-[#577782] px-4 py-3 bg-[#F3FBFC]/40 border-t border-[#D7EBEF]">
+      <div className="flex items-center justify-between text-xs text-[#879197] px-4 py-3 bg-[#F8FAFA] border-t border-[#E7ECEE] rounded-b-2xl">
         <span>Menampilkan seluruh <strong>{total}</strong> data</span>
       </div>
     );
@@ -19,7 +19,7 @@ export function Pagination({ pagination, onPageChange, currentPage, lastPage, to
   const to = Math.min(current_page * per_page, total);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 bg-[#F3FBFC]/40 border-t border-[#D7EBEF] text-xs text-[#577782]">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 bg-[#F8FAFA] border-t border-[#E7ECEE] text-xs text-[#879197] rounded-b-2xl">
       <div>
         Menampilkan <strong>{from}</strong> - <strong>{to}</strong> dari <strong>{total}</strong> data
       </div>
@@ -29,12 +29,12 @@ export function Pagination({ pagination, onPageChange, currentPage, lastPage, to
           type="button"
           disabled={current_page <= 1}
           onClick={() => onPageChange(current_page - 1)}
-          className="px-3 py-1.5 rounded-lg bg-white border border-[#D7EBEF] text-[#16323B] hover:bg-[#F3FBFC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-2xs font-medium"
+          className="px-3 py-1.5 rounded-full bg-white border border-[#E7ECEE] text-[#20282D] hover:bg-[#F1F4F5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer font-medium text-xs shadow-xs"
         >
           &larr; Sebelumnya
         </button>
 
-        <span className="px-3 py-1.5 rounded-lg bg-[#167A93] text-white font-bold shadow-xs">
+        <span className="px-3 py-1.5 rounded-full bg-[#20282D] text-white font-bold text-xs shadow-xs">
           Hal {current_page} / {last_page}
         </span>
 
@@ -42,7 +42,7 @@ export function Pagination({ pagination, onPageChange, currentPage, lastPage, to
           type="button"
           disabled={current_page >= last_page}
           onClick={() => onPageChange(current_page + 1)}
-          className="px-3 py-1.5 rounded-lg bg-white border border-[#D7EBEF] text-[#16323B] hover:bg-[#F3FBFC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-2xs font-medium"
+          className="px-3 py-1.5 rounded-full bg-white border border-[#E7ECEE] text-[#20282D] hover:bg-[#F1F4F5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer font-medium text-xs shadow-xs"
         >
           Selanjutnya &rarr;
         </button>

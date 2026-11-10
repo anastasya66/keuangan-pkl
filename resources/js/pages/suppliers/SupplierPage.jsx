@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Plus } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import supplierService from '../../services/supplierService';
 import DataTable from '../../components/common/DataTable';
@@ -6,6 +7,7 @@ import Pagination from '../../components/common/Pagination';
 import SearchInput from '../../components/common/SearchInput';
 import StatusBadge from '../../components/common/StatusBadge';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import PageHeader from '../../components/ui/PageHeader';
 import SupplierModal from './SupplierModal';
 import { IconSupplier } from '../../components/common/Icons';
 
@@ -228,29 +230,20 @@ export function SupplierPage() {
       )}
 
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-            <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
-              <IconSupplier className="w-5 h-5" />
-            </span>
-            Data Supplier
-          </h1>
-          <p className="text-xs text-[#577782] mt-0.5">
-            Kelola daftar pemasok dan kontak distributor toko.
-          </p>
-        </div>
-
+      <PageHeader
+        title="Data Supplier"
+        subtitle="Kelola daftar pemasok dan kontak distributor toko."
+      >
         {isAdmin && (
           <button
             onClick={handleOpenAddModal}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold rounded-xl text-xs shadow-xs transition cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-[#20282D] hover:bg-black text-white font-bold rounded-full text-xs shadow-xs transition cursor-pointer"
           >
-            <span>+</span>
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Tambah Supplier</span>
           </button>
         )}
-      </div>
+      </PageHeader>
 
       {/* Filter and Search */}
       <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-center gap-3 justify-between">

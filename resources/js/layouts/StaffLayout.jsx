@@ -2,24 +2,27 @@ import React, { useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import {
-  IconDashboard,
-  IconBox,
-  IconTag,
-  IconRuler,
-  IconJournal,
-  IconLedger,
-  IconAccounts,
-  IconBalance,
-  IconIncomeStatement,
-  IconBalanceSheet,
-  IconStock,
-  IconMovement,
-  IconUser,
-  IconLogout,
-  IconPos,
-  IconStockCard,
-  IconValuation,
-} from '../components/common/Icons';
+  LayoutDashboard,
+  ShoppingCart,
+  Package,
+  Tag,
+  Ruler,
+  Layers,
+  ClipboardList,
+  Coins,
+  ArrowLeftRight,
+  User,
+  LogOut,
+  Menu,
+  X,
+  Bell,
+  Mail,
+  ChevronDown,
+  PanelLeftClose,
+  PanelLeft,
+} from 'lucide-react';
+import SearchPill from '../components/ui/SearchPill';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 
 export function StaffLayout({ children }) {
   const { user, logout } = useAuth();
@@ -29,119 +32,104 @@ export function StaffLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState('');
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  const todayFormatted = new Intl.DateTimeFormat('id-ID', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date());
-
   const navClass = ({ isActive }) =>
-    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-[0.97] group ${
+    `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 select-none group ${
       isActive
-        ? 'bg-[#E3F6FA] text-[#167A93] border border-[#38BFE0]/30 shadow-xs'
-        : 'text-[#577782] hover:text-[#16323B] hover:bg-[#F3FBFC] hover:translate-x-1'
+        ? 'bg-[#20282D] text-white shadow-xs font-bold'
+        : 'text-[#879197] hover:text-[#20282D] hover:bg-[#EAEFF1]'
     }`;
 
-  const navItems = [
+  const navSections = [
     {
       group: 'MENU UTAMA',
       items: [
-        { to: '/staff/dashboard', label: 'Dashboard Toko', icon: IconDashboard },
-        { to: '/staff/pos', label: 'Penjualan', icon: IconPos },
+        { to: '/staff/dashboard', label: 'Dashboard Staf', icon: LayoutDashboard },
+        { to: '/staff/pos', label: 'Penjualan (Kasir POS)', icon: ShoppingCart },
       ],
     },
     {
-      group: 'PRODUK & STOK BARANG',
+      group: 'PRODUK & INVENTARIS',
       items: [
-        { to: '/staff/products', label: 'Katalog Barang', icon: IconBox },
-        { to: '/staff/inventory/valuation', label: 'Nilai Persediaan', icon: IconValuation },
-        { to: '/staff/categories', label: 'Kategori Barang', icon: IconTag },
-        { to: '/staff/units', label: 'Satuan Ukuran', icon: IconRuler },
-        { to: '/staff/inventory/stock-card', label: 'Kartu Stok', icon: IconStockCard },
-        { to: '/staff/reports/inventory', label: 'Sisa Stok Toko', icon: IconStock },
-        { to: '/staff/reports/stock-movements', label: 'Riwayat Keluar Masuk', icon: IconMovement },
-      ],
-    },
-    {
-      group: 'CATATAN KEUANGAN',
-      items: [
-        { to: '/staff/accounting/journals', label: 'Catatan Transaksi (Jurnal)', icon: IconJournal },
-        { to: '/staff/accounting/ledger', label: 'Buku Kas & Rekening', icon: IconLedger },
-        { to: '/staff/accounting/accounts', label: 'Daftar Rekening Akun', icon: IconAccounts },
-        { to: '/staff/accounting/trial-balance', label: 'Cek Keseimbangan Saldo', icon: IconBalance },
-      ],
-    },
-    {
-      group: 'LAPORAN TOKO',
-      items: [
-        { to: '/staff/reports/income-statement', label: 'Laporan Untung & Rugi', icon: IconIncomeStatement },
-        { to: '/staff/reports/balance-sheet', label: 'Posisi Keuangan (Neraca)', icon: IconBalanceSheet },
-      ],
-    },
-    {
-      group: 'PENGATURAN',
-      items: [
-        { to: '/profile', label: 'Profil Saya', icon: IconUser },
+        { to: '/staff/products', label: 'Katalog Produk', icon: Package },
+        { to: '/staff/categories', label: 'Kategori Produk', icon: Tag },
+        { to: '/staff/units', label: 'Satuan Ukuran', icon: Ruler },
+        { to: '/staff/reports/inventory', label: 'Stok Barang', icon: Layers },
+        { to: '/staff/inventory/stock-card', label: 'Kartu Stok', icon: ClipboardList },
+        { to: '/staff/inventory/valuation', label: 'Nilai Persediaan', icon: Coins },
       ],
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#EAF8FA] text-[#16323B] flex font-sans antialiased">
-      {/* Mobile Drawer Backdrop with smooth blur */}
+    <div className="min-h-screen bg-[#F1F4F5] text-[#20282D] flex font-sans antialiased">
+      {/* Mobile Drawer Backdrop */}
       {isMobileMenuOpen && (
         <div
           onClick={() => setIsMobileMenuOpen(false)}
-          className="fixed inset-0 bg-[#10262E]/35 backdrop-blur-xs z-40 lg:hidden animate-backdrop"
+          className="fixed inset-0 bg-[#20282D]/40 backdrop-blur-xs z-40 lg:hidden animate-backdrop"
         />
       )}
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed lg:sticky top-0 h-screen z-50 lg:z-30 bg-white border-r border-[#D7EBEF] flex flex-col justify-between transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl lg:shadow-xs ${
+        className={`fixed lg:sticky top-0 h-screen z-50 lg:z-30 bg-[#F8FAFA] border-r border-[#E7ECEE] flex flex-col justify-between transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-xl lg:shadow-none ${
           isMobileMenuOpen ? 'translate-x-0 w-72 max-w-[85vw]' : '-translate-x-full lg:translate-x-0'
         } ${isSidebarOpen ? 'lg:w-64' : 'lg:w-20'}`}
       >
+        {/* Brand Header */}
         <div>
-          <div className="h-16 px-4 flex items-center justify-between border-b border-[#D7EBEF]">
-            <Link to="/staff/dashboard" className="flex items-center gap-3 overflow-hidden group">
+          <div className="h-16 px-4 flex items-center justify-between border-b border-[#E7ECEE] bg-[#F8FAFA]">
+            <Link to="/staff/dashboard" className="flex items-center gap-2.5 overflow-hidden group">
               <img
                 src="/images/fintoko-mark.png"
                 alt="FinToko"
-                className="w-9 h-9 object-contain shrink-0 group-hover:scale-105 transition-transform duration-200"
+                className="w-8 h-8 object-contain shrink-0 group-hover:scale-105 transition-transform duration-200"
               />
               {(isSidebarOpen || isMobileMenuOpen) && (
                 <div className="flex flex-col">
-                  <span className="text-base font-black tracking-tight text-[#10262E] leading-tight">
+                  <span className="text-base font-black tracking-tight text-[#20282D] leading-tight">
                     FinToko
                   </span>
-                  <span className="text-[10px] font-bold text-[#167A93] uppercase tracking-wider">
-                    Staff Toko
+                  <span className="text-[10px] font-bold text-[#55BFD8] uppercase tracking-wider">
+                    Staff Kasir
                   </span>
                 </div>
               )}
             </Link>
 
             <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg text-[#577782] hover:bg-[#F3FBFC] btn-press"
+              type="button"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="hidden lg:flex p-1.5 rounded-lg text-[#879197] hover:text-[#20282D] hover:bg-[#EAEFF1] transition-colors"
             >
-              ✕
+              {isSidebarOpen ? (
+                <PanelLeftClose className="w-4 h-4" />
+              ) : (
+                <PanelLeft className="w-4 h-4" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-1.5 rounded-lg text-[#879197] hover:text-[#20282D] hover:bg-[#EAEFF1] transition-colors"
+            >
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="p-3 space-y-6 overflow-y-auto max-h-[calc(100vh-140px)] no-scrollbar">
-            {navItems.map((sec, sIdx) => (
+          {/* Navigation Links Scrollable */}
+          <div className="p-3 space-y-5 overflow-y-auto max-h-[calc(100vh-145px)] no-scrollbar">
+            {navSections.map((sec, sIdx) => (
               <div key={sIdx} className="space-y-1">
                 {(isSidebarOpen || isMobileMenuOpen) && (
-                  <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#8EA6AF] mb-1.5">
+                  <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#A6AFB3] mb-1">
                     {sec.group}
                   </div>
                 )}
@@ -155,8 +143,8 @@ export function StaffLayout({ children }) {
                       className={navClass}
                       title={!isSidebarOpen ? item.label : undefined}
                     >
-                      <span className="shrink-0 text-current transition-colors">
-                        <Icon className="w-4 h-4" />
+                      <span className="shrink-0 transition-colors">
+                        <Icon className="w-4 h-4 stroke-[2]" />
                       </span>
                       {(isSidebarOpen || isMobileMenuOpen) && (
                         <span className="truncate">{item.label}</span>
@@ -169,132 +157,145 @@ export function StaffLayout({ children }) {
           </div>
         </div>
 
-        <div className="p-3 border-t border-[#D7EBEF] bg-[#F8FDFF]">
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t border-[#E7ECEE] bg-[#F8FAFA]">
           {(isSidebarOpen || isMobileMenuOpen) ? (
-            <div className="p-2.5 rounded-2xl bg-white border border-[#D7EBEF] shadow-2xs flex items-center justify-between">
-              <div className="flex items-center gap-2.5 overflow-hidden">
-                <div className="w-8 h-8 rounded-full bg-[#E3F6FA] text-[#167A93] border border-[#38BFE0]/30 flex items-center justify-center font-bold text-xs shrink-0">
-                  {user?.name?.charAt(0) || 'S'}
+            <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white border border-[#E7ECEE] shadow-2xs">
+              <Link to="/profile" className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-85 transition-opacity">
+                <div className="w-8 h-8 rounded-full bg-[#E5F6FA] text-[#55BFD8] font-bold text-xs flex items-center justify-center shrink-0 border border-[#D5E3E7]">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
                 </div>
-                <div className="overflow-hidden">
-                  <div className="text-xs font-bold text-[#10262E] truncate">{user?.name}</div>
-                  <div className="text-[10px] text-[#577782] truncate">Staff Toko</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-bold text-[#20282D] truncate">
+                    {user?.name || 'Staff Toko'}
+                  </div>
+                  <div className="text-[10px] font-semibold text-[#879197] truncate">
+                    {user?.email || 'staff@fintoko.com'}
+                  </div>
                 </div>
-              </div>
+              </Link>
               <button
+                type="button"
                 onClick={handleLogout}
-                className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer btn-press"
+                className="p-1.5 rounded-lg text-[#879197] hover:text-[#E47777] hover:bg-[#FDF3F3] transition-colors"
                 title="Keluar"
               >
-                <IconLogout className="w-4 h-4" />
+                <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <button
-              onClick={handleLogout}
-              className="w-full py-2 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer btn-press"
-              title="Keluar"
-            >
-              <IconLogout className="w-4 h-4" />
-            </button>
+            <div className="flex flex-col items-center gap-2">
+              <Link to="/profile" className="w-8 h-8 rounded-full bg-[#E5F6FA] text-[#55BFD8] font-bold text-xs flex items-center justify-center border border-[#D5E3E7]">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="p-2 rounded-xl text-[#879197] hover:text-[#E47777] hover:bg-[#FDF3F3] transition-colors"
+                title="Keluar"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           )}
         </div>
       </aside>
 
-      {/* Main Content Viewport */}
+      {/* Main Container Area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
-        <header className="bg-white/85 backdrop-blur-md border-b border-[#D7EBEF] sticky top-0 z-30 h-16">
-          <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+        {/* Topbar Minimalist */}
+        <header className="h-16 bg-white border-b border-[#E7ECEE] sticky top-0 z-20 flex items-center px-4 sm:px-6 justify-between gap-4">
+          <div className="flex items-center gap-3 flex-1 max-w-md">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-xl text-[#879197] hover:text-[#20282D] hover:bg-[#F1F4F5] border border-[#E7ECEE]"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <SearchPill
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              placeholder="Search here..."
+              className="w-full max-w-xs sm:max-w-sm"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              className="w-9 h-9 rounded-full bg-[#F1F4F5] hover:bg-[#EAEFF1] text-[#879197] hover:text-[#20282D] flex items-center justify-center transition-colors relative"
+            >
+              <Mail className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              className="w-9 h-9 rounded-full bg-[#F1F4F5] hover:bg-[#EAEFF1] text-[#879197] hover:text-[#20282D] flex items-center justify-center transition-colors relative"
+            >
+              <Bell className="w-4 h-4" />
+            </button>
+
+            <div className="relative">
               <button
                 type="button"
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-xl text-[#577782] hover:bg-[#F3FBFC] border border-[#D7EBEF] cursor-pointer btn-press"
+                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-full hover:bg-[#F1F4F5] transition-colors border border-transparent hover:border-[#E7ECEE]"
               >
-                ☰
+                <div className="w-8 h-8 rounded-full bg-[#E5F6FA] text-[#55BFD8] font-bold text-xs flex items-center justify-center border border-[#D5E3E7] shadow-2xs">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
+                </div>
+                <span className="hidden sm:inline text-xs font-bold text-[#20282D]">
+                  {user?.name?.split(' ')[0] || 'Staff'}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-[#879197]" />
               </button>
 
-              <button
-                type="button"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="hidden lg:flex p-2 rounded-xl text-[#577782] hover:bg-[#F3FBFC] border border-[#D7EBEF] cursor-pointer btn-press"
-              >
-                {isSidebarOpen ? '◀' : '▶'}
-              </button>
-
-              <div className="flex items-center gap-1.5 sm:gap-2 text-xs truncate max-w-[150px] xs:max-w-[200px] sm:max-w-none">
-                <img src="/images/fintoko-mark.png" alt="FinToko" className="w-5 h-5 object-contain shrink-0" />
-                <span className="font-black text-[#10262E] tracking-tight">FinToko</span>
-                <span className="hidden sm:inline text-[#8EA6AF]">&bull;</span>
-                <span className="hidden sm:inline font-semibold text-[#577782]">Portal Staf Toko</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="hidden sm:flex items-center px-3.5 py-1.5 rounded-full bg-[#F3FBFC] border border-[#D7EBEF] text-xs font-semibold text-[#577782]">
-                <span>{todayFormatted}</span>
-              </div>
-
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                  className="flex items-center gap-2.5 p-1 sm:px-3 sm:py-1.5 rounded-full hover:bg-[#F3FBFC] border border-transparent hover:border-[#D7EBEF] transition-all cursor-pointer btn-press"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#27C5E5] to-[#38BFE0] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                    {user?.name?.charAt(0) || 'S'}
-                  </div>
-                  <div className="hidden md:flex flex-col text-left">
-                    <span className="text-xs font-bold text-[#10262E] leading-tight">
+              {isUserDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl border border-[#E7ECEE] shadow-lg p-2 space-y-1 animate-dropdown-pop z-50">
+                  <div className="px-3 py-2 border-b border-[#F1F4F5]">
+                    <div className="text-xs font-bold text-[#20282D] truncate">
                       {user?.name}
-                    </span>
-                    <span className="text-[10px] text-[#167A93] font-semibold">Staff Toko</span>
-                  </div>
-                  <span className="text-xs text-[#8EA6AF]">▾</span>
-                </button>
-
-                {isUserDropdownOpen && (
-                  <div
-                    onClick={() => setIsUserDropdownOpen(false)}
-                    className="absolute right-0 mt-2 w-52 bg-white border border-[#D7EBEF] rounded-2xl shadow-xl p-2 z-50 animate-dropdown-pop"
-                  >
-                    <div className="px-3 py-2 border-b border-[#EBF5F8] mb-1">
-                      <div className="text-xs font-bold text-[#10262E] truncate">{user?.name}</div>
-                      <div className="text-[11px] text-[#577782] truncate">{user?.email}</div>
                     </div>
-
-                    <Link
-                      to="/profile"
-                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#577782] hover:text-[#10262E] hover:bg-[#F3FBFC] rounded-xl transition-colors btn-press"
-                    >
-                      <IconUser className="w-4 h-4 text-[#27C5E5]" />
-                      <span>Profil Saya</span>
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer mt-1 btn-press"
-                    >
-                      <IconLogout className="w-4 h-4 text-rose-500" />
-                      <span>Keluar Sistem</span>
-                    </button>
+                    <div className="text-[11px] text-[#879197] truncate">
+                      {user?.email}
+                    </div>
                   </div>
-                )}
-              </div>
+
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsUserDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#879197] hover:text-[#20282D] hover:bg-[#F1F4F5] transition-colors"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Profil Pengguna</span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#E47777] hover:bg-[#FDF3F3] transition-colors text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Keluar Sistem</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
 
-        {/* Content Area with Smooth Page Transition Motion */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 overflow-x-hidden">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
           <div key={location.pathname} className="animate-page-enter">
-            {children || <Outlet />}
+            <ErrorBoundary>
+              {children || <Outlet />}
+            </ErrorBoundary>
           </div>
         </main>
 
-        <footer className="border-t border-[#D7EBEF] bg-white/50 text-center py-4 text-xs text-[#8EA6AF]">
-          FinToko &copy; 2026 &bull; Aplikasi Pengelolaan Keuangan &amp; Stok Toko
+        <footer className="border-t border-[#E7ECEE] bg-white/60 text-center py-4 text-xs font-medium text-[#A6AFB3]">
+          FinToko &copy; 2026 &bull; Modern Inventory &amp; Financial Management System
         </footer>
       </div>
     </div>

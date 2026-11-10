@@ -115,22 +115,22 @@ export function StockCardPage() {
     switch (type) {
       case 'purchase':
       case 'stock_in':
-        return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+        return 'bg-[#48B58B] text-white font-bold';
       case 'initial_stock':
-        return 'bg-teal-50 text-teal-700 border border-teal-200';
+        return 'bg-[#20282D] text-white font-bold';
       case 'sale':
       case 'stock_out':
-        return 'bg-sky-50 text-sky-700 border border-sky-200';
+        return 'bg-[#55BFD8] text-white font-bold';
       case 'adjustment_in':
-        return 'bg-blue-50 text-blue-700 border border-blue-200';
+        return 'bg-[#37AFCB] text-white font-bold';
       case 'adjustment_out':
-        return 'bg-amber-50 text-amber-700 border border-amber-200';
+        return 'bg-[#E9B45D] text-white font-bold';
       case 'purchase_reversal':
       case 'purchase_return':
       case 'sale_return':
-        return 'bg-purple-50 text-purple-700 border border-purple-200';
+        return 'bg-[#8B5CF6] text-white font-bold';
       default:
-        return 'bg-slate-50 text-slate-700 border border-slate-200';
+        return 'bg-[#20282D] text-white font-bold';
     }
   };
 
@@ -281,42 +281,42 @@ export function StockCardPage() {
           <div className="p-4 sm:p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-xs font-bold text-[#167A93] bg-[#EAF8FA] px-2.5 py-0.5 rounded-md border border-[#38BFE0]/30 shadow-2xs">
+                <span className="font-mono text-xs font-bold text-[#20282D] bg-[#E5F6FA] px-2.5 py-1 rounded-lg border border-[#55BFD8] shadow-xs">
                   {stockCardData.product.sku}
                 </span>
                 {stockCardData.product.barcode && (
-                  <span className="font-mono text-xs text-[#577782] bg-gray-50 px-2 py-0.5 rounded">
+                  <span className="font-mono text-xs text-[#879197] bg-[#F1F4F5] px-2.5 py-1 rounded-lg border border-[#E7ECEE]">
                     Barcode: {stockCardData.product.barcode}
                   </span>
                 )}
-                <span className="text-xs text-[#577782]">
-                  &bull; Kategori: <strong className="text-[#16323B]">{stockCardData.product.category_name}</strong>
+                <span className="text-xs text-[#879197]">
+                  &bull; Kategori: <strong className="text-[#20282D]">{stockCardData.product.category_name}</strong>
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-[#16323B] mt-1.5">
+              <h2 className="text-lg font-bold text-[#20282D] mt-2">
                 {stockCardData.product.name}
               </h2>
             </div>
 
             {/* Financial Parameters & Current Stock Pill */}
             <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
-              <div className="bg-[#F8FDFE] border border-[#EAF4F6] px-3 py-1.5 rounded-xl">
-                <span className="text-[#577782] text-[10px] block uppercase font-semibold">HPP Rata-rata</span>
-                <span className="font-mono font-bold text-[#16323B]">
+              <div className="bg-[#F8FAFA] border border-[#E7ECEE] px-3.5 py-2 rounded-xl">
+                <span className="text-[#879197] text-[10px] block uppercase font-semibold">HPP Rata-rata</span>
+                <span className="font-mono font-bold text-[#20282D]">
                   {formatRupiah(stockCardData.product.average_cost)}
                 </span>
               </div>
 
-              <div className="bg-[#F8FDFE] border border-[#EAF4F6] px-3 py-1.5 rounded-xl">
-                <span className="text-[#577782] text-[10px] block uppercase font-semibold">Harga Jual</span>
-                <span className="font-mono font-bold text-[#167A93]">
+              <div className="bg-[#F8FAFA] border border-[#E7ECEE] px-3.5 py-2 rounded-xl">
+                <span className="text-[#879197] text-[10px] block uppercase font-semibold">Harga Jual</span>
+                <span className="font-mono font-bold text-[#37AFCB]">
                   {formatRupiah(stockCardData.product.selling_price)}
                 </span>
               </div>
 
-              <div className="px-4 py-2 bg-[#167A93] text-white rounded-xl shadow-xs text-right shrink-0">
-                <span className="text-[10px] font-semibold text-[#D7EBEF] block uppercase tracking-wider">Stok Fisik Saat Ini</span>
-                <div className="text-base font-extrabold font-mono text-white">
+              <div className="px-4 py-2.5 bg-[#20282D] text-white rounded-xl shadow-xs text-right shrink-0">
+                <span className="text-[10px] font-semibold text-[#879197] block uppercase tracking-wider">Stok Saat Ini</span>
+                <div className="text-base font-black font-mono text-white">
                   {stockCardData.product.current_stock} {stockCardData.product.unit_symbol}
                 </div>
               </div>

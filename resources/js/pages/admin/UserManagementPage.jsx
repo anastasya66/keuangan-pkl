@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import userService from '../../services/userService';
+import PageHeader from '../../components/ui/PageHeader';
 import { IconUsers } from '../../components/common/Icons';
 
 export function UserManagementPage() {
@@ -144,25 +146,18 @@ export function UserManagementPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#10262E] flex items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-white border border-[#D7EBEF] text-[#27C5E5] shadow-2xs">
-              <IconUsers className="w-5 h-5" />
-            </span>
-            <span>Kelola Tim Toko</span>
-          </h1>
-          <p className="text-xs text-[#577782] mt-1">
-            Atur akun staf, kasir toko, dan hak akses admin tokomu
-          </p>
-        </div>
+      <PageHeader
+        title="Manajemen Pengguna"
+        subtitle="Kelola akun tim, kasir toko, dan hak akses admin."
+      >
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer btn-press"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#20282D] hover:bg-black text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
         >
-          <span>+ Tambah Anggota Tim</span>
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>Tambah Anggota Tim</span>
         </button>
-      </div>
+      </PageHeader>
 
       {/* Alert Feedback */}
       {feedback.message && (

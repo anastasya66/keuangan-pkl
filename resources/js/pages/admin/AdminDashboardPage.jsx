@@ -1,29 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import ExpenseDistributionChart from '../../components/charts/ExpenseDistributionChart';
-import FinancialChart from '../../components/charts/FinancialChart';
+import {
+  Layers,
+  Clock,
+  ArrowDownRight,
+  Hash,
+  ShoppingBag,
+  TrendingUp,
+  TrendingDown,
+  ArrowUpRight,
+  Package,
+  Calendar,
+  Filter,
+} from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import reportService from '../../services/reportService';
 import { formatRupiah } from '../../utils/currency';
-import {
-  IconDashboard,
-  IconBox,
-  IconWallet,
-  IconTrendingUp,
-  IconTrendingDown,
-  IconBalance,
-  IconJournal,
-  IconIncomeStatement,
-} from '../../components/common/Icons';
+import StatCard from '../../components/ui/StatCard';
+import StatusBadge from '../../components/ui/StatusBadge';
+import TabPills from '../../components/ui/TabPills';
+import SalesPurchaseChart from '../../components/charts/SalesPurchaseChart';
+import TopCategoriesCard from '../../components/charts/TopCategoriesCard';
 
 export function AdminDashboardPage() {
   const { user } = useAuth();
 
   // Period filter state
-  const [period, setPeriod] = useState('this_month');
+  const [period, setPeriod] = useState('this_year');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isCustomDate, setIsCustomDate] = useState(false);
+
+  // Active tab for Recent Transactions
+  const [activeTrxTab, setActiveTrxTab] = useState('all');
 
   // Data states
   const [loading, setLoading] = useState(true);
@@ -47,7 +56,7 @@ export function AdminDashboardPage() {
         reportService.getFinancialSummary(params),
         reportService.getFinancialChart(params),
         reportService.getExpenseDistribution(params),
-        reportService.getRecentActivities(8),
+        reportService.getRecentActivities(12),
         reportService.getInventorySummary(),
         reportService.getLowStock(6),
       ]);
@@ -81,446 +90,207 @@ export function AdminDashboardPage() {
     }
   };
 
+  // Filter activities based on tab
+  const transactionTabs = [
+    { id: 'all', label: 'All Transactions' },
+    { id: 'sale', label: 'Sale' },
+    { id: 'purchase', label: 'Purchase' },
+    { id: 'expense', label: 'Expenses' },
+    { id: 'invoice', label: 'Invoices' },
+  ];
+
+  const filteredActivities = activities.filter((act) => {
+    if (activeTrxTab === 'all') return true;
+    if (activeTrxTab === 'sale') return act.type === 'income' || act.type === 'sale';
+    if (activeTrxTab === 'purchase') return act.type === 'expense' || act.type === 'purchase';
+    if (activeTrxTab === 'expense') return act.type === 'expense';
+    if (activeTrxTab === 'invoice') return true;
+    return true;
+  });
+
   return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-white via-[#F8FDFF] to-[#EBF8FB] border border-[#D7EBEF] rounded-3xl p-6 sm:p-8 shadow-xs relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-[#38BFE0]/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+    <div className="space-y-6 animate-fade-in">
+      {/* 1. Four Statistics Cards (Reference Image Row 1) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Card 1: Profit */}
+        <StatCard
+          icon={Layers}
+          iconBg="bg-[#E5F6FA]"
+          iconColor="text-[#37AFCB]"
+          label="Profit"
+          value={loading ? '...' : formatRupiah(summary?.net_profit || 0)}
+          trend="+35%"
+          trendDirection="up"
+          trendPeriod="vs Last Month"
+        />
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#10262E] tracking-tight">
-              Halo, {user?.name}!
-            </h1>
-            <p className="mt-1 text-xs sm:text-sm text-[#577782] max-w-2xl leading-relaxed">
-              Ringkasan aktivitas keuangan dan inventori toko secara real-time.
-            </p>
-          </div>
+        {/* Card 2: Total Sales / Invoice Due */}
+        <StatCard
+          icon={Clock}
+          iconBg="bg-[#EBF7F2]"
+          iconColor="text-[#48B58B]"
+          label="Invoice Due / Total Sales"
+          value={loading ? '...' : formatRupiah(summary?.total_income || 0)}
+          trend="+35%"
+          trendDirection="up"
+          trendPeriod="vs Last Month"
+        />
 
-          {/* Quick Action Shortcuts */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link
-              to="/admin/products"
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white hover:bg-[#F3FBFC] border border-[#D7EBEF] text-[#16323B] font-semibold text-xs shadow-2xs transition-all cursor-pointer btn-press"
-            >
-              <IconBox className="w-4 h-4 text-[#27C5E5]" />
-              <span>Katalog Barang</span>
-            </Link>
-            <Link
-              to="/admin/reports/income-statement"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer btn-press"
-            >
-              <IconIncomeStatement className="w-4 h-4 text-white" />
-              <span>Cek Untung &amp; Rugi</span>
-            </Link>
-          </div>
-        </div>
+        {/* Card 3: Total Expenses */}
+        <StatCard
+          icon={ArrowDownRight}
+          iconBg="bg-[#FEF7EB]"
+          iconColor="text-[#E9B45D]"
+          label="Total Expenses"
+          value={loading ? '...' : formatRupiah(summary?.total_expense || 0)}
+          trend="+35%"
+          trendDirection="up"
+          trendPeriod="vs Last Month"
+        />
 
-        {/* Period Selector Tabs */}
-        <div className="mt-6 pt-5 border-t border-[#D7EBEF]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="text-xs font-semibold text-[#577782]">
-            Periode Tampilan: <span className="text-[#10262E] font-bold">{summary?.period?.label || 'Bulan Ini'}</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            {[
-              { key: 'today', label: 'Hari Ini' },
-              { key: 'this_week', label: 'Minggu Ini' },
-              { key: 'this_month', label: 'Bulan Ini' },
-              { key: 'this_year', label: 'Tahun Ini' },
-              { key: 'custom', label: 'Pilih Tanggal' },
-            ].map((p) => (
-              <button
-                key={p.key}
-                type="button"
-                onClick={() => handlePeriodChange(p.key)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer btn-press ${period === p.key
-                  ? 'bg-[#27C5E5] text-white shadow-sm shadow-[#27C5E5]/30'
-                  : 'bg-white hover:bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF]'
-                  }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Custom Date Form */}
-        {isCustomDate && (
-          <form
-            onSubmit={handleCustomFilterSubmit}
-            className="mt-4 pt-4 border-t border-[#D7EBEF] flex flex-wrap items-end gap-3 animate-modal-pop"
-          >
-            <div>
-              <label className="block text-[11px] font-semibold text-[#577782] mb-1">
-                Mulai Tanggal
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-                className="bg-white border border-[#D7EBEF] rounded-xl px-3 py-1.5 text-xs text-[#16323B] focus:outline-none focus:border-[#38BFE0] input-focus-glow"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-semibold text-[#577782] mb-1">
-                Sampai Tanggal
-              </label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required
-                className="bg-white border border-[#D7EBEF] rounded-xl px-3 py-1.5 text-xs text-[#16323B] focus:outline-none focus:border-[#38BFE0] input-focus-glow"
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#27C5E5] hover:bg-[#38BFE0] text-white transition-all cursor-pointer shadow-xs btn-press"
-            >
-              Tampilkan
-            </button>
-          </form>
-        )}
+        {/* Card 4: Total Payment Returns / Purchase */}
+        <StatCard
+          icon={Hash}
+          iconBg="bg-[#F3EFFE]"
+          iconColor="text-[#8B5CF6]"
+          label="Total Purchases / Liabilities"
+          value={loading ? '...' : formatRupiah(summary?.total_liabilities || 0)}
+          trend="-20%"
+          trendDirection="down"
+          trendPeriod="vs Last Month"
+        />
       </div>
 
-      {/* 4 Financial Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* Card 1: Total Pemasukan */}
-        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#36B878]/50 card-interactive group">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#577782] uppercase tracking-wider">
-              Total Uang Masuk
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#36B878] flex items-center justify-center border border-emerald-100">
-              <IconTrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
-            {loading ? '...' : formatRupiah(summary?.total_income || 0)}
-          </div>
-          <div className="mt-2 text-xs font-medium text-[#36B878]">
-            Pemasukan periode ini
-          </div>
-        </div>
-
-        {/* Card 2: Total Pengeluaran */}
-        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#E66D79]/50 card-interactive group">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#577782] uppercase tracking-wider">
-              Total Uang Keluar
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-rose-50 text-[#E66D79] flex items-center justify-center border border-rose-100">
-              <IconTrendingDown className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
-            {loading ? '...' : formatRupiah(summary?.total_expense || 0)}
-          </div>
-          <div className="mt-2 text-xs font-medium text-[#E66D79]">
-            Pengeluaran &amp; operasional
-          </div>
-        </div>
-
-        {/* Card 3: Saldo Kas & Bank */}
-        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#38BFE0]/50 card-interactive group">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#577782] uppercase tracking-wider">
-              Sisa Uang Kas &amp; Bank
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-[#EAF8FA] text-[#27C5E5] flex items-center justify-center border border-[#D7EBEF]">
-              <IconWallet className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-[#167A93] mt-3 font-mono">
-            {loading ? '...' : formatRupiah(summary?.cash_balance || 0)}
-          </div>
-          <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-[#577782]">
-            <span>Saldo likuid tersedia</span>
-          </div>
-        </div>
-
-        {/* Card 4: Total Produk & Persediaan */}
-        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#38BFE0]/50 card-interactive group">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#577782] uppercase tracking-wider">
-              Barang &amp; Sisa Stok
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-[#F0FAFC] text-[#27C5E5] flex items-center justify-center border border-[#D7EBEF]">
-              <IconBox className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
-            {loading ? '...' : `${inventorySummary?.total_products || 0} Barang`}
-          </div>
-          <div className="flex items-center justify-between mt-2 text-xs">
-            <span className="text-[#577782] font-medium">{inventorySummary?.total_units || 0} unit</span>
-            <Link to="/admin/reports/inventory" className="text-[#167A93] font-semibold hover:underline">
-              Cek Stok &rarr;
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Accounting Equilibrium Banner */}
-      <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs card-interactive">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#EAF8FA] text-[#27C5E5] flex items-center justify-center border border-[#D7EBEF]">
-              <IconBalance className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#10262E]">
-                Posisi Keuangan Toko
-              </h3>
-              <p className="text-xs text-[#577782]">
-                Aset = Kewajiban + Ekuitas
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3.5 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#167A93]">TOTAL ASET</div>
-            <div className="text-lg font-black font-mono text-[#10262E] mt-1">
-              {loading ? '...' : formatRupiah(summary?.total_assets || 0)}
-            </div>
-            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Kas, bank, &amp; stok</div>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#F0B75A]">Total Hutang (Kewajiban)</div>
-            <div className="text-lg font-black font-mono text-[#10262E] mt-1">
-              {loading ? '...' : formatRupiah(summary?.total_liabilities || 0)}
-            </div>
-            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Hutang &amp; kewajiban</div>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#27C5E5]">Total Modal (Ekuitas)</div>
-            <div className="text-lg font-black font-mono text-[#10262E] mt-1">
-              {loading ? '...' : formatRupiah(summary?.total_equity || 0)}
-            </div>
-            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Modal &amp; laba bersih</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Financial Analytics: Cash Flow Chart & Expense Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 2. Middle Row: Sales & Purchase Chart + Top Categories (Reference Image Row 2) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         <div className="lg:col-span-2">
-          <FinancialChart points={chartData} title="Grafik Arus Uang (Masuk vs Keluar)" />
+          <SalesPurchaseChart
+            points={chartData}
+            period={period}
+            onPeriodChange={handlePeriodChange}
+          />
         </div>
         <div className="lg:col-span-1">
-          <ExpenseDistributionChart distribution={distribution} />
+          <TopCategoriesCard
+            distribution={distribution}
+            inventorySummary={inventorySummary}
+          />
         </div>
       </div>
 
-      {/* Inventory Overview & Low Stock Warnings */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Inventory Valuation Card */}
-        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-6 shadow-xs lg:col-span-1 flex flex-col justify-between card-interactive">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-[#10262E] flex items-center gap-2">
-                <IconBox className="w-4 h-4 text-[#27C5E5]" />
-                <span>Ringkasan Stok Barang</span>
-              </h3>
-              <Link
-                to="/admin/reports/inventory"
-                className="text-xs text-[#167A93] hover:text-[#38BFE0] font-bold btn-press"
-              >
-                Lengkap &rarr;
-              </Link>
-            </div>
-
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
-                <span className="text-xs text-[#577782]">Total Jenis Barang</span>
-                <span className="text-xs font-bold font-mono text-[#10262E]">
-                  {inventorySummary?.total_products || 0} Barang
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
-                <span className="text-xs text-[#577782]">Total Kuantitas Fisik</span>
-                <span className="text-xs font-bold font-mono text-[#10262E]">
-                  {inventorySummary?.total_units || 0} unit
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
-                <span className="text-xs text-[#577782]">Nilai Aset Modal Barang</span>
-                <span className="text-xs font-bold font-mono text-[#36B878]">
-                  {formatRupiah(inventorySummary?.total_valuation || 0)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-[#EBF5F8] grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100">
-              <div className="text-xs font-black text-emerald-700">
-                {inventorySummary?.available_count || 0}
-              </div>
-              <div className="text-[10px] text-[#577782] font-medium">Aman</div>
-            </div>
-            <div className="p-2 rounded-xl bg-amber-50 border border-amber-100">
-              <div className="text-xs font-black text-amber-700">
-                {inventorySummary?.low_stock_count || 0}
-              </div>
-              <div className="text-[10px] text-[#577782] font-medium">Menipis</div>
-            </div>
-            <div className="p-2 rounded-xl bg-rose-50 border border-rose-100">
-              <div className="text-xs font-black text-rose-700">
-                {inventorySummary?.out_of_stock_count || 0}
-              </div>
-              <div className="text-[10px] text-[#577782] font-medium">Habis</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Low Stock Warning Table */}
-        <div className="bg-white border border-[#D7EBEF] rounded-3xl p-6 shadow-xs lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-[#10262E] flex items-center gap-2">
-              <span className="p-1 rounded-md bg-amber-50 text-amber-600">⚠️</span>
-              <span>Barang yang Perlu Ditambah (Stok Menipis)</span>
-            </h3>
-            <span className="text-[11px] font-medium text-[#577782] bg-[#F8FDFF] border border-[#D7EBEF] px-2.5 py-1 rounded-lg">Batas: &le; 10 unit</span>
-          </div>
-
-          {lowStock.length === 0 ? (
-            <div className="text-center py-10 text-[#8EA6AF] text-xs">
-              🎉 Bagus! Semua stok barang masih aman di atas 10 unit.
-            </div>
-          ) : (
-            <div className="overflow-x-auto no-scrollbar">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-[#D7EBEF] text-[#8EA6AF] uppercase tracking-wider text-[10px]">
-                    <th className="py-2.5 px-3">Kode SKU</th>
-                    <th className="py-2.5 px-3">Nama Barang</th>
-                    <th className="py-2.5 px-3">Kategori</th>
-                    <th className="py-2.5 px-3 text-right">Sisa Stok</th>
-                    <th className="py-2.5 px-3 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#EBF5F8]">
-                  {lowStock.map((prod) => (
-                    <tr key={prod.id} className="hover:bg-[#F3FBFC] transition-colors">
-                      <td className="py-2.5 px-3 font-mono font-bold text-[#16323B]">
-                        {prod.sku}
-                      </td>
-                      <td className="py-2.5 px-3 font-medium text-[#10262E]">{prod.name}</td>
-                      <td className="py-2.5 px-3 text-[#577782]">{prod.category || '-'}</td>
-                      <td className="py-2.5 px-3 text-right font-mono font-bold text-[#E66D79] whitespace-nowrap">
-                        {prod.stock} {prod.unit}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                        <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${prod.stock <= 0
-                            ? 'bg-rose-600 text-white'
-                            : 'bg-amber-600 text-white'
-                            }`}
-                        >
-                          {prod.status_label || (prod.stock <= 0 ? 'Habis' : 'Menipis')}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Recent Transactions Table */}
-      <div className="bg-white border border-[#D7EBEF] rounded-3xl p-6 shadow-xs">
+      {/* 3. Bottom Row: Recent Transactions (Reference Image Row 3) */}
+      <div className="bg-white rounded-2xl p-6 border border-[#E7ECEE] shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-[#D5E3E7] transition-all">
+        {/* Header with Title & View All button */}
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-sm font-bold text-[#10262E] flex items-center gap-2">
-              <IconJournal className="w-4 h-4 text-[#27C5E5]" />
-              <span>Catatan Transaksi Terkini</span>
-            </h3>
-            <p className="text-xs text-[#577782] mt-0.5">
-              Aktivitas transaksi terbaru.
-            </p>
-          </div>
+          <h3 className="text-base font-bold text-[#20282D]">Recent Transactions</h3>
           <Link
-            to="/admin/reports/income-statement"
-            className="text-xs font-bold text-[#167A93] hover:text-[#38BFE0] btn-press"
+            to="/admin/financial/income"
+            className="px-4 py-1.5 rounded-full text-xs font-semibold border border-[#E7ECEE] text-[#20282D] hover:bg-[#F1F4F5] transition-all"
           >
-            Lihat Semua Transaksi &rarr;
+            View All
           </Link>
         </div>
 
-        {activities.length === 0 ? (
-          <div className="text-center py-8 text-[#8EA6AF] text-xs">
-            Belum ada aktivitas transaksi yang tercatat.
-          </div>
-        ) : (
-          <div className="divide-y divide-[#EBF5F8]">
-            {activities.slice(0, 5).map((act) => (
-              <div
-                key={act.id}
-                className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#F3FBFC] px-3 rounded-2xl transition-colors card-interactive"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${act.type === 'income'
-                    ? 'bg-emerald-50 text-[#36B878] border-emerald-100'
-                    : act.type === 'expense'
-                      ? 'bg-rose-50 text-[#E66D79] border-rose-100'
-                      : 'bg-[#F0FAFC] text-[#27C5E5] border-[#D7EBEF]'
-                    }`}>
-                    {act.type === 'income' ? (
-                      <IconTrendingUp className="w-4 h-4" />
-                    ) : act.type === 'expense' ? (
-                      <IconTrendingDown className="w-4 h-4" />
-                    ) : (
-                      <IconBox className="w-4 h-4" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#10262E]">{act.title}</span>
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold shadow-xs whitespace-nowrap ${act.type === 'income'
-                          ? 'bg-emerald-600 text-white'
-                          : act.type === 'expense'
-                            ? 'bg-rose-600 text-white'
-                            : 'bg-[#167A93] text-white'
-                          }`}
-                      >
-                        {act.type_label}
-                      </span>
-                    </div>
-                    <p className="text-xs text-[#577782] mt-0.5 truncate max-w-xs sm:max-w-md">{act.description}</p>
-                  </div>
-                </div>
+        {/* Tab Pills (Sale, Purchase, Quotation, Expenses, Invoices) */}
+        <div className="mb-5">
+          <TabPills
+            tabs={transactionTabs}
+            activeTab={activeTrxTab}
+            onChange={setActiveTrxTab}
+          />
+        </div>
 
-                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center text-xs shrink-0">
-                  {act.amount !== null && (
-                    <span
-                      className={`font-mono font-bold ${act.type === 'income'
-                        ? 'text-[#36B878]'
-                        : act.type === 'expense'
-                          ? 'text-[#E66D79]'
-                          : 'text-[#10262E]'
-                        }`}
+        {/* Transactions Table */}
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-[#F1F4F5] text-[11px] font-semibold text-[#879197] uppercase tracking-wider">
+                <th className="py-3 px-4 font-medium">Customer / Deskripsi</th>
+                <th className="py-3 px-4 font-medium">Date</th>
+                <th className="py-3 px-4 font-medium">Status</th>
+                <th className="py-3 px-4 font-medium text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#F8FAFA] text-xs">
+              {loading ? (
+                <tr>
+                  <td colSpan="4" className="py-8 text-center text-[#879197]">
+                    Memuat transaksi terbaru...
+                  </td>
+                </tr>
+              ) : filteredActivities.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="py-8 text-center text-[#879197]">
+                    Belum ada data transaksi yang cocok pada kategori ini.
+                  </td>
+                </tr>
+              ) : (
+                filteredActivities.slice(0, 5).map((act, idx) => {
+                  const isPositive = act.type === 'income' || act.type === 'sale';
+                  const initials = (act.title || 'TRX')
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .substring(0, 2)
+                    .toUpperCase();
+
+                  const avatarColors = [
+                    'bg-[#E5F6FA] text-[#37AFCB]',
+                    'bg-[#FEF7EB] text-[#E9B45D]',
+                    'bg-[#EBF7F2] text-[#48B58B]',
+                    'bg-[#F3EFFE] text-[#8B5CF6]',
+                    'bg-[#FDF3F3] text-[#E47777]',
+                  ];
+                  const avatarColor = avatarColors[idx % avatarColors.length];
+
+                  return (
+                    <tr
+                      key={act.id || idx}
+                      className="hover:bg-[#F8FAFA] transition-colors group"
                     >
-                      {formatRupiah(act.amount)}
-                    </span>
-                  )}
-                  <span className="text-[11px] text-[#8EA6AF]">{act.date}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                      {/* Customer / Avatar */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-9 h-9 rounded-full ${avatarColor} flex items-center justify-center font-bold text-xs shrink-0`}
+                          >
+                            {initials}
+                          </div>
+                          <div>
+                            <div className="font-bold text-[#20282D] group-hover:text-[#37AFCB] transition-colors">
+                              {act.title}
+                            </div>
+                            <div className="text-[11px] text-[#879197]">
+                              #{act.id ? String(act.id).padStart(5, '0') : '114589'} &bull; {act.type_label || act.type}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Date */}
+                      <td className="py-3.5 px-4 text-[#20282D] font-medium whitespace-nowrap">
+                        {act.date}
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <StatusBadge
+                          status={isPositive ? 'completed' : 'draft'}
+                          label={isPositive ? 'Completed' : 'Draft'}
+                        />
+                      </td>
+
+                      {/* Total */}
+                      <td className="py-3.5 px-4 text-right font-black text-[#20282D] whitespace-nowrap">
+                        {act.amount !== null ? formatRupiah(act.amount) : '-'}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

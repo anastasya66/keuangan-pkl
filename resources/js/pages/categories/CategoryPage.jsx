@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import DataTable from '../../components/common/DataTable';
 import Pagination from '../../components/common/Pagination';
 import SearchInput from '../../components/common/SearchInput';
 import StatusBadge from '../../components/common/StatusBadge';
+import PageHeader from '../../components/ui/PageHeader';
 import useAuth from '../../hooks/useAuth';
 import categoryService from '../../services/categoryService';
 import { formatDateTime } from '../../utils/currency';
@@ -162,19 +164,10 @@ export function CategoryPage() {
       )}
 
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#10262E] flex items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-white border border-[#D7EBEF] text-[#27C5E5] shadow-2xs">
-              <IconTag className="w-5 h-5" />
-            </span>
-            <span>Kategori Barang</span>
-          </h1>
-          <p className="text-xs text-[#577782] mt-0.5">
-            Kelola pengelompokan produk untuk pencatatan stok.
-          </p>
-        </div>
-
+      <PageHeader
+        title="Kategori Barang"
+        subtitle="Kelola pengelompokan produk untuk pencatatan stok dan laporan keuangan."
+      >
         {isAdmin && (
           <button
             type="button"
@@ -182,12 +175,13 @@ export function CategoryPage() {
               setSelectedCategory(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold text-xs transition-all shadow-md shadow-[#27C5E5]/20 cursor-pointer self-start sm:self-auto btn-press"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#20282D] hover:bg-black text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
           >
-            <span>+ Tambah Kategori</span>
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Tambah Kategori</span>
           </button>
         )}
-      </div>
+      </PageHeader>
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-2xl border border-[#D7EBEF] shadow-xs">

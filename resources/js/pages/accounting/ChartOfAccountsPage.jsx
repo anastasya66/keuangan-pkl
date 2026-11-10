@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import DataTable from '../../components/common/DataTable';
 import Pagination from '../../components/common/Pagination';
 import SearchInput from '../../components/common/SearchInput';
 import StatusBadge from '../../components/common/StatusBadge';
+import PageHeader from '../../components/ui/PageHeader';
 import useAuth from '../../hooks/useAuth';
 import accountingService from '../../services/accountingService';
 import AccountModal from './AccountModal';
@@ -154,16 +156,10 @@ export function ChartOfAccountsPage() {
       )}
 
       {/* Header Page */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#10262E] flex items-center gap-2">
-            <span>📑</span> Daftar Akun (Chart of Accounts)
-          </h1>
-          <p className="text-xs text-[#577782] mt-1">
-            Kelola kode akun akuntansi terstandar dengan prinsip double-entry bookkeeping.
-          </p>
-        </div>
-
+      <PageHeader
+        title="Daftar Akun (Chart of Accounts)"
+        subtitle="Kelola kode akun akuntansi terstandar dengan prinsip double-entry bookkeeping."
+      >
         {isAdmin && (
           <button
             type="button"
@@ -171,12 +167,13 @@ export function ChartOfAccountsPage() {
               setSelectedAccount(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#27C5E5] to-[#38BFE0] hover:from-[#1FB2D0] hover:to-[#2FB0CF] text-white font-bold text-xs shadow-md shadow-[#38BFE0]/25 transition-all cursor-pointer self-start sm:self-auto"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#20282D] hover:bg-black text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
           >
-            <span>+</span> Tambah Akun Baru
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Tambah Akun Baru</span>
           </button>
         )}
-      </div>
+      </PageHeader>
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-3xl border border-[#D7EBEF] shadow-xs flex flex-col md:flex-row gap-3 items-center justify-between">

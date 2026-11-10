@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Plus, ShoppingCart, Filter } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import purchaseService from '../../services/purchaseService';
 import supplierService from '../../services/supplierService';
@@ -7,8 +8,9 @@ import { formatRupiah } from '../../utils/currency';
 import DataTable from '../../components/common/DataTable';
 import Pagination from '../../components/common/Pagination';
 import SearchInput from '../../components/common/SearchInput';
+import PageHeader from '../../components/ui/PageHeader';
+import StatusBadge from '../../components/ui/StatusBadge';
 import PurchaseModal from './PurchaseModal';
-import { IconPurchase } from '../../components/common/Icons';
 
 /**
  * Format tanggal ramah pengguna (contoh: 10 Nov 2026)
@@ -155,11 +157,11 @@ export function PurchasePage() {
         <div className="space-y-0.5">
           <Link
             to={`/admin/purchases/${item.id}`}
-            className="font-mono text-xs font-bold text-[#167A93] hover:underline block"
+            className="font-mono text-xs font-bold text-[#37AFCB] hover:underline block"
           >
             {item.invoice_number}
           </Link>
-          <div className="text-[11px] text-[#577782] font-medium">
+          <div className="text-[11px] text-[#879197] font-medium">
             {formatDate(item.purchase_date)}
           </div>
         </div>
@@ -170,11 +172,11 @@ export function PurchasePage() {
       label: 'Supplier',
       render: (item) => (
         <div className="space-y-0.5">
-          <div className="font-semibold text-xs text-[#16323B] leading-tight">
+          <div className="font-semibold text-xs text-[#20282D] leading-tight">
             {item.supplier?.name || '-'}
           </div>
           {item.supplier?.code && (
-            <div className="text-[10px] text-[#8FA8B0] font-mono">
+            <div className="text-[10px] text-[#879197] font-mono">
               {item.supplier.code}
             </div>
           )}
@@ -185,7 +187,7 @@ export function PurchasePage() {
       key: 'items_count',
       label: 'Jumlah Item',
       render: (item) => (
-        <span className="text-xs text-[#577782] font-medium whitespace-nowrap">
+        <span className="text-xs text-[#879197] font-medium whitespace-nowrap">
           {item.items?.length || 0} macam
         </span>
       ),
@@ -194,28 +196,13 @@ export function PurchasePage() {
       key: 'status',
       label: 'Status Barang',
       render: (item) => {
-        if (item.status === 'received') {
-          return (
-            <span className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap inline-flex items-center gap-1.5 shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              Diterima
-            </span>
-          );
-        }
-        if (item.status === 'draft') {
-          return (
-            <span className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap inline-flex items-center gap-1.5 shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-              Draft
-            </span>
-          );
-        }
-        return (
-          <span className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap inline-flex items-center gap-1.5 shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-            Batal
-          </span>
-        );
+        const statusMap = {
+          received: { status: 'completed', label: 'Diterima' },
+          draft: { status: 'pending', label: 'Draft' },
+          cancelled: { status: 'cancelled', label: 'Dibatalkan' },
+        };
+        const cfg = statusMap[item.status] || { status: 'info', label: item.status };
+        return <StatusBadge status={cfg.status} label={cfg.label} />;
       },
     },
     {
@@ -224,6 +211,8 @@ export function PurchasePage() {
       render: (item) => {
         const isPaid = item.payment_status === 'paid';
         const isPartial = item.payment_status === 'partial';
+        const statusKey = isPaid ? 'completed' : isPartial ? 'sebagian' : 'draft';
+        const labelText = isPaid ? 'Lunas' : isPartial ? 'Sebagian (DP)' : 'Belum Bayar';
         const methodLabel = item.payment_method
           ? item.payment_method === 'cash'
             ? 'Cash'
@@ -236,36 +225,19 @@ export function PurchasePage() {
 
         return (
           <div className="inline-flex flex-col items-start gap-1">
-            <span
-              className={`px-2.5 py-0.5 text-[10px] font-bold rounded-md whitespace-nowrap inline-flex items-center gap-1.5 shadow-2xs ${
-                isPaid
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : isPartial
-                  ? 'bg-sky-50 text-sky-700 border border-sky-200'
-                  : 'bg-rose-50 text-rose-700 border border-rose-200'
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  isPaid ? 'bg-emerald-500' : isPartial ? 'bg-sky-500' : 'bg-rose-500'
-                }`}
-              />
-              {isPaid ? 'Lunas' : isPartial ? 'Sebagian (DP)' : 'Belum Bayar'}
-            </span>
-            <span className="text-[10px] text-[#577782] font-semibold pl-1 uppercase tracking-wider">
-              {methodLabel}
-            </span>
+            <StatusBadge status={statusKey} label={labelText} />
+            <span className="text-[10px] text-[#879197] font-medium">Metode: {methodLabel}</span>
           </div>
         );
       },
     },
     {
       key: 'grand_total',
-      label: 'Total Pembelian',
+      label: 'Total Belanja',
       align: 'right',
       render: (item) => (
-        <div className="font-mono text-xs font-bold text-[#16323B]">
-          {formatRupiah(item.grand_total)}
+        <div className="font-mono text-xs font-black text-[#20282D]">
+          {formatRupiah(item.grand_total || 0)}
         </div>
       ),
     },
@@ -278,7 +250,7 @@ export function PurchasePage() {
         return (
           <div
             className={`font-mono text-xs font-bold ${
-              debt > 0 ? 'text-rose-600' : 'text-[#8FA8B0]'
+              debt > 0 ? 'text-[#E47777]' : 'text-[#879197]'
             }`}
           >
             {debt > 0 ? formatRupiah(debt) : '-'}
@@ -293,7 +265,7 @@ export function PurchasePage() {
       render: (item) => (
         <Link
           to={`/admin/purchases/${item.id}`}
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#167A93] bg-[#F0F9FB] hover:bg-[#EAF8FA] rounded-lg border border-[#D7EBEF]/60 transition"
+          className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#20282D] bg-[#F1F4F5] hover:bg-[#E7ECEE] rounded-full transition"
         >
           <span>Detail</span>
           <span>&rarr;</span>
@@ -303,14 +275,14 @@ export function PurchasePage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Toast */}
       {toast && (
         <div
           className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold flex items-center gap-2 ${
             toast.type === 'error'
-              ? 'bg-rose-50 border-rose-200 text-rose-700'
-              : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+              ? 'bg-[#FDF3F3] border-[#E47777]/30 text-[#E47777]'
+              : 'bg-[#EBF7F2] border-[#48B58B]/30 text-[#48B58B]'
           }`}
         >
           <span>{toast.type === 'error' ? '⚠️' : '✓'}</span>
@@ -319,35 +291,26 @@ export function PurchasePage() {
       )}
 
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-            <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
-              <IconPurchase className="w-5 h-5" />
-            </span>
-            Pembelian
-          </h1>
-          <p className="text-xs text-[#577782] mt-0.5">
-            Pencatatan faktur barang masuk dan pembaruan stok.
-          </p>
-        </div>
-
+      <PageHeader
+        title="Pembelian Toko"
+        subtitle="Pencatatan faktur barang masuk dan pembaruan stok otomatis."
+      >
         {isAdmin && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold rounded-xl text-xs shadow-xs transition cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-[#20282D] hover:bg-black text-white font-bold rounded-full text-xs shadow-xs transition cursor-pointer"
           >
-            <span>+</span>
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Input Pembelian</span>
           </button>
         )}
-      </div>
+      </PageHeader>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs space-y-3">
+      <div className="bg-white border border-[#E7ECEE] rounded-2xl p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <div>
-            <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
               Pencarian
             </label>
             <SearchInput
@@ -361,7 +324,7 @@ export function PurchasePage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
               Supplier
             </label>
             <select
@@ -370,7 +333,7 @@ export function PurchasePage() {
                 setSupplierFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]"
+              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             >
               <option value="">Semua Supplier</option>
               {suppliers.map((s) => (
@@ -382,7 +345,7 @@ export function PurchasePage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
               Status Barang
             </label>
             <select
@@ -391,7 +354,7 @@ export function PurchasePage() {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]"
+              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             >
               <option value="">Semua Status Barang</option>
               <option value="received">Diterima</option>
@@ -401,7 +364,7 @@ export function PurchasePage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
               Status Pembayaran
             </label>
             <select
@@ -410,7 +373,7 @@ export function PurchasePage() {
                 setPaymentStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]"
+              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             >
               <option value="">Semua Status Bayar</option>
               <option value="paid">Lunas</option>
@@ -420,9 +383,9 @@ export function PurchasePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 border-t border-[#F0F9FB]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#F1F4F5]">
           <div>
-            <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
               Metode Pembayaran
             </label>
             <select
@@ -431,7 +394,7 @@ export function PurchasePage() {
                 setPaymentMethodFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]"
+              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             >
               <option value="">Semua Metode</option>
               <option value="cash">Tunai (Kas)</option>
@@ -441,7 +404,7 @@ export function PurchasePage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
               Tanggal Mulai
             </label>
             <input
@@ -451,12 +414,12 @@ export function PurchasePage() {
                 setStartDate(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]"
+              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             />
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
               Tanggal Akhir
             </label>
             <input
@@ -466,7 +429,7 @@ export function PurchasePage() {
                 setEndDate(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]"
+              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             />
           </div>
         </div>
@@ -482,15 +445,13 @@ export function PurchasePage() {
         />
 
         {pagination && pagination.total > pagination.per_page && (
-          <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs">
-            <Pagination
-              currentPage={pagination.current_page}
-              lastPage={pagination.last_page}
-              total={pagination.total}
-              perPage={pagination.per_page}
-              onPageChange={(page) => setCurrentPage(page)}
-            />
-          </div>
+          <Pagination
+            currentPage={pagination.current_page}
+            lastPage={pagination.last_page}
+            total={pagination.total}
+            perPage={pagination.per_page}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
         )}
       </div>
 
