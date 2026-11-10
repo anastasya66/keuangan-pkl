@@ -86,19 +86,26 @@ export function LoginPage() {
           ========================================================================= */}
       <header className="max-w-7xl w-full mx-auto flex items-center justify-between z-20 shrink-0 pt-0.5">
         {/* Brand Left */}
-        <div className="flex flex-col">
-          <span className="text-xl sm:text-2xl font-black tracking-tight text-[#10262E] leading-tight">
-            FinToko
-          </span>
-          {/* Characteristic Razor Underline */}
-          <div className="w-10 sm:w-14 h-[1.8px] bg-[#16323B] mt-0.5" />
-          <a
-            href="mailto:support@fintoko.id"
-            className="hidden sm:flex text-[11px] text-[#577782] hover:text-[#10262E] font-medium mt-1 items-center gap-1 transition-colors"
-          >
-            <span>sales@fintoko.id</span>
-            <span>&rarr;</span>
-          </a>
+        <div className="flex items-center gap-3">
+          <img
+            src="/images/fintoko-mark.png"
+            alt="FinToko"
+            className="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0"
+          />
+          <div className="flex flex-col">
+            <span className="text-xl sm:text-2xl font-black tracking-tight text-[#10262E] leading-tight">
+              FinToko
+            </span>
+            {/* Characteristic Razor Underline */}
+            <div className="w-10 sm:w-14 h-[1.8px] bg-[#16323B] mt-0.5" />
+            <a
+              href="mailto:support@fintoko.id"
+              className="hidden sm:flex text-[11px] text-[#577782] hover:text-[#10262E] font-medium mt-1 items-center gap-1 transition-colors"
+            >
+              <span>sales@fintoko.id</span>
+              <span>&rarr;</span>
+            </a>
+          </div>
         </div>
 
         {/* Actions Right */}
@@ -246,7 +253,12 @@ export function LoginPage() {
             <div className="w-full max-w-[400px] xl:max-w-[425px] bg-white border border-[#E0EFF2] rounded-2xl sm:rounded-3xl lg:rounded-[28px] xl:rounded-[32px] p-5 sm:p-7 lg:p-6 xl:p-8 shadow-xl shadow-[#16323B]/8 backdrop-blur animate-modal-pop">
               
               {/* Header Title & Subtitle */}
-              <div className="text-center mb-4 sm:mb-5">
+              <div className="text-center mb-4 sm:mb-5 flex flex-col items-center">
+                <img
+                  src="/images/fintoko-mark.png"
+                  alt="FinToko"
+                  className="w-12 h-12 object-contain mb-2"
+                />
                 <h1 className="text-xl sm:text-2xl xl:text-[26px] font-black text-[#10262E] tracking-tight">
                   Agent Login
                 </h1>

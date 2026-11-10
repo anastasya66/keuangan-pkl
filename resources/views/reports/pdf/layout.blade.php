@@ -111,13 +111,24 @@
         <table class="header-table">
             <tr>
                 <td style="width: 55%; vertical-align: top;">
-                    <div class="app-name">{{ $settings['store_name'] ?? 'FinToko Minimarket & Retail' }}</div>
-                    <div class="app-tagline">
-                        {{ $settings['store_address'] ?? 'Sistem Manajemen Keuangan & Persediaan Toko' }}
-                        @if(!empty($settings['store_phone']))
-                            • Telp: {{ $settings['store_phone'] }}
-                        @endif
-                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            @if(file_exists(public_path('images/fintoko-mark.png')))
+                                <td style="width: 44px; vertical-align: top; padding-right: 8px;">
+                                    <img src="{{ public_path('images/fintoko-mark.png') }}" style="width: 38px; height: 38px;" alt="Logo" />
+                                </td>
+                            @endif
+                            <td style="vertical-align: top;">
+                                <div class="app-name">{{ $settings['store_name'] ?? 'FinToko Minimarket & Retail' }}</div>
+                                <div class="app-tagline">
+                                    {{ $settings['store_address'] ?? 'Sistem Manajemen Keuangan & Persediaan Toko' }}
+                                    @if(!empty($settings['store_phone']))
+                                        • Telp: {{ $settings['store_phone'] }}
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
                 <td style="width: 45%; vertical-align: top;">
                     <div class="report-title">@yield('report-title')</div>

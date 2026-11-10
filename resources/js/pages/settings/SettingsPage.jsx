@@ -381,6 +381,23 @@ export function SettingsPage() {
                 </p>
               </div>
 
+              {/* Logo Preview Card */}
+              <div className="flex items-center gap-4 p-4 bg-[#F8FDFE] border border-[#EAF4F6] rounded-2xl">
+                <div className="w-16 h-16 rounded-xl bg-white border border-[#D7EBEF] flex items-center justify-center p-2 shadow-xs shrink-0">
+                  <img
+                    src="/images/fintoko-mark.png"
+                    alt="Logo FinToko"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div>
+                  <div className="font-bold text-[#16323B] text-sm">Logo Resmi FinToko</div>
+                  <div className="text-[11px] text-[#577782] mt-0.5">
+                    Logo aktif yang digunakan pada navbar, sidebar, struk kasir, faktur, dan tab browser.
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                 <div>
                   <label className="block font-semibold text-[#16323B] mb-1">Nama Toko / Minimarket</label>

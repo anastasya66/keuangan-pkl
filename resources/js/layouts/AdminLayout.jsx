@@ -126,9 +126,11 @@ export function AdminLayout({ children }) {
         <div>
           <div className="h-16 px-4 flex items-center justify-between border-b border-[#D7EBEF]">
             <Link to="/admin/dashboard" className="flex items-center gap-3 overflow-hidden group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#27C5E5] to-[#38BFE0] flex items-center justify-center text-white font-extrabold text-lg shadow-sm shadow-[#38BFE0]/30 shrink-0 group-hover:scale-105 transition-transform duration-200">
-                F
-              </div>
+              <img
+                src="/images/fintoko-mark.png"
+                alt="FinToko"
+                className="w-9 h-9 object-contain shrink-0 group-hover:scale-105 transition-transform duration-200"
+              />
               {(isSidebarOpen || isMobileMenuOpen) && (
                 <div className="flex flex-col">
                   <span className="text-base font-black tracking-tight text-[#10262E] leading-tight">
@@ -242,6 +244,7 @@ export function AdminLayout({ children }) {
               </button>
 
               <div className="flex items-center gap-1.5 sm:gap-2 text-xs truncate max-w-[150px] xs:max-w-[200px] sm:max-w-none">
+                <img src="/images/fintoko-mark.png" alt="FinToko" className="w-5 h-5 object-contain shrink-0" />
                 <span className="font-black text-[#10262E] tracking-tight">FinToko</span>
                 <span className="hidden sm:inline text-[#8EA6AF]">&bull;</span>
                 <span className="hidden sm:inline font-semibold text-[#577782]">Sistem Keuangan &amp; Stok Toko</span>

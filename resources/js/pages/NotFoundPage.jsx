@@ -13,6 +13,11 @@ export function NotFoundPage() {
   return (
     <div className="min-h-screen bg-[#EAF8FA] flex flex-col items-center justify-center p-6 text-center">
       <div className="max-w-md w-full bg-white border border-[#D7EBEF] rounded-3xl p-8 sm:p-10 shadow-xl text-center space-y-4">
+        <img
+          src="/images/fintoko-mark.png"
+          alt="FinToko"
+          className="w-12 h-12 object-contain mx-auto"
+        />
         <div className="w-16 h-16 rounded-2xl bg-[#EAF8FA] border border-[#A9DDE7] text-[#27C5E5] flex items-center justify-center mx-auto text-3xl font-bold">
           404
         </div>
