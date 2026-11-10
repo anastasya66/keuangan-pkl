@@ -20,7 +20,7 @@ class PosSaleService
     /**
      * Cari produk aktif untuk kasir berdasarkan barcode, SKU, atau nama produk.
      */
-    public function searchProducts(string $query = '', int $limit = 30): Collection
+    public function searchProducts(string $query = '', int $limit = 250): Collection
     {
         $q = Product::query()
             ->with(['category', 'unit'])

@@ -73,7 +73,7 @@ export function UnitModal({
             <span className="p-2 rounded-xl bg-[#EAF8FA] text-[#27C5E5]">
               <IconRuler className="w-5 h-5" />
             </span>
-            <span>{isEdit ? 'Ubah Satuan Ukuran' : 'Tambah Satuan Baru'}</span>
+            <span>{isEdit ? 'Ubah Satuan' : 'Tambah Satuan'}</span>
           </h3>
           <button
             type="button"

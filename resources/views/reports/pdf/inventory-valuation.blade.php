@@ -1,64 +1,177 @@
 @extends('reports.pdf.layout')
 
-@section('title', 'Laporan Nilai Persediaan — FinToko')
-@section('report-title', 'Laporan Nilai Persediaan (Moving Weighted Average)')
-@section('report-period', 'Posisi Valuasi per: ' . now()->translatedFormat('d F Y H:i'))
+@section('title', 'Laporan Valuasi Persediaan — FinToko')
+@section('report-title', 'Laporan Valuasi Persediaan')
+@section('report-period', 'Tanggal Cetak: ' . now()->translatedFormat('d F Y H:i'))
 
 @section('content')
-    <div style="margin-bottom: 12px; padding: 10px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
-        <table style="width: 100%; font-size: 10px;">
+    <style>
+        .summary-card {
+            margin-bottom: 12px;
+            border: 1px solid #D7EBEF;
+            border-radius: 6px;
+            background-color: #F8FDFE;
+            padding: 8px 10px;
+        }
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .summary-table td {
+            padding: 2px 6px;
+            border: none;
+            vertical-align: top;
+        }
+        .summary-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: #577782;
+            letter-spacing: 0.3px;
+        }
+        .summary-value {
+            font-size: 11px;
+            font-weight: bold;
+            color: #16323B;
+            margin-top: 1px;
+        }
+        .summary-value-teal {
+            color: #167A93;
+        }
+        table.valuation-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5px;
+            margin-top: 6px;
+        }
+        table.valuation-table th {
+            background-color: #16323B;
+            color: #FFFFFF;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 6px 5px;
+            border: 1px solid #10262E;
+            font-size: 8px;
+            letter-spacing: 0.2px;
+        }
+        table.valuation-table td {
+            padding: 5px 5px;
+            border: 1px solid #D7EBEF;
+            vertical-align: middle;
+        }
+        table.valuation-table tr.even-row td {
+            background-color: #F8FDFE;
+        }
+        table.valuation-table tr.total-row td {
+            background-color: #EAF8FA !important;
+            color: #16323B;
+            font-weight: bold;
+            border-top: 2px solid #167A93;
+            border-bottom: 2px solid #167A93;
+            font-size: 9px;
+        }
+        .badge-stock {
+            display: inline-block;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 7.5px;
+            font-weight: bold;
+        }
+        .badge-out { background-color: #FEE2E2; color: #991B1B; }
+        .badge-low { background-color: #FEF3C7; color: #92400E; }
+    </style>
+
+    {{-- Kotak Ringkasan Utama (4 Kartu Ringkas) --}}
+    <div class="summary-card">
+        <table class="summary-table">
             <tr>
-                <td style="width: 25%;"><strong>Total Item SKU:</strong> {{ $data['summary']['total_products'] }}</td>
-                <td style="width: 25%;"><strong>Total Kuantitas Fisik:</strong> {{ number_format($data['summary']['total_stock_units'], 2, ',', '.') }} unit</td>
-                <td style="width: 25%;"><strong>Potensi Omzet:</strong> Rp {{ number_format($data['summary']['potential_revenue'], 2, ',', '.') }}</td>
-                <td style="width: 25%; text-align: right;"><strong>Total Nilai Persediaan (HPP):</strong> <span style="color: #059669; font-weight: bold;">Rp {{ number_format($data['summary']['total_valuation'], 2, ',', '.') }}</span></td>
+                <td style="width: 25%;">
+                    <div class="summary-label">Total Item Produk</div>
+                    <div class="summary-value">{{ $data['summary']['total_products'] }} <span style="font-size: 9px; font-weight: normal; color: #577782;">jenis</span></div>
+                </td>
+                <td style="width: 25%;">
+                    <div class="summary-label">Total Stok Fisik</div>
+                    <div class="summary-value">{{ number_format($data['summary']['total_stock_units'], 0, ',', '.') }} <span style="font-size: 9px; font-weight: normal; color: #577782;">unit</span></div>
+                </td>
+                <td style="width: 25%;">
+                    <div class="summary-label">Total Nilai Aset (HPP)</div>
+                    <div class="summary-value summary-value-teal">Rp {{ number_format($data['summary']['total_valuation'], 0, ',', '.') }}</div>
+                </td>
+                <td style="width: 25%;">
+                    <div class="summary-label">Potensi Omzet</div>
+                    <div class="summary-value">Rp {{ number_format($data['summary']['potential_revenue'], 0, ',', '.') }}</div>
+                </td>
             </tr>
         </table>
     </div>
 
-    <table class="data-table">
+    {{-- Tabel Rincian Nilai Persediaan --}}
+    <table class="valuation-table">
         <thead>
             <tr>
-                <th style="width: 12%;" class="text-left">Kode SKU</th>
-                <th style="width: 28%;" class="text-left">Nama Produk</th>
-                <th style="width: 14%;" class="text-left">Kategori</th>
-                <th style="width: 10%;" class="text-right">Stok Fisik</th>
-                <th style="width: 12%;" class="text-right">HPP Rata-rata</th>
-                <th style="width: 12%;" class="text-right">Harga Jual</th>
-                <th style="width: 12%;" class="text-right">Total Nilai HPP</th>
+                <th style="width: 4%; text-align: center;">No</th>
+                <th style="width: 13%; text-align: left;">Kode SKU</th>
+                <th style="width: 27%; text-align: left;">Nama Produk</th>
+                <th style="width: 14%; text-align: left;">Kategori</th>
+                <th style="width: 9%; text-align: right;">Stok Fisik</th>
+                <th style="width: 11%; text-align: right;">HPP Rata-rata</th>
+                <th style="width: 10%; text-align: right;">Harga Jual</th>
+                <th style="width: 12%; text-align: right;">Total Nilai Aset</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($data['products'] as $p)
+            @forelse($data['products'] as $idx => $p)
                 @php
-                    $stock = max(0.0, (float) $p->stock);
-                    $avgCost = (float) $p->effective_cost;
+                    $sku = is_array($p) ? ($p['sku'] ?? '') : $p->sku;
+                    $name = is_array($p) ? ($p['name'] ?? '') : $p->name;
+                    $cat = is_array($p) ? ($p['category'] ?? $p['category_name'] ?? '-') : ($p->category?->name ?? '-');
+                    $unit = is_array($p) ? ($p['unit'] ?? $p['unit_symbol'] ?? 'unit') : ($p->unit?->symbol ?? 'unit');
+                    $stock = max(0.0, (float) (is_array($p) ? ($p['stock'] ?? 0) : $p->stock));
+                    $avgCost = (float) (is_array($p) ? ($p['average_cost'] ?? $p['purchase_price'] ?? 0) : ($p->effective_cost ?? $p->average_cost ?? $p->purchase_price ?? 0));
+                    $sellingPrice = (float) (is_array($p) ? ($p['selling_price'] ?? 0) : $p->selling_price);
                     $itemVal = round($stock * $avgCost, 2);
+                    $minStock = (float) (is_array($p) ? ($p['min_stock'] ?? 5) : ($p->min_stock ?? 5));
+                    $isLow = $stock > 0 && $stock <= $minStock;
+                    $isOut = $stock <= 0;
                 @endphp
-                <tr>
-                    <td class="font-mono">{{ $p->sku }}</td>
+                <tr class="{{ $loop->even ? 'even-row' : '' }}">
+                    <td style="text-align: center;">{{ $idx + 1 }}</td>
+                    <td class="font-mono">{{ $sku }}</td>
                     <td>
-                        <strong>{{ $p->name }}</strong>
+                        <strong>{{ $name }}</strong>
+                        @if($isOut)
+                            <span class="badge-stock badge-out">Habis</span>
+                        @elseif($isLow)
+                            <span class="badge-stock badge-low">Menipis</span>
+                        @endif
                     </td>
-                    <td>{{ $p->category?->name ?? '-' }}</td>
-                    <td class="text-right font-mono">{{ number_format($stock, 2, ',', '.') }} {{ $p->unit?->symbol ?? 'pcs' }}</td>
-                    <td class="text-right font-mono">Rp {{ number_format($avgCost, 2, ',', '.') }}</td>
-                    <td class="text-right font-mono">Rp {{ number_format((float) $p->selling_price, 2, ',', '.') }}</td>
-                    <td class="text-right font-mono font-bold" style="color: #0f766e;">Rp {{ number_format($itemVal, 2, ',', '.') }}</td>
+                    <td>{{ $cat }}</td>
+                    <td style="text-align: right;" class="font-mono">
+                        {{ number_format($stock, 0, ',', '.') }} {{ $unit }}
+                    </td>
+                    <td style="text-align: right;" class="font-mono">
+                        Rp {{ number_format($avgCost, 0, ',', '.') }}
+                    </td>
+                    <td style="text-align: right;" class="font-mono">
+                        Rp {{ number_format($sellingPrice, 0, ',', '.') }}
+                    </td>
+                    <td style="text-align: right; color: #167A93; font-weight: bold;" class="font-mono">
+                        Rp {{ number_format($itemVal, 0, ',', '.') }}
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center" style="color: #94a3b8;">Tidak ada data produk persediaan</td>
+                    <td colspan="8" style="text-align: center; color: #94a3b8; padding: 12px;">Tidak ada data produk persediaan.</td>
                 </tr>
             @endforelse
             <tr class="total-row">
-                <td colspan="3" class="text-right">TOTAL KESELURUHAN VALUASI</td>
-                <td class="text-right font-mono">{{ number_format($data['summary']['total_stock_units'], 2, ',', '.') }}</td>
-                <td class="text-right font-mono">-</td>
-                <td class="text-right font-mono">-</td>
-                <td class="text-right font-mono" style="color: #059669;">Rp {{ number_format($data['summary']['total_valuation'], 2, ',', '.') }}</td>
+                <td colspan="4" style="text-align: right; font-weight: bold;">TOTAL KESELURUHAN</td>
+                <td style="text-align: right;" class="font-mono">{{ number_format($data['summary']['total_stock_units'], 0, ',', '.') }}</td>
+                <td style="text-align: center;" class="font-mono">-</td>
+                <td style="text-align: right;" class="font-mono">Rp {{ number_format($data['summary']['potential_revenue'], 0, ',', '.') }}</td>
+                <td style="text-align: right; color: #167A93; font-weight: bold;" class="font-mono">
+                    Rp {{ number_format($data['summary']['total_valuation'], 0, ',', '.') }}
+                </td>
             </tr>
         </tbody>
     </table>
 @endsection
-

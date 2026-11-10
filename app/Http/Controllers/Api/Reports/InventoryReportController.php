@@ -23,7 +23,7 @@ class InventoryReportController extends Controller
     {
         $filters = [
             'category_id' => $request->query('category_id'),
-            'stock_status' => $request->query('stock_status'),
+            'stock_status' => $request->query('stock_status') ?? $request->query('status'),
             'search' => $request->query('search'),
         ];
 
@@ -43,7 +43,7 @@ class InventoryReportController extends Controller
     {
         $filters = [
             'category_id' => $request->query('category_id'),
-            'stock_status' => $request->query('stock_status'),
+            'stock_status' => $request->query('stock_status') ?? $request->query('status'),
             'search' => $request->query('search'),
         ];
 
@@ -59,7 +59,7 @@ class InventoryReportController extends Controller
     {
         $filters = [
             'category_id' => $request->query('category_id'),
-            'stock_status' => $request->query('stock_status'),
+            'stock_status' => $request->query('stock_status') ?? $request->query('status'),
             'search' => $request->query('search'),
         ];
 

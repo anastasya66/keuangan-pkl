@@ -21,7 +21,7 @@ class PosController extends Controller
     public function products(Request $request): JsonResponse
     {
         $query = $request->input('search', '');
-        $limit = (int) $request->input('limit', 40);
+        $limit = (int) $request->input('limit', 250);
 
         $products = $this->posSaleService->searchProducts($query, $limit);
 
@@ -61,7 +61,7 @@ class PosController extends Controller
         $validated = $request->validate([
             'sale_date' => ['nullable', 'date'],
             'customer_name' => ['nullable', 'string', 'max:100'],
-            'payment_method' => ['required', 'in:cash,transfer,qris'],
+            'payment_method' => ['required', 'string', 'max:50'],
             'paid_amount' => ['required', 'numeric', 'min:0'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'tax_amount' => ['nullable', 'numeric', 'min:0'],

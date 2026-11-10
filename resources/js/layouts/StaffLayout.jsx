@@ -18,6 +18,7 @@ import {
   IconLogout,
   IconPos,
   IconStockCard,
+  IconValuation,
 } from '../components/common/Icons';
 
 export function StaffLayout({ children }) {
@@ -52,17 +53,17 @@ export function StaffLayout({ children }) {
       group: 'MENU UTAMA',
       items: [
         { to: '/staff/dashboard', label: 'Dashboard Toko', icon: IconDashboard },
-        { to: '/staff/pos', label: 'Kasir POS (Penjualan)', icon: IconPos },
-        { to: '/staff/pos/sales', label: 'Riwayat Penjualan', icon: IconStock },
+        { to: '/staff/pos', label: 'Penjualan', icon: IconPos },
       ],
     },
     {
       group: 'PRODUK & STOK BARANG',
       items: [
         { to: '/staff/products', label: 'Katalog Barang', icon: IconBox },
+        { to: '/staff/inventory/valuation', label: 'Nilai Persediaan', icon: IconValuation },
         { to: '/staff/categories', label: 'Kategori Barang', icon: IconTag },
         { to: '/staff/units', label: 'Satuan Ukuran', icon: IconRuler },
-        { to: '/staff/inventory/stock-card', label: 'Kartu Stok Barang', icon: IconStockCard },
+        { to: '/staff/inventory/stock-card', label: 'Kartu Stok', icon: IconStockCard },
         { to: '/staff/reports/inventory', label: 'Sisa Stok Toko', icon: IconStock },
         { to: '/staff/reports/stock-movements', label: 'Riwayat Keluar Masuk', icon: IconMovement },
       ],

@@ -58,14 +58,13 @@ export function AdminLayout({ children }) {
       group: 'MENU UTAMA',
       items: [
         { to: '/admin/dashboard', label: 'Dashboard Toko', icon: IconDashboard },
-        { to: '/admin/pos', label: 'Kasir POS (Penjualan)', icon: IconPos },
-        { to: '/admin/pos/sales', label: 'Riwayat Penjualan', icon: IconStock },
+        { to: '/admin/pos', label: 'Penjualan', icon: IconPos },
       ],
     },
     {
       group: 'PEMBELIAN & SUPPLIER',
       items: [
-        { to: '/admin/purchases', label: 'Pembelian Toko', icon: IconPurchase },
+        { to: '/admin/purchases', label: 'Pembelian', icon: IconPurchase },
         { to: '/admin/suppliers', label: 'Data Supplier', icon: IconSupplier },
       ],
     },
@@ -73,9 +72,10 @@ export function AdminLayout({ children }) {
       group: 'PRODUK & STOK BARANG',
       items: [
         { to: '/admin/products', label: 'Katalog Barang', icon: IconBox },
+        { to: '/admin/inventory/valuation', label: 'Nilai Persediaan', icon: IconValuation },
         { to: '/admin/categories', label: 'Kategori Barang', icon: IconTag },
         { to: '/admin/units', label: 'Satuan Ukuran', icon: IconRuler },
-        { to: '/admin/inventory/stock-card', label: 'Kartu Stok Barang', icon: IconStockCard },
+        { to: '/admin/inventory/stock-card', label: 'Kartu Stok', icon: IconStockCard },
         { to: '/admin/reports/inventory', label: 'Sisa Stok Toko', icon: IconStock },
         { to: '/admin/reports/stock-movements', label: 'Riwayat Keluar Masuk', icon: IconMovement },
       ],
@@ -94,7 +94,6 @@ export function AdminLayout({ children }) {
       items: [
         { to: '/admin/reports/income-statement', label: 'Laporan Untung & Rugi', icon: IconIncomeStatement },
         { to: '/admin/reports/balance-sheet', label: 'Posisi Keuangan (Neraca)', icon: IconBalanceSheet },
-        { to: '/admin/inventory/valuation', label: 'Valuasi Persediaan (HPP)', icon: IconValuation },
       ],
     },
     {

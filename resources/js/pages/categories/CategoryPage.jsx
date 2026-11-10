@@ -128,12 +128,12 @@ export function CategoryPage() {
   };
 
   const columns = [
-    { header: 'Nama Kategori', className: 'w-1/4' },
-    { header: 'Deskripsi', className: 'w-1/3' },
+    { header: 'Nama Kategori', className: 'min-w-[180px] text-left' },
+    { header: 'Deskripsi', className: 'min-w-[200px] text-left' },
     { header: 'Jumlah Produk', className: 'text-center whitespace-nowrap' },
     { header: 'Status', className: 'text-center whitespace-nowrap' },
-    { header: 'Dibuat Pada', className: 'hidden md:table-cell whitespace-nowrap' },
-    ...(isAdmin ? [{ header: 'Aksi', className: 'text-right whitespace-nowrap' }] : []),
+    { header: 'Dibuat Pada', className: 'hidden md:table-cell whitespace-nowrap text-left' },
+    ...(isAdmin ? [{ header: 'Aksi', className: 'text-right whitespace-nowrap min-w-[210px]' }] : []),
   ];
 
   return (
@@ -168,10 +168,10 @@ export function CategoryPage() {
             <span className="p-2 rounded-xl bg-white border border-[#D7EBEF] text-[#27C5E5] shadow-2xs">
               <IconTag className="w-5 h-5" />
             </span>
-            <span>Kategori Barang Toko</span>
+            <span>Kategori Barang</span>
           </h1>
-          <p className="text-xs text-[#577782] mt-1">
-            Bantu kelompokkan barang toko agar pencatatan stok dan penjualan lebih rapi
+          <p className="text-xs text-[#577782] mt-0.5">
+            Kelola pengelompokan produk untuk pencatatan stok.
           </p>
         </div>
 
@@ -182,15 +182,15 @@ export function CategoryPage() {
               setSelectedCategory(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs transition-all shadow-md shadow-[#27C5E5]/20 cursor-pointer self-start sm:self-auto btn-press"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold text-xs transition-all shadow-md shadow-[#27C5E5]/20 cursor-pointer self-start sm:self-auto btn-press"
           >
-            <span>+ Tambah Kategori Baru</span>
+            <span>+ Tambah Kategori</span>
           </button>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-[#D7EBEF] shadow-xs">
+      <div className="bg-white p-4 rounded-2xl border border-[#D7EBEF] shadow-xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <form
             onSubmit={(e) => {
@@ -235,11 +235,11 @@ export function CategoryPage() {
         emptyMessage="Belum ada data kategori yang cocok dengan pencarian Anda."
         renderRow={(cat) => (
           <tr key={cat.id} className="hover:bg-[#F3FBFC] transition-colors">
-            <td className="px-4 py-3.5 font-bold text-[#10262E]">
+            <td className="px-4 py-3.5 font-bold text-xs sm:text-[13px] text-[#10262E] whitespace-nowrap">
               {cat.name}
             </td>
 
-            <td className="px-4 py-3.5 text-xs text-[#577782]">
+            <td className="px-4 py-3.5 text-xs text-[#577782] min-w-[200px]">
               {cat.description || <span className="text-[#8EA6AF] italic">Tidak ada deskripsi</span>}
             </td>
 
@@ -253,13 +253,13 @@ export function CategoryPage() {
               <StatusBadge isActive={cat.is_active} />
             </td>
 
-            <td className="px-4 py-3.5 text-xs text-[#8EA6AF] hidden md:table-cell">
+            <td className="px-4 py-3.5 text-xs text-[#577782] hidden md:table-cell whitespace-nowrap font-medium">
               {formatDateTime(cat.created_at)}
             </td>
 
             {isAdmin && (
-              <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                <div className="inline-flex items-center gap-1.5">
+              <td className="px-4 py-3.5 text-right whitespace-nowrap min-w-[210px]">
+                <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() => {

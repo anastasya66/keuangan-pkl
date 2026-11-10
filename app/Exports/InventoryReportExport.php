@@ -2,148 +2,183 @@
 
 namespace App\Exports;
 
-use Illuminate\Http\Response;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Symfony\Component\HttpFoundation\Response;
 
-class InventoryReportExport
+class InventoryReportExport extends BaseExcelExport
 {
     public function __construct(
         protected array $data
     ) {}
 
     /**
-     * Generate response file Excel (.xls) berformat tabel terstruktur.
+     * Generate response file Excel (.xlsx) berformat workbook OpenXML valid.
      */
     public function download(?string $filename = null): Response
     {
-        $filename = $filename ?: 'laporan-stok-persediaan-' . date('Ymd') . '.xls';
+        $filename = $filename ?: 'laporan-stok-persediaan-' . date('Ymd') . '.xlsx';
 
-        $html = $this->buildHtmlTable();
+        $spreadsheet = $this->createSpreadsheet('Laporan Stok Persediaan', 'Stok Persediaan');
+        $sheet = $spreadsheet->getActiveSheet();
 
-        return response($html, 200, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'Pragma' => 'no-cache',
-            'Expires' => '0',
+        $store = $this->getStoreInfo();
+        $generatedAt = $this->data['generated_at'] ?? date('d/m/Y H:i');
+        $totalProducts = (int) ($this->data['summary']['total_products'] ?? 0);
+        $totalStockUnits = (float) ($this->data['summary']['total_stock_units'] ?? $this->data['summary']['total_units'] ?? 0);
+        $totalValuation = (float) ($this->data['summary']['total_inventory_value'] ?? $this->data['summary']['total_valuation'] ?? 0);
+        $totalIn = (float) ($this->data['summary']['total_in'] ?? 0);
+        $totalOut = (float) ($this->data['summary']['total_out'] ?? 0);
+
+        // 1. Header Banner
+        $sheet->setCellValue('A1', mb_strtoupper($store['name']) . ' — SISTEM MANAJEMEN KEUANGAN & PERSEDIAAN TOKO');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(13)->getColor()->setRGB(self::COLOR_DARK);
+
+        $sheet->setCellValue('A2', 'LAPORAN SISA STOK & NILAI PERSEDIAAN TOKO');
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(11)->getColor()->setRGB(self::COLOR_PRIMARY);
+
+        $metaText = "Tanggal Cetak: {$generatedAt} | Total Produk: {$totalProducts} item | Total Sisa Fisik: " . number_format($totalStockUnits, 2, ',', '.') . " unit | Total Nilai Aset: Rp " . number_format($totalValuation, 2, ',', '.');
+        if (!empty($store['address'])) {
+            $metaText .= " | {$store['address']}";
+        }
+        $sheet->setCellValue('A3', $metaText);
+        $sheet->getStyle('A3')->getFont()->setSize(9)->setItalic(true)->getColor()->setRGB(self::COLOR_MUTED);
+
+        $row = 5;
+
+        // Table Headers
+        $headers = [
+            'A' => 'No',
+            'B' => 'Kode / SKU',
+            'C' => 'Barcode',
+            'D' => 'Nama Produk',
+            'E' => 'Kategori',
+            'F' => 'Satuan',
+            'G' => 'Harga Beli (HPP)',
+            'H' => 'Harga Jual',
+            'I' => 'Masuk (+)',
+            'J' => 'Keluar (-)',
+            'K' => 'Sisa Stok',
+            'L' => 'Nilai Persediaan (Rp)',
+            'M' => 'Status Stok',
+        ];
+
+        foreach ($headers as $col => $title) {
+            $sheet->setCellValue("{$col}{$row}", $title);
+        }
+
+        $sheet->getStyle("A{$row}:M{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_PRIMARY]],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
         ]);
-    }
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("B{$row}:E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle("F{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("G{$row}:L{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("M{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $row++;
 
-    protected function buildHtmlTable(): string
-    {
-        $generatedAt = htmlspecialchars($this->data['generated_at'] ?? date('Y-m-d H:i:s'));
-        $totalProducts = number_format($this->data['summary']['total_products'] ?? 0, 0, ',', '.');
-        $totalStockUnits = number_format($this->data['summary']['total_stock_units'] ?? 0, 2, ',', '.');
-        $totalInventoryValue = number_format($this->data['summary']['total_inventory_value'] ?? 0, 2, ',', '.');
+        $products = $this->data['products'] ?? $this->data['items'] ?? [];
+        if (empty($products)) {
+            $sheet->setCellValue("A{$row}", 'Tidak ada data produk persediaan');
+            $sheet->mergeCells("A{$row}:M{$row}");
+            $sheet->getStyle("A{$row}")->getFont()->setItalic(true)->getColor()->setRGB(self::COLOR_MUTED);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+        } else {
+            $calcTotalIn = 0;
+            $calcTotalOut = 0;
+            $calcTotalStock = 0;
+            $calcTotalVal = 0;
 
-        ob_start();
-        ?>
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:x="urn:schemas-microsoft-com:office:excel"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <!--[if gte mso 9]>
-    <xml>
-        <x:ExcelWorkbook>
-            <x:ExcelWorksheets>
-                <x:ExcelWorksheet>
-                    <x:Name>Stok Persediaan</x:Name>
-                    <x:WorksheetOptions>
-                        <x:DisplayGridlines/>
-                    </x:WorksheetOptions>
-                </x:ExcelWorksheet>
-            </x:ExcelWorksheets>
-        </x:ExcelWorkbook>
-    </xml>
-    <![endif]-->
-    <style>
-        body, table { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 10pt; color: #16323B; }
-        .doc-title { font-size: 15pt; font-weight: bold; color: #10262E; text-align: left; }
-        .doc-subtitle { font-size: 12pt; font-weight: bold; color: #167A93; text-align: left; }
-        .doc-meta { font-size: 10pt; color: #577782; text-align: left; }
-        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-        th { background-color: #27C5E5; color: #FFFFFF; font-weight: bold; border: 1px solid #1A9DB8; padding: 9px 8px; text-align: left; font-size: 10pt; }
-        th.center { text-align: center; }
-        th.right { text-align: right; }
-        td { border: 1px solid #D7EBEF; padding: 6px 8px; vertical-align: middle; }
-        td.center { text-align: center; }
-        td.right { text-align: right; mso-number-format: "\#\,\#\#0\.00"; }
-        td.mono { font-family: monospace; font-weight: bold; }
-        .row-grand-total { background-color: #D6F4FA; color: #10262E; font-weight: bold; font-size: 11pt; border-top: 2px solid #27C5E5; border-bottom: 2px solid #27C5E5; }
-        .status-normal { background-color: #E8F8F0; color: #1B8751; font-weight: bold; text-align: center; }
-        .status-low { background-color: #FEF8EC; color: #B7791F; font-weight: bold; text-align: center; }
-        .status-empty { background-color: #FDEBED; color: #C53030; font-weight: bold; text-align: center; }
-    </style>
-</head>
-<body>
-    <table>
-        <tr>
-            <td colspan="10" class="doc-title">FINTOKO — SISTEM MANAJEMEN KEUANGAN &amp; PERSEDIAAN TOKO</td>
-        </tr>
-        <tr>
-            <td colspan="10" class="doc-subtitle">LAPORAN STOK &amp; VALUASI PERSEDIAAN BARANG</td>
-        </tr>
-        <tr>
-            <td colspan="10" class="doc-meta">
-                Tanggal Cetak: <?= $generatedAt ?> &bull; Total Item: <?= $totalProducts ?> &bull; Total Fisik: <?= $totalStockUnits ?> unit &bull; Total Nilai: Rp <?= $totalInventoryValue ?>
-            </td>
-        </tr>
-        <tr><td colspan="10" style="border:none; height:15px;"></td></tr>
-        <thead>
-            <tr>
-                <th class="center" style="width: 40px;">No</th>
-                <th style="width: 120px;">Kode SKU</th>
-                <th style="width: 120px;">Barcode</th>
-                <th style="width: 250px;">Nama Produk</th>
-                <th style="width: 140px;">Kategori</th>
-                <th class="center" style="width: 80px;">Satuan</th>
-                <th class="right" style="width: 100px;">Stok Fisik</th>
-                <th class="center" style="width: 110px;">Status</th>
-                <th class="right" style="width: 140px;">Harga Beli (Rp)</th>
-                <th class="right" style="width: 160px;">Nilai Stok (Rp)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (empty($this->data['products'])): ?>
-                <tr>
-                    <td colspan="10" style="text-align: center; color: #8EA6AF; padding: 20px;">Belum ada data barang terdaftar.</td>
-                </tr>
-            <?php else: ?>
-                <?php $no = 1; foreach ($this->data['products'] as $p): 
-                    $statusClass = 'status-normal';
-                    if (($p['stock'] ?? 0) <= 0) {
-                        $statusClass = 'status-empty';
-                    } elseif (($p['stock'] ?? 0) <= 10) {
-                        $statusClass = 'status-low';
-                    }
-                ?>
-                    <tr>
-                        <td class="center"><?= $no++ ?></td>
-                        <td class="mono"><?= htmlspecialchars($p['sku']) ?></td>
-                        <td style="font-family: monospace;"><?= htmlspecialchars($p['barcode'] ?: '-') ?></td>
-                        <td><?= htmlspecialchars($p['name']) ?></td>
-                        <td><?= htmlspecialchars($p['category_name']) ?></td>
-                        <td class="center"><?= htmlspecialchars($p['unit_symbol']) ?></td>
-                        <td class="right"><?= number_format($p['stock'], 2, ',', '.') ?></td>
-                        <td class="<?= $statusClass ?>"><?= htmlspecialchars($p['stock_status_label']) ?></td>
-                        <td class="right"><?= number_format($p['purchase_price'], 2, ',', '.') ?></td>
-                        <td class="right"><?= number_format($p['inventory_value'], 2, ',', '.') ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
+            foreach ($products as $idx => $p) {
+                // Cast model atau array
+                $sku = (string) (is_array($p) ? ($p['sku'] ?? '') : $p->sku);
+                $barcode = (string) (is_array($p) ? ($p['barcode'] ?? '') : $p->barcode);
+                $name = (string) (is_array($p) ? ($p['name'] ?? '') : $p->name);
+                $category = (string) (is_array($p) ? ($p['category'] ?? $p['category_name'] ?? '-') : ($p->category?->name ?? '-'));
+                $unit = (string) (is_array($p) ? ($p['unit'] ?? $p['unit_symbol'] ?? 'unit') : ($p->unit?->symbol ?? 'unit'));
+                $purchasePrice = (float) (is_array($p) ? ($p['purchase_price'] ?? $p['average_cost'] ?? 0) : ($p->purchase_price ?? 0));
+                $sellingPrice = (float) (is_array($p) ? ($p['selling_price'] ?? 0) : ($p->selling_price ?? 0));
+                $qtyIn = (float) (is_array($p) ? ($p['total_in'] ?? 0) : 0);
+                $qtyOut = (float) (is_array($p) ? ($p['total_out'] ?? 0) : 0);
+                $stock = (float) (is_array($p) ? ($p['stock'] ?? 0) : ($p->stock ?? 0));
+                $invValue = (float) (is_array($p) ? ($p['inventory_value'] ?? $p['valuation'] ?? ($stock * $purchasePrice)) : ($stock * $purchasePrice));
+                $statusLabel = (string) (is_array($p) ? ($p['status_label'] ?? ($stock <= 0 ? 'Habis' : ($stock <= 10 ? 'Menipis' : 'Tersedia'))) : ($stock <= 0 ? 'Habis' : ($stock <= 10 ? 'Menipis' : 'Tersedia')));
 
-            <tr class="row-grand-total">
-                <td colspan="6" style="text-align: right; font-weight: bold;">TOTAL PERSEDIAAN:</td>
-                <td class="right"><?= $totalStockUnits ?></td>
-                <td></td>
-                <td></td>
-                <td class="right">Rp <?= $totalInventoryValue ?></td>
-            </tr>
-        </tbody>
-    </table>
-</body>
-</html>
-        <?php
-        return ob_get_clean();
+                $calcTotalIn += $qtyIn;
+                $calcTotalOut += $qtyOut;
+                $calcTotalStock += $stock;
+                $calcTotalVal += $invValue;
+
+                $sheet->setCellValue("A{$row}", $idx + 1);
+                $sheet->setCellValueExplicit("B{$row}", $sku, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit("C{$row}", $barcode, DataType::TYPE_STRING);
+                $sheet->setCellValue("D{$row}", $name);
+                $sheet->setCellValue("E{$row}", $category);
+                $sheet->setCellValue("F{$row}", $unit);
+                $sheet->setCellValue("G{$row}", $purchasePrice);
+                $sheet->setCellValue("H{$row}", $sellingPrice);
+                $sheet->setCellValue("I{$row}", $qtyIn);
+                $sheet->setCellValue("J{$row}", $qtyOut);
+                $sheet->setCellValue("K{$row}", $stock);
+                $sheet->setCellValue("L{$row}", $invValue);
+                $sheet->setCellValue("M{$row}", $statusLabel);
+
+                // Alignments & Formats
+                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("F{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("M{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("G{$row}:H{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+                $sheet->getStyle("I{$row}:K{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_QTY);
+                $sheet->getStyle("L{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+
+                // Status coloring
+                if ($stock <= 0) {
+                    $sheet->getStyle("M{$row}")->getFont()->getColor()->setRGB(self::COLOR_LOSS);
+                } elseif ($stock <= 10) {
+                    $sheet->getStyle("M{$row}")->getFont()->getColor()->setRGB('D97706');
+                } else {
+                    $sheet->getStyle("M{$row}")->getFont()->getColor()->setRGB(self::COLOR_PROFIT);
+                }
+
+                $sheet->getStyle("A{$row}:M{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB(self::COLOR_BORDER);
+                $row++;
+            }
+
+            if ($totalIn <= 0) $totalIn = $calcTotalIn;
+            if ($totalOut <= 0) $totalOut = $calcTotalOut;
+            if ($totalStockUnits <= 0) $totalStockUnits = $calcTotalStock;
+            if ($totalValuation <= 0) $totalValuation = $calcTotalVal;
+        }
+
+        // Summary Row
+        $sheet->setCellValue("A{$row}", 'GRAND TOTAL');
+        $sheet->mergeCells("A{$row}:H{$row}");
+        $sheet->setCellValue("I{$row}", $totalIn);
+        $sheet->setCellValue("J{$row}", $totalOut);
+        $sheet->setCellValue("K{$row}", $totalStockUnits);
+        $sheet->setCellValue("L{$row}", $totalValuation);
+        $sheet->setCellValue("M{$row}", '');
+
+        $sheet->getStyle("A{$row}:M{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => self::COLOR_DARK], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_SECTION]],
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+                'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+            ],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("I{$row}:K{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_QTY);
+        $sheet->getStyle("L{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+
+        // Auto-fit column widths
+        $this->autoFitColumns($sheet, 'M');
+
+        return $this->streamXlsx($spreadsheet, $filename);
     }
 }

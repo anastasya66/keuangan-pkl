@@ -122,13 +122,13 @@ export function UnitPage() {
   };
 
   const columns = [
-    { header: 'Nama Satuan', className: 'w-1/4' },
-    { header: 'Simbol', className: 'text-center whitespace-nowrap' },
-    { header: 'Deskripsi', className: 'w-1/3' },
-    { header: 'Jumlah Produk', className: 'text-center whitespace-nowrap' },
-    { header: 'Status', className: 'text-center whitespace-nowrap' },
-    { header: 'Dibuat Pada', className: 'hidden md:table-cell whitespace-nowrap' },
-    ...(isAdmin ? [{ header: 'Aksi', className: 'text-right whitespace-nowrap' }] : []),
+    { header: 'Nama Satuan', className: 'min-w-[150px] text-left' },
+    { header: 'Simbol', className: 'text-center whitespace-nowrap w-24' },
+    { header: 'Deskripsi', className: 'min-w-[180px] text-left' },
+    { header: 'Jumlah Produk', className: 'text-center whitespace-nowrap w-36' },
+    { header: 'Status', className: 'text-center whitespace-nowrap w-28' },
+    { header: 'Dibuat Pada', className: 'hidden md:table-cell whitespace-nowrap text-left w-40' },
+    ...(isAdmin ? [{ header: 'Aksi', className: 'text-right whitespace-nowrap min-w-[210px]' }] : []),
   ];
 
   return (
@@ -163,10 +163,10 @@ export function UnitPage() {
             <span className="p-2 rounded-xl bg-white border border-[#D7EBEF] text-[#27C5E5] shadow-2xs">
               <IconRuler className="w-5 h-5" />
             </span>
-            <span>Satuan Ukuran Barang</span>
+            <span>Satuan Ukuran</span>
           </h1>
-          <p className="text-xs text-[#577782] mt-1">
-            Atur satuan ukuran kemasan barang toko (contoh: kg, pcs, botol, dus, bungkus)
+          <p className="text-xs text-[#577782] mt-0.5">
+            Kelola satuan dan unit pengukuran produk.
           </p>
         </div>
 
@@ -177,15 +177,15 @@ export function UnitPage() {
               setSelectedUnit(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs transition-all shadow-md shadow-[#27C5E5]/20 cursor-pointer self-start sm:self-auto btn-press"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold text-xs transition-all shadow-md shadow-[#27C5E5]/20 cursor-pointer self-start sm:self-auto btn-press"
           >
-            <span>+ Tambah Satuan Baru</span>
+            <span>+ Tambah Satuan</span>
           </button>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-[#D7EBEF] shadow-xs">
+      <div className="bg-white p-4 rounded-2xl border border-[#D7EBEF] shadow-xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <form
             onSubmit={(e) => {
@@ -230,37 +230,43 @@ export function UnitPage() {
         emptyMessage="Belum ada data satuan yang cocok dengan pencarian Anda."
         renderRow={(unit) => (
           <tr key={unit.id} className="hover:bg-[#F3FBFC] transition-colors">
-            <td className="px-4 py-3.5 font-bold text-[#10262E]">
+            <td className="px-4 py-3.5 font-bold text-xs sm:text-[13px] text-[#10262E] whitespace-nowrap align-middle">
               {unit.name}
             </td>
 
-            <td className="px-4 py-3.5 text-center whitespace-nowrap">
-              <span className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-[#167A93] text-white whitespace-nowrap shadow-2xs">
-                {unit.symbol}
-              </span>
+            <td className="px-4 py-3.5 text-center whitespace-nowrap align-middle">
+              <div className="flex items-center justify-center">
+                <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-[#167A93] text-white whitespace-nowrap shadow-2xs">
+                  {unit.symbol}
+                </span>
+              </div>
             </td>
 
-            <td className="px-4 py-3.5 text-xs text-[#577782]">
+            <td className="px-4 py-3.5 text-xs text-[#577782] min-w-[180px] align-middle">
               {unit.description || <span className="text-[#8EA6AF] italic">Tidak ada deskripsi</span>}
             </td>
 
-            <td className="px-4 py-3.5 text-center whitespace-nowrap">
-              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-[#167A93] text-white text-xs font-bold whitespace-nowrap shadow-2xs">
-                {unit.products_count ?? 0} produk
-              </span>
+            <td className="px-4 py-3.5 text-center whitespace-nowrap align-middle">
+              <div className="flex items-center justify-center">
+                <span className="inline-flex items-center justify-center px-3 py-0.5 rounded-full bg-[#167A93] text-white text-xs font-bold whitespace-nowrap shadow-2xs">
+                  {unit.products_count ?? 0} produk
+                </span>
+              </div>
             </td>
 
-            <td className="px-4 py-3.5 text-center whitespace-nowrap">
-              <StatusBadge isActive={unit.is_active} />
+            <td className="px-4 py-3.5 text-center whitespace-nowrap align-middle">
+              <div className="flex items-center justify-center">
+                <StatusBadge isActive={unit.is_active} />
+              </div>
             </td>
 
-            <td className="px-4 py-3.5 text-xs text-[#8EA6AF] hidden md:table-cell">
+            <td className="px-4 py-3.5 text-xs text-[#577782] hidden md:table-cell whitespace-nowrap font-medium align-middle">
               {formatDateTime(unit.created_at)}
             </td>
 
             {isAdmin && (
-              <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                <div className="inline-flex items-center gap-1.5">
+              <td className="px-4 py-3.5 text-right whitespace-nowrap min-w-[210px] align-middle">
+                <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() => {

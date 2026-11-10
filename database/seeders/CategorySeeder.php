@@ -40,13 +40,13 @@ class CategorySeeder extends Seeder
             ],
             [
                 'name' => 'Alat Tulis Kantor',
-                'description' => 'Perlengkapan alat tulis sekolah dan kantor (kategori non-aktif untuk pengujian filter).',
-                'is_active' => false,
+                'description' => 'Perlengkapan alat tulis sekolah dan kantor.',
+                'is_active' => true,
             ],
         ];
 
         foreach ($categories as $cat) {
-            Category::firstOrCreate(['name' => $cat['name']], $cat);
+            Category::updateOrCreate(['name' => $cat['name']], $cat);
         }
     }
 }

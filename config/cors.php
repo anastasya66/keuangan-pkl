@@ -22,7 +22,7 @@ return [
 
     'allowed_headers' => ['Authorization', 'Content-Type', 'X-Requested-With', 'Accept'],
 
-    'exposed_headers' => ['Authorization'],
+    'exposed_headers' => ['Authorization', 'Content-Disposition'],
 
     'max_age' => 86400,
 

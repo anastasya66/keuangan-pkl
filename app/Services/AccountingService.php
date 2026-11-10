@@ -473,7 +473,7 @@ class AccountingService
         $cogsAccount = $this->resolveAccount('cogs_default', 'expenses', '5110');
         $inventoryAssetAccount = $this->resolveAccount('inventory_asset', 'assets', '1130');
 
-        $paymentAcc = ($sale->payment_method === 'transfer' || $sale->payment_method === 'qris') ? $bankAccount : $cashAccount;
+        $paymentAcc = in_array($sale->payment_method, ['transfer', 'bank_transfer', 'qris', 'bank', 'digital']) ? $bankAccount : $cashAccount;
 
         $totalBalance = round($grandTotal + $cogsTotal, 2);
 

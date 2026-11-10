@@ -70,13 +70,13 @@ class UnitSeeder extends Seeder
             [
                 'name' => 'Gross',
                 'symbol' => 'grs',
-                'description' => 'Satuan 144 pcs (non-aktif untuk pengujian status).',
-                'is_active' => false,
+                'description' => 'Satuan 144 pcs.',
+                'is_active' => true,
             ],
         ];
 
-        foreach ($units as $u) {
-            Unit::firstOrCreate(['name' => $u['name']], $u);
+        foreach ($units as $unit) {
+            Unit::updateOrCreate(['name' => $unit['name']], $unit);
         }
     }
 }

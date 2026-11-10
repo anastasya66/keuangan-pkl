@@ -157,7 +157,7 @@ export function ProductPage() {
     setIsDeleting(true);
     try {
       await productService.deleteProduct(deleteTarget.id);
-      showToast(`Produk ${deleteTarget.name} berhasil dihapus (soft delete).`);
+      showToast(`Produk ${deleteTarget.name} berhasil dihapus.`);
       setDeleteTarget(null);
       fetchProducts(currentPage);
     } catch (error) {
@@ -168,13 +168,13 @@ export function ProductPage() {
   };
 
   const columns = [
-    { header: 'Kode / SKU', className: 'w-32' },
-    { header: 'Nama Produk & Kategori', className: 'w-1/3' },
-    { header: 'Satuan', className: 'text-center' },
-    { header: 'Harga Beli (Cost)', className: 'text-right' },
-    { header: 'Harga Jual', className: 'text-right' },
-    { header: 'Status', className: 'text-center' },
-    ...(isAdmin ? [{ header: 'Aksi', className: 'text-right' }] : []),
+    { header: 'Kode / SKU', className: 'whitespace-nowrap' },
+    { header: 'Nama Barang', className: 'min-w-[200px]' },
+    { header: 'Satuan', className: 'text-center whitespace-nowrap' },
+    { header: 'Harga Beli', className: 'text-right whitespace-nowrap' },
+    { header: 'Harga Jual', className: 'text-right whitespace-nowrap' },
+    { header: 'Status', className: 'text-center whitespace-nowrap' },
+    ...(isAdmin ? [{ header: 'Aksi', className: 'text-right whitespace-nowrap min-w-[210px]' }] : []),
   ];
 
   return (
@@ -209,10 +209,10 @@ export function ProductPage() {
             <span className="p-2 rounded-xl bg-white border border-[#D7EBEF] text-[#27C5E5] shadow-2xs">
               <IconBox className="w-5 h-5" />
             </span>
-            <span>Katalog Barang Toko</span>
+            <span>Katalog Barang</span>
           </h1>
-          <p className="text-xs text-[#577782] mt-1">
-            Kelola daftar barang, harga modal beli, dan harga jual tokomu dengan mudah
+          <p className="text-xs text-[#577782] mt-0.5">
+            Kelola daftar produk, kategori, dan harga barang.
           </p>
         </div>
 
@@ -223,15 +223,15 @@ export function ProductPage() {
               setSelectedProduct(null);
               setIsModalOpen(true);
             }}
-            className="px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer flex items-center gap-2 self-start sm:self-auto btn-press"
+            className="px-4 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer flex items-center gap-2 self-start sm:self-auto btn-press"
           >
-            <span>+ Tambah Barang Baru</span>
+            <span>+ Tambah Barang</span>
           </button>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-[#D7EBEF] shadow-xs">
+      <div className="bg-white p-4 rounded-2xl border border-[#D7EBEF] shadow-xs">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <form
             onSubmit={(e) => {
@@ -333,15 +333,18 @@ export function ProductPage() {
 
             {/* Name & Category */}
             <td className="px-4 py-3.5">
-              <div className="font-bold text-[#10262E]">
+              <div className="font-bold text-xs sm:text-[13px] text-[#10262E] leading-snug">
                 {prod.name}
               </div>
               <div className="inline-flex items-center gap-1.5 mt-1">
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF] font-medium">
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF] font-medium whitespace-nowrap shrink-0">
                   {prod.category?.name || 'Tanpa Kategori'}
                 </span>
                 {prod.description && (
-                  <span className="text-[11px] text-[#8EA6AF] truncate max-w-xs">
+                  <span
+                    className="text-[11px] text-[#8EA6AF] truncate max-w-[180px]"
+                    title={prod.description}
+                  >
                     • {prod.description}
                   </span>
                 )}
@@ -350,7 +353,7 @@ export function ProductPage() {
 
             {/* Unit */}
             <td className="px-4 py-3.5 text-center whitespace-nowrap">
-              <span className="inline-block px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-[#167A93] text-white whitespace-nowrap shadow-2xs">
+              <span className="inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-[#167A93] text-white whitespace-nowrap shadow-2xs">
                 {prod.unit?.symbol || '-'}
               </span>
             </td>
@@ -361,7 +364,7 @@ export function ProductPage() {
             </td>
 
             {/* Selling Price */}
-            <td className="px-4 py-3.5 text-right font-mono text-xs font-bold text-[#36B878] whitespace-nowrap">
+            <td className="px-4 py-3.5 text-right font-mono text-xs font-bold text-[#167A93] whitespace-nowrap">
               {formatRupiah(prod.selling_price_numeric)}
             </td>
 
@@ -373,7 +376,7 @@ export function ProductPage() {
             {/* Actions (Admin Only) */}
             {isAdmin && (
               <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                <div className="inline-flex items-center gap-1.5">
+                <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() => {

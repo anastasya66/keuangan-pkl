@@ -2,188 +2,264 @@
 
 namespace App\Exports;
 
-use Illuminate\Http\Response;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Symfony\Component\HttpFoundation\Response;
 
-class BalanceSheetExport
+class BalanceSheetExport extends BaseExcelExport
 {
     public function __construct(
         protected array $data
     ) {}
 
     /**
-     * Generate response file Excel (.xls) berformat tabel terstruktur.
+     * Generate response file Excel (.xlsx) berformat workbook OpenXML valid.
      */
     public function download(?string $filename = null): Response
     {
         $asOfDate = $this->data['as_of_date'] ?? date('Y-m-d');
-        $filename = $filename ?: "laporan-neraca-per-{$asOfDate}.xls";
+        $filename = $filename ?: "laporan-neraca-per-{$asOfDate}.xlsx";
 
-        $html = $this->buildHtmlTable();
+        $spreadsheet = $this->createSpreadsheet('Laporan Neraca', 'Neraca');
+        $sheet = $spreadsheet->getActiveSheet();
 
-        return response($html, 200, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'Pragma' => 'no-cache',
-            'Expires' => '0',
-        ]);
-    }
-
-    protected function buildHtmlTable(): string
-    {
-        $asOfFormatted = htmlspecialchars($this->data['formatted_as_of'] ?? '-');
-        $generatedAt = htmlspecialchars($this->data['generated_at'] ?? date('Y-m-d H:i:s'));
+        $store = $this->getStoreInfo();
+        $asOfFormatted = $this->data['formatted_as_of'] ?? $asOfDate;
+        $generatedAt = $this->data['generated_at'] ?? date('d/m/Y H:i');
         $isBalanced = $this->data['is_balanced'] ?? false;
-        $statusLabel = $isBalanced ? 'SEIMBANG (EQUILIBRIUM)' : 'TIDAK SEIMBANG';
-        $statusBg = $isBalanced ? '#E8F8F0' : '#FDEBED';
-        $statusColor = $isBalanced ? '#1B8751' : '#C53030';
+        $totalAssets = (float) ($this->data['total_assets'] ?? 0);
+        $totalLiabilities = (float) ($this->data['total_liabilities'] ?? 0);
+        $totalEquity = (float) ($this->data['total_equity'] ?? 0);
+        $totalLiabAndEquity = (float) ($this->data['total_liabilities_and_equity'] ?? 0);
+        $currentEarnings = (float) ($this->data['equity']['current_earnings'] ?? 0);
+        $difference = (float) ($this->data['difference'] ?? 0);
 
-        $totalAssets = number_format($this->data['total_assets'] ?? 0, 2, ',', '.');
-        $totalLiabilities = number_format($this->data['total_liabilities'] ?? 0, 2, ',', '.');
-        $totalEquity = number_format($this->data['total_equity'] ?? 0, 2, ',', '.');
-        $totalLiabAndEquity = number_format($this->data['total_liabilities_and_equity'] ?? 0, 2, ',', '.');
-        $difference = number_format($this->data['difference'] ?? 0, 2, ',', '.');
-        $currentEarnings = number_format($this->data['equity']['current_earnings'] ?? 0, 2, ',', '.');
+        // 1. Header Banner
+        $sheet->setCellValue('A1', mb_strtoupper($store['name']) . ' — SISTEM MANAJEMEN KEUANGAN TOKO');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(13)->getColor()->setRGB(self::COLOR_DARK);
 
-        ob_start();
-        ?>
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:x="urn:schemas-microsoft-com:office:excel"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <!--[if gte mso 9]>
-    <xml>
-        <x:ExcelWorkbook>
-            <x:ExcelWorksheets>
-                <x:ExcelWorksheet>
-                    <x:Name>Neraca</x:Name>
-                    <x:WorksheetOptions>
-                        <x:DisplayGridlines/>
-                    </x:WorksheetOptions>
-                </x:ExcelWorksheet>
-            </x:ExcelWorksheets>
-        </x:ExcelWorkbook>
-    </xml>
-    <![endif]-->
-    <style>
-        body, table { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 11pt; color: #16323B; }
-        .doc-title { font-size: 15pt; font-weight: bold; color: #10262E; text-align: left; }
-        .doc-subtitle { font-size: 12pt; font-weight: bold; color: #167A93; text-align: left; }
-        .doc-meta { font-size: 10pt; color: #577782; text-align: left; }
-        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-        th { background-color: #27C5E5; color: #FFFFFF; font-weight: bold; border: 1px solid #1A9DB8; padding: 10px; text-align: left; }
-        th.right { text-align: right; }
-        td { border: 1px solid #D7EBEF; padding: 7px 10px; vertical-align: middle; }
-        td.right { text-align: right; mso-number-format: "\#\,\#\#0\.00"; }
-        .section-header { background-color: #EAF8FA; color: #167A93; font-weight: bold; border: 1px solid #D7EBEF; }
-        .row-total { background-color: #F3FBFC; font-weight: bold; border-top: 2px solid #27C5E5; border-bottom: 2px solid #27C5E5; }
-        .row-grand-total { background-color: #D6F4FA; color: #10262E; font-weight: bold; font-size: 12pt; border: 2px solid #27C5E5; }
-    </style>
-</head>
-<body>
-    <table>
-        <tr>
-            <td colspan="3" class="doc-title">FINTOKO — SISTEM MANAJEMEN KEUANGAN TOKO</td>
-        </tr>
-        <tr>
-            <td colspan="3" class="doc-subtitle">LAPORAN NERACA (BALANCE SHEET)</td>
-        </tr>
-        <tr>
-            <td colspan="3" class="doc-meta">
-                Posisi per: <?= $asOfFormatted ?> &bull; Status: <span style="color: <?= $statusColor ?>; font-weight: bold;"><?= $statusLabel ?></span> &bull; Cetak: <?= $generatedAt ?>
-            </td>
-        </tr>
-        <tr><td colspan="3" style="border:none; height:15px;"></td></tr>
-        <thead>
-            <tr>
-                <th style="width: 140px;">Kode Akun</th>
-                <th style="width: 380px;">Nama Rekening Akun</th>
-                <th class="right" style="width: 220px;">Saldo (Rp)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- 1. ASET -->
-            <tr>
-                <td colspan="3" class="section-header">1. ASET TOKO (ASSETS)</td>
-            </tr>
-            <?php foreach ($this->data['assets']['items'] as $item): ?>
-                <tr>
-                    <td style="font-family: monospace; font-weight: bold;"><?= htmlspecialchars($item['account_code']) ?></td>
-                    <td><?= htmlspecialchars($item['account_name']) ?></td>
-                    <td class="right"><?= number_format($item['amount'], 2, ',', '.') ?></td>
-                </tr>
-            <?php endforeach; ?>
-            <tr class="row-total">
-                <td colspan="2">TOTAL ASET</td>
-                <td class="right">Rp <?= $totalAssets ?></td>
-            </tr>
+        $sheet->setCellValue('A2', 'LAPORAN NERACA (BALANCE SHEET)');
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(11)->getColor()->setRGB(self::COLOR_PRIMARY);
 
-            <tr><td colspan="3" style="border:none; height:10px;"></td></tr>
+        $statusText = $isBalanced ? 'SEIMBANG (EQUILIBRIUM)' : 'TIDAK SEIMBANG';
+        $metaText = "Posisi per: {$asOfFormatted} | Status: {$statusText} | Tanggal Cetak: {$generatedAt}";
+        if (!empty($store['address'])) {
+            $metaText .= " | {$store['address']}";
+        }
+        $sheet->setCellValue('A3', $metaText);
+        $sheet->getStyle('A3')->getFont()->setSize(9)->setItalic(true)->getColor()->setRGB(self::COLOR_MUTED);
 
-            <!-- 2. KEWAJIBAN -->
-            <tr>
-                <td colspan="3" class="section-header">2. KEWAJIBAN / HUTANG TOKO (LIABILITIES)</td>
-            </tr>
-            <?php if (empty($this->data['liabilities']['items'])): ?>
-                <tr>
-                    <td colspan="3" style="text-align: center; color: #8EA6AF;">Tidak ada kewajiban / hutang aktif.</td>
-                </tr>
-            <?php else: ?>
-                <?php foreach ($this->data['liabilities']['items'] as $item): ?>
-                    <tr>
-                        <td style="font-family: monospace; font-weight: bold;"><?= htmlspecialchars($item['account_code']) ?></td>
-                        <td><?= htmlspecialchars($item['account_name']) ?></td>
-                        <td class="right"><?= number_format($item['amount'], 2, ',', '.') ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-            <tr class="row-total">
-                <td colspan="2">TOTAL KEWAJIBAN</td>
-                <td class="right">Rp <?= $totalLiabilities ?></td>
-            </tr>
+        $row = 5;
 
-            <tr><td colspan="3" style="border:none; height:10px;"></td></tr>
+        // 2. Section 1: Aset (Assets)
+        $sheet->setCellValue("A{$row}", '1. ASET (ASSETS)');
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(10)->getColor()->setRGB(self::COLOR_PRIMARY);
+        $sheet->getStyle("A{$row}:C{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB(self::COLOR_SECTION);
+        $row++;
 
-            <!-- 3. EKUITAS -->
-            <tr>
-                <td colspan="3" class="section-header">3. EKUITAS / MODAL PEMILIK (EQUITY)</td>
-            </tr>
-            <?php foreach ($this->data['equity']['items'] as $item): ?>
-                <tr>
-                    <td style="font-family: monospace; font-weight: bold;"><?= htmlspecialchars($item['account_code']) ?></td>
-                    <td><?= htmlspecialchars($item['account_name']) ?></td>
-                    <td class="right"><?= number_format($item['amount'], 2, ',', '.') ?></td>
-                </tr>
-            <?php endforeach; ?>
-            <tr>
-                <td style="font-family: monospace; font-weight: bold;">-</td>
-                <td>Laba / (Rugi) Berjalan Kumulatif Toko</td>
-                <td class="right"><?= $currentEarnings ?></td>
-            </tr>
-            <tr class="row-total">
-                <td colspan="2">TOTAL EKUITAS</td>
-                <td class="right">Rp <?= $totalEquity ?></td>
-            </tr>
+        // Table Header
+        $sheet->setCellValue("A{$row}", 'Kode Akun');
+        $sheet->setCellValue("B{$row}", 'Nama Rekening Aset');
+        $sheet->setCellValue("C{$row}", 'Saldo (Rp)');
+        $sheet->getStyle("A{$row}:C{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_PRIMARY]],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $row++;
 
-            <tr><td colspan="3" style="border:none; height:15px;"></td></tr>
+        $assets = $this->data['assets']['items'] ?? [];
+        if (empty($assets)) {
+            $sheet->setCellValue("A{$row}", 'Tidak ada data akun aset');
+            $sheet->mergeCells("A{$row}:C{$row}");
+            $sheet->getStyle("A{$row}")->getFont()->setItalic(true)->getColor()->setRGB(self::COLOR_MUTED);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+        } else {
+            foreach ($assets as $item) {
+                $sheet->setCellValueExplicit("A{$row}", (string) ($item['account_code'] ?? ''), DataType::TYPE_STRING);
+                $sheet->setCellValue("B{$row}", (string) ($item['account_name'] ?? ''));
+                $sheet->setCellValue("C{$row}", (float) ($item['amount'] ?? 0));
 
-            <!-- TOTAL KEWAJIBAN & EKUITAS -->
-            <tr class="row-grand-total">
-                <td colspan="2">TOTAL KEWAJIBAN DAN EKUITAS</td>
-                <td class="right">Rp <?= $totalLiabAndEquity ?></td>
-            </tr>
-            <tr>
-                <td colspan="2" style="font-weight: bold;">SELISIH KESEIMBANGAN (DIFFERENCE)</td>
-                <td class="right" style="font-weight: bold; color: <?= $isBalanced ? '#1B8751' : '#C53030' ?>;">
-                    Rp <?= $difference ?> (<?= $statusLabel ?>)
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</body>
-</html>
-        <?php
-        return ob_get_clean();
+                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+                $sheet->getStyle("A{$row}:C{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB(self::COLOR_BORDER);
+                $row++;
+            }
+        }
+
+        // Subtotal Aset
+        $sheet->setCellValue("A{$row}", 'TOTAL ASET');
+        $sheet->mergeCells("A{$row}:B{$row}");
+        $sheet->setCellValue("C{$row}", $totalAssets);
+        $sheet->getStyle("A{$row}:C{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => self::COLOR_PRIMARY], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_LIGHT]],
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+                'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+            ],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+        $row += 2;
+
+        // 3. Section 2: Kewajiban (Liabilities)
+        $sheet->setCellValue("A{$row}", '2. KEWAJIBAN (LIABILITIES)');
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(10)->getColor()->setRGB(self::COLOR_PRIMARY);
+        $sheet->getStyle("A{$row}:C{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB(self::COLOR_SECTION);
+        $row++;
+
+        // Table Header
+        $sheet->setCellValue("A{$row}", 'Kode Akun');
+        $sheet->setCellValue("B{$row}", 'Nama Rekening Kewajiban');
+        $sheet->setCellValue("C{$row}", 'Saldo (Rp)');
+        $sheet->getStyle("A{$row}:C{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_PRIMARY]],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $row++;
+
+        $liabilities = $this->data['liabilities']['items'] ?? [];
+        if (empty($liabilities)) {
+            $sheet->setCellValue("A{$row}", 'Tidak ada data akun kewajiban / hutang');
+            $sheet->mergeCells("A{$row}:C{$row}");
+            $sheet->getStyle("A{$row}")->getFont()->setItalic(true)->getColor()->setRGB(self::COLOR_MUTED);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+        } else {
+            foreach ($liabilities as $item) {
+                $sheet->setCellValueExplicit("A{$row}", (string) ($item['account_code'] ?? ''), DataType::TYPE_STRING);
+                $sheet->setCellValue("B{$row}", (string) ($item['account_name'] ?? ''));
+                $sheet->setCellValue("C{$row}", (float) ($item['amount'] ?? 0));
+
+                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+                $sheet->getStyle("A{$row}:C{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB(self::COLOR_BORDER);
+                $row++;
+            }
+        }
+
+        // Subtotal Kewajiban
+        $sheet->setCellValue("A{$row}", 'TOTAL KEWAJIBAN');
+        $sheet->mergeCells("A{$row}:B{$row}");
+        $sheet->setCellValue("C{$row}", $totalLiabilities);
+        $sheet->getStyle("A{$row}:C{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'D97706'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_LIGHT]],
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+                'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+            ],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+        $row += 2;
+
+        // 4. Section 3: Ekuitas / Modal (Equity)
+        $sheet->setCellValue("A{$row}", '3. EKUITAS / MODAL (EQUITY)');
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(10)->getColor()->setRGB(self::COLOR_PRIMARY);
+        $sheet->getStyle("A{$row}:C{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB(self::COLOR_SECTION);
+        $row++;
+
+        // Table Header
+        $sheet->setCellValue("A{$row}", 'Kode Akun');
+        $sheet->setCellValue("B{$row}", 'Komponen Ekuitas');
+        $sheet->setCellValue("C{$row}", 'Saldo (Rp)');
+        $sheet->getStyle("A{$row}:C{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_PRIMARY]],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $row++;
+
+        $equityItems = $this->data['equity']['items'] ?? [];
+        foreach ($equityItems as $item) {
+            $sheet->setCellValueExplicit("A{$row}", (string) ($item['account_code'] ?? ''), DataType::TYPE_STRING);
+            $sheet->setCellValue("B{$row}", (string) ($item['account_name'] ?? ''));
+            $sheet->setCellValue("C{$row}", (float) ($item['amount'] ?? 0));
+
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+            $sheet->getStyle("A{$row}:C{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB(self::COLOR_BORDER);
+            $row++;
+        }
+
+        // Laba / (Rugi) Berjalan Kumulatif
+        $sheet->setCellValueExplicit("A{$row}", '-', DataType::TYPE_STRING);
+        $sheet->setCellValue("B{$row}", 'Laba / (Rugi) Berjalan Kumulatif');
+        $sheet->setCellValue("C{$row}", $currentEarnings);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("B{$row}")->getFont()->setItalic(true);
+        $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+        $sheet->getStyle("A{$row}:C{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB(self::COLOR_BORDER);
+        $row++;
+
+        // Subtotal Ekuitas
+        $sheet->setCellValue("A{$row}", 'TOTAL EKUITAS');
+        $sheet->mergeCells("A{$row}:B{$row}");
+        $sheet->setCellValue("C{$row}", $totalEquity);
+        $sheet->getStyle("A{$row}:C{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => '7C3AED'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_LIGHT]],
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+                'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+            ],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+        $row += 2;
+
+        // 5. Grand Total: Total Kewajiban & Ekuitas
+        $sheet->setCellValue("A{$row}", 'TOTAL KEWAJIBAN & EKUITAS');
+        $sheet->mergeCells("A{$row}:B{$row}");
+        $sheet->setCellValue("C{$row}", $totalLiabAndEquity);
+        $sheet->getStyle("A{$row}:C{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => self::COLOR_DARK]],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_SECTION]],
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+                'bottom' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+            ],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_CURRENCY);
+        $row++;
+
+        // 6. Baris Status Keseimbangan Neraca
+        $statusLabel = $isBalanced ? 'STATUS: SEIMBANG (EQUILIBRIUM)' : "STATUS: TIDAK SEIMBANG (SELISIH: Rp " . number_format($difference, 2, ',', '.') . ")";
+        $sheet->setCellValue("A{$row}", $statusLabel);
+        $sheet->mergeCells("A{$row}:C{$row}");
+
+        $colorStatus = $isBalanced ? self::COLOR_PROFIT : self::COLOR_LOSS;
+        $bgStatus = $isBalanced ? self::COLOR_PROFIT_BG : self::COLOR_LOSS_BG;
+
+        $sheet->getStyle("A{$row}:C{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => $colorStatus]],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $bgStatus]],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => $colorStatus]],
+                'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => $colorStatus]],
+            ],
+        ]);
+
+        // Auto-fit column widths
+        $this->autoFitColumns($sheet, 'C');
+
+        return $this->streamXlsx($spreadsheet, $filename);
     }
 }

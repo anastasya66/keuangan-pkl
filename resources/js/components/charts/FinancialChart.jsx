@@ -42,7 +42,7 @@ export default function FinancialChart({ points = [], title = 'Tren Keuangan & A
             <span>📈</span> {title}
           </h3>
           <p className="text-xs text-[#577782] mt-0.5">
-            Perbandingan pemasukan, pengeluaran operasional, dan arus kas toko
+            Analisis tren pemasukan dan pengeluaran bulanan.
           </p>
         </div>
 

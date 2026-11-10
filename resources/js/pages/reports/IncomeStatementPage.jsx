@@ -50,7 +50,7 @@ export default function IncomeStatementPage() {
         end_date: endDate,
       });
     } catch (err) {
-      alert('Gagal mengunduh PDF Laba Rugi.');
+      alert(err.message || 'Gagal mengunduh PDF Laba Rugi.');
     } finally {
       setExportingPdf(false);
     }
@@ -64,7 +64,7 @@ export default function IncomeStatementPage() {
         end_date: endDate,
       });
     } catch (err) {
-      alert('Gagal mengunduh Excel Laba Rugi.');
+      alert(err.message || 'Gagal mengunduh Excel Laba Rugi.');
     } finally {
       setExportingExcel(false);
     }

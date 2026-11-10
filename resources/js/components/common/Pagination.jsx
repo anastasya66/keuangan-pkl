@@ -1,9 +1,12 @@
 import React from 'react';
 
-export function Pagination({ pagination, onPageChange }) {
-  if (!pagination || pagination.total === 0) return null;
+export function Pagination({ pagination, onPageChange, currentPage, lastPage, total: propTotal, perPage }) {
+  const current_page = pagination?.current_page ?? currentPage ?? 1;
+  const last_page = pagination?.last_page ?? lastPage ?? 1;
+  const total = pagination?.total ?? propTotal ?? 0;
+  const per_page = pagination?.per_page ?? perPage ?? 15;
 
-  const { current_page, last_page, total, per_page } = pagination;
+  if (!total || total === 0) return null;
   if (last_page <= 1) {
     return (
       <div className="flex items-center justify-between text-xs text-[#577782] px-4 py-3 bg-[#F3FBFC]/40 border-t border-[#D7EBEF]">

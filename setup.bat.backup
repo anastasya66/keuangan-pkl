@@ -1,0 +1,359 @@
+@echo off
+setlocal EnableExtensions EnableDelayedExpansion
+title FinToko - Instalasi dan Setup Otomatis
+
+echo ====================================================
+echo        FinToko - Instalasi dan Setup Otomatis
+echo ====================================================
+echo.
+
+:: =====================================================
+:: 1. DETEKSI LOKASI LARAGON SECARA OTOMATIS
+:: =====================================================
+
+set "LARAGON_DIR="
+set "PHP_DIR="
+set "PHP_EXE="
+set "COMPOSER_DIR="
+set "NODE_DIR="
+
+:: Deteksi lokasi Laragon
+if exist "E:\Laraon\laragon\bin\php" (
+    set "LARAGON_DIR=E:\Laraon\laragon\"
+)
+
+if not defined LARAGON_DIR if exist "E:\Laragon\laragon\bin\php" (
+    set "LARAGON_DIR=E:\Laragon\laragon\"
+)
+
+if not defined LARAGON_DIR if exist "E:\laragon\bin\php" (
+    set "LARAGON_DIR=E:\laragon\"
+)
+
+if not defined LARAGON_DIR if exist "C:\laragon\bin\php" (
+    set "LARAGON_DIR=C:\laragon\"
+)
+
+if not defined LARAGON_DIR if exist "D:\laragon\bin\php" (
+    set "LARAGON_DIR=D:\laragon\"
+)
+
+:: Deteksi dari lokasi relatif script
+if not defined LARAGON_DIR if exist "%~dp0..\..\bin\php" (
+    set "LARAGON_DIR=%~dp0..\..\"
+)
+
+if defined LARAGON_DIR (
+    echo [INFO] Terdeteksi instalasi Laragon di: !LARAGON_DIR!
+
+    :: Composer
+    set "COMPOSER_DIR=!LARAGON_DIR!bin\composer"
+
+    :: Git
+    if exist "!LARAGON_DIR!bin\git\cmd" (
+        set "PATH=!LARAGON_DIR!bin\git\cmd;!PATH!"
+    )
+
+    :: Prioritaskan PHP 8.3.36
+    if exist "!LARAGON_DIR!bin\php\php-8.3.36-Win32-vs16-x64\php.exe" (
+        set "PHP_DIR=!LARAGON_DIR!bin\php\php-8.3.36-Win32-vs16-x64"
+    )
+
+    :: Jika tidak tersedia, deteksi PHP Laragon lainnya
+    if not defined PHP_DIR (
+        for /f "delims=" %%P in ('dir /b /ad /o-n "!LARAGON_DIR!bin\php\php*" 2^>nul') do (
+            if not defined PHP_DIR (
+                if exist "!LARAGON_DIR!bin\php\%%P\php.exe" (
+                    set "PHP_DIR=!LARAGON_DIR!bin\php\%%P"
+                )
+            )
+        )
+    )
+
+    :: Simpan lokasi executable PHP secara absolut
+    if defined PHP_DIR (
+        set "PHP_EXE=!PHP_DIR!\php.exe"
+        set "PATH=!PHP_DIR!;!PATH!"
+        echo [INFO] Menggunakan PHP dari: !PHP_EXE!
+    ) else (
+        echo [ERROR] PHP Laragon tidak ditemukan.
+        pause
+        exit /b 1
+    )
+
+    :: Deteksi Node.js
+    for /d %%N in ("!LARAGON_DIR!bin\nodejs\node*") do (
+        if exist "%%N\node.exe" (
+            set "NODE_DIR=%%N"
+        )
+    )
+
+    :: Composer
+    if exist "!COMPOSER_DIR!\composer.bat" (
+        set "PATH=!COMPOSER_DIR!;!PATH!"
+    ) else (
+        echo [ERROR] Composer Laragon tidak ditemukan.
+        pause
+        exit /b 1
+    )
+
+    :: Node.js
+    if defined NODE_DIR (
+        set "PATH=!NODE_DIR!;!PATH!"
+        echo [INFO] Node.js ditemukan: !NODE_DIR!
+    )
+
+) else (
+    echo [ERROR] Instalasi Laragon tidak ditemukan.
+    echo.
+    echo Pastikan lokasi instalasi Laragon benar.
+    pause
+    exit /b 1
+)
+
+:: =====================================================
+:: 2. CEK KETERSEDIAAN PHP
+:: =====================================================
+
+echo.
+echo [INFO] Memeriksa PHP...
+
+if not exist "!PHP_EXE!" (
+    echo [ERROR] php.exe tidak ditemukan.
+    pause
+    exit /b 1
+)
+
+where php
+"!PHP_EXE!" -v
+
+if errorlevel 1 (
+    echo [ERROR] PHP gagal dijalankan.
+    pause
+    exit /b 1
+)
+
+:: Pastikan PHP menggunakan konfigurasi yang benar
+"!PHP_EXE!" --ini
+
+:: =====================================================
+:: 3. VALIDASI PHP EXTENSIONS
+:: =====================================================
+
+echo.
+echo [INFO] Memeriksa extension PHP...
+
+set "MISSING_EXT="
+
+for %%E in (openssl curl mbstring fileinfo pdo_mysql) do (
+    "!PHP_EXE!" -r "exit(extension_loaded('%%E') ? 0 : 1);" >nul 2>&1
+
+    if errorlevel 1 (
+        echo [ERROR] Extension %%E tidak aktif.
+        set "MISSING_EXT=1"
+    ) else (
+        echo [OK] Extension %%E aktif.
+    )
+)
+
+if defined MISSING_EXT (
+    echo.
+    echo [ERROR] Validasi extension PHP gagal.
+    echo PHP yang digunakan:
+    echo !PHP_EXE!
+    echo.
+    echo Tidak ada perubahan otomatis pada php.ini.
+    pause
+    exit /b 1
+)
+
+echo.
+echo [OK] Semua extension PHP wajib tersedia.
+
+:: =====================================================
+:: 4. CEK KETERSEDIAAN COMPOSER
+:: =====================================================
+
+echo.
+echo [INFO] Memeriksa Composer...
+
+if not exist "!COMPOSER_DIR!\composer.bat" (
+    echo [ERROR] Composer tidak ditemukan.
+    pause
+    exit /b 1
+)
+
+call "!COMPOSER_DIR!\composer.bat" --version
+
+if errorlevel 1 (
+    echo [ERROR] Composer gagal dijalankan.
+    pause
+    exit /b 1
+)
+
+:: =====================================================
+:: 5. PINDAH KE FOLDER PROYEK
+:: =====================================================
+
+cd /d "%~dp0"
+
+echo.
+echo [INFO] Direktori proyek:
+echo %CD%
+
+if not exist "composer.json" (
+    echo [ERROR] composer.json tidak ditemukan.
+    echo Pastikan script berada di folder utama proyek.
+    pause
+    exit /b 1
+)
+
+:: =====================================================
+:: [1/6] COMPOSER INSTALL
+:: =====================================================
+
+echo.
+echo [1/6] Mengunduh dependensi PHP (composer install)...
+
+call "!COMPOSER_DIR!\composer.bat" install
+
+if errorlevel 1 (
+    echo.
+    echo [PERINGATAN] Gagal menjalankan composer install.
+    echo Periksa koneksi internet, PHP, dan konfigurasi Composer.
+    pause
+    exit /b 1
+)
+
+:: =====================================================
+:: [2/6] ENV CONFIGURATION
+:: =====================================================
+
+echo.
+echo [2/6] Memeriksa file konfigurasi .env...
+
+if not exist ".env" (
+    if exist ".env.example" (
+        echo Menyalin file .env.example ke .env...
+        copy /Y ".env.example" ".env" >nul
+
+        if errorlevel 1 (
+            echo [ERROR] Gagal membuat file .env.
+            pause
+            exit /b 1
+        )
+
+        echo [OK] File .env berhasil dibuat.
+    ) else (
+        echo [ERROR] File .env.example tidak ditemukan.
+        pause
+        exit /b 1
+    )
+) else (
+    echo File .env sudah tersedia.
+)
+
+:: =====================================================
+:: [3/6] GENERATE APP KEY
+:: =====================================================
+
+echo.
+echo [3/6] Menghasilkan APP_KEY Laravel...
+
+"!PHP_EXE!" artisan key:generate --force
+
+if errorlevel 1 (
+    echo [ERROR] Gagal menghasilkan APP_KEY.
+    pause
+    exit /b 1
+)
+
+:: =====================================================
+:: [4/6] DATABASE MIGRATION & SEEDER
+:: =====================================================
+
+echo.
+echo [4/6] Menjalankan migrasi dan data awal (seeder) database...
+echo.
+echo Pastikan MySQL atau MariaDB di Laragon sudah dalam keadaan START (aktif)!
+echo.
+
+"!PHP_EXE!" artisan migrate --seed --force
+
+if errorlevel 1 (
+    echo.
+    echo [ERROR] Migrasi database gagal.
+    echo Periksa konfigurasi database pada file .env.
+    pause
+    exit /b 1
+)
+
+:: =====================================================
+:: [5/6] NPM INSTALL
+:: =====================================================
+
+echo.
+echo [5/6] Mengunduh dependensi frontend (npm install)...
+
+where npm >nul 2>nul
+
+if errorlevel 1 (
+    echo [CATATAN] Node.js / npm belum terdeteksi.
+    echo Melewati proses instalasi frontend.
+    goto FINISH
+)
+
+if not exist "package.json" (
+    echo [CATATAN] package.json tidak ditemukan.
+    echo Melewati proses frontend.
+    goto FINISH
+)
+
+call npm install
+
+if errorlevel 1 (
+    echo [ERROR] npm install gagal.
+    pause
+    exit /b 1
+)
+
+:: =====================================================
+:: [6/6] NPM BUILD
+:: =====================================================
+
+echo.
+echo [6/6] Melakukan kompilasi aset frontend (npm run build)...
+
+call npm run build
+
+if errorlevel 1 (
+    echo [ERROR] npm run build gagal.
+    pause
+    exit /b 1
+)
+
+:: =====================================================
+:: FINISH
+:: =====================================================
+
+:FINISH
+
+echo.
+echo ====================================================
+echo        FinToko Berhasil Disetup dan Siap Digunakan!
+echo.
+echo   Cara menjalankan aplikasi:
+echo   1. Buka Laragon, klik "Start All"
+echo   2. Buka browser:
+echo      http://localhost/keuangan-pkl/public
+echo.
+echo      atau jalankan perintah:
+echo      php artisan serve
+echo.
+echo      lalu buka browser:
+echo      http://127.0.0.1:8000
+echo ====================================================
+echo.
+pause
+
+endlocal

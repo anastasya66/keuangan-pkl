@@ -1,0 +1,30 @@
+# ============================================================
+# FinToko — uploads/bukti/.htaccess
+# ⛔ CEGAH EKSEKUSI SCRIPT PHP ATAU CGI DALAM DIREKTORI UPLOAD
+# ============================================================
+
+# Matikan engine PHP jika modul PHP aktif
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# Blokir eksekusi file executable/script
+<FilesMatch "(?i)\.(php|php[0-9]|phtml|pl|py|jsp|asp|htm|html|shtml|sh|cgi|phar|exe)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Hanya izinkan akses MIME whitelist
+<FilesMatch "(?i)\.(jpe?g|png|gif|webp|pdf)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Matikan direktori listing
+Options -Indexes -ExecCGI

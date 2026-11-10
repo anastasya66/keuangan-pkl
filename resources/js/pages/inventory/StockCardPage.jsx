@@ -1,14 +1,60 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
 import productService from '../../services/productService';
 import stockCardService from '../../services/stockCardService';
 import { formatRupiah } from '../../utils/currency';
-import { IconStockCard } from '../../components/common/Icons';
+import { IconStockCard, IconPos } from '../../components/common/Icons';
+
+/**
+ * Format tanggal ramah pengguna (contoh: 10 Nov 2026)
+ */
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return new Intl.DateTimeFormat('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(d);
+  } catch {
+    return dateStr;
+  }
+}
+
+/**
+ * Helper default tanggal awal bulan berjalan
+ */
+function getStartOfMonth() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}-01`;
+}
+
+/**
+ * Helper default tanggal hari ini
+ */
+function getToday() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 export function StockCardPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
   const [products, setProducts] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(getStartOfMonth());
+  const [endDate, setEndDate] = useState(getToday());
   const [stockCardData, setStockCardData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,14 +73,15 @@ export function StockCardPage() {
         const res = await productService.getProducts({ all: true, is_active: true });
         if (res.success && res.data.length > 0) {
           setProducts(res.data);
-          setSelectedProductId(res.data[0].id);
+          const initialId = searchParams.get('product_id') || location.state?.productId || res.data[0].id;
+          setSelectedProductId(initialId);
         }
       } catch (err) {
         console.error('Gagal memuat produk:', err);
       }
     }
     loadProducts();
-  }, []);
+  }, [searchParams, location.state]);
 
   const fetchStockCard = useCallback(
     async (productId = selectedProductId, start = startDate, end = endDate) => {
@@ -68,26 +115,46 @@ export function StockCardPage() {
     switch (type) {
       case 'purchase':
       case 'stock_in':
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
       case 'initial_stock':
-        return 'bg-emerald-600 text-white font-bold';
+        return 'bg-teal-50 text-teal-700 border border-teal-200';
       case 'sale':
       case 'stock_out':
-        return 'bg-blue-600 text-white font-bold';
+        return 'bg-sky-50 text-sky-700 border border-sky-200';
       case 'adjustment_in':
-        return 'bg-teal-600 text-white font-bold';
+        return 'bg-blue-50 text-blue-700 border border-blue-200';
       case 'adjustment_out':
-        return 'bg-amber-600 text-white font-bold';
+        return 'bg-amber-50 text-amber-700 border border-amber-200';
       case 'purchase_reversal':
+      case 'purchase_return':
       case 'sale_return':
-        return 'bg-purple-600 text-white font-bold';
+        return 'bg-purple-50 text-purple-700 border border-purple-200';
       default:
-        return 'bg-slate-600 text-white font-bold';
+        return 'bg-slate-50 text-slate-700 border border-slate-200';
     }
   };
 
+  const handleResetDateFilter = () => {
+    setStartDate('');
+    setEndDate('');
+  };
+
+  // Filter pergerakan mutasi: sembunyikan baris dari tahun 2020 lampau
+  const displayMovements = useMemo(() => {
+    if (!stockCardData?.movements) return [];
+    return stockCardData.movements.filter((mov) => !mov.movement_date?.startsWith('2020'));
+  }, [stockCardData]);
+
+  // Sembunyikan baris saldo awal jika tanggalnya adalah tahun 2020 lampau
+  const showOpeningBalanceRow = useMemo(() => {
+    if (!stockCardData?.period?.start_date) return false;
+    if (stockCardData.period.start_date.startsWith('2020')) return false;
+    return Boolean(startDate);
+  }, [stockCardData, startDate]);
+
   return (
-    <div className="space-y-6">
-      {/* Toast */}
+    <div className="space-y-4">
+      {/* Toast Notification */}
       {toast && (
         <div
           className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold flex items-center gap-2 ${
@@ -101,113 +168,169 @@ export function StockCardPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-[#16323B] flex items-center gap-2.5">
-          <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
-            <IconStockCard className="w-5 h-5" />
-          </span>
-          Kartu Stok Barang (Stock Card)
-        </h1>
-        <p className="text-xs text-[#577782] mt-1">
-          Buku pembantu pergerakan fisik barang masuk, keluar, dan saldo berjalan per produk
-        </p>
-      </div>
-
-      {/* Filter Selector Bar */}
-      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-        <div className="md:col-span-6">
-          <label className="block text-xs font-semibold text-[#16323B] mb-1">
-            Pilih Produk yang Ingin Dilihat:
-          </label>
-          <select
-            value={selectedProductId}
-            onChange={(e) => setSelectedProductId(e.target.value)}
-            className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5] font-semibold"
-          >
-            {products.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} ({p.sku}) &bull; Sisa Stok: {p.stock} {p.unit?.symbol || 'pcs'}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="md:col-span-3">
-          <label className="block text-xs font-semibold text-[#577782] mb-1">
-            Dari Tanggal
-          </label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B]"
-          />
-        </div>
-
-        <div className="md:col-span-3">
-          <label className="block text-xs font-semibold text-[#577782] mb-1">
-            Sampai Tanggal
-          </label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl text-xs text-[#16323B]"
-          />
-        </div>
-      </div>
-
-      {/* Product Summary Card */}
-      {stockCardData && (
-        <>
-          <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white border border-[#D7EBEF] rounded-2xl p-4 sm:p-5 shadow-xs">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
+              <IconStockCard className="w-5 h-5" />
+            </span>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-white bg-[#167A93] px-2.5 py-0.5 rounded-md shadow-xs">
+                <h1 className="text-xl font-bold text-[#16323B]">Kartu Stok</h1>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Sistem Mutasi
+                </span>
+              </div>
+              <p className="text-xs text-[#577782] mt-0.5">
+                Laporan pergerakan keluar dan masuk stok barang.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons Group */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => fetchStockCard(selectedProductId, startDate, endDate)}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#F8FDFE] border border-[#D7EBEF] hover:bg-[#EAF8FA] text-[#16323B] font-semibold rounded-xl text-xs transition cursor-pointer"
+            title="Segarkan data kartu stok"
+          >
+            <span>🔄</span>
+            <span>Segarkan</span>
+          </button>
+
+          <Link
+            to={isAdmin ? '/admin/pos' : '/staff/pos'}
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#27C5E5] hover:bg-[#167A93] text-white font-bold rounded-xl text-xs shadow-xs transition cursor-pointer"
+          >
+            <IconPos className="w-4 h-4" />
+            <span>+ Kasir</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Baris Filter Produk & Tanggal */}
+      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-end">
+          {/* Pemilihan Produk */}
+          <div className="lg:col-span-6">
+            <label className="block text-[11px] font-bold text-[#167A93] uppercase tracking-wider mb-1">
+              Pilih Produk yang Ingin Dilihat:
+            </label>
+            <select
+              value={selectedProductId}
+              onChange={(e) => setSelectedProductId(e.target.value)}
+              className="w-full px-3 py-2 bg-[#F8FDFE] border border-[#D7EBEF] focus:border-[#27C5E5] rounded-xl text-xs text-[#16323B] font-semibold focus:outline-none transition"
+            >
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.sku}) &bull; Sisa Stok: {p.stock} {p.unit?.symbol || 'pcs'}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filter Rentang Tanggal */}
+          <div className="lg:col-span-6">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[11px] font-bold text-[#577782] uppercase tracking-wider">
+                Periode Mutasi:
+              </label>
+              {(startDate || endDate) && (
+                <button
+                  type="button"
+                  onClick={handleResetDateFilter}
+                  className="text-[10px] text-rose-500 hover:text-rose-700 font-semibold cursor-pointer"
+                >
+                  Reset Tanggal
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full px-2.5 py-1.5 bg-[#F8FDFE] border border-[#D7EBEF] focus:border-[#27C5E5] rounded-xl text-xs text-[#16323B] focus:outline-none"
+                  title="Dari Tanggal"
+                />
+              </div>
+              <div className="relative">
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full px-2.5 py-1.5 bg-[#F8FDFE] border border-[#D7EBEF] focus:border-[#27C5E5] rounded-xl text-xs text-[#16323B] focus:outline-none"
+                  title="Sampai Tanggal"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Informasi Detail Produk & Summary Bar Statistik */}
+      {stockCardData && (
+        <div className="bg-white border border-[#D7EBEF] rounded-2xl shadow-xs overflow-hidden">
+          {/* Header Info Produk Terpilih */}
+          <div className="p-4 sm:p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-xs font-bold text-[#167A93] bg-[#EAF8FA] px-2.5 py-0.5 rounded-md border border-[#38BFE0]/30 shadow-2xs">
                   {stockCardData.product.sku}
                 </span>
                 {stockCardData.product.barcode && (
-                  <span className="font-mono text-xs text-[#577782]">
+                  <span className="font-mono text-xs text-[#577782] bg-gray-50 px-2 py-0.5 rounded">
                     Barcode: {stockCardData.product.barcode}
                   </span>
                 )}
                 <span className="text-xs text-[#577782]">
-                  &bull; {stockCardData.product.category_name}
+                  &bull; Kategori: <strong className="text-[#16323B]">{stockCardData.product.category_name}</strong>
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-[#16323B] mt-1">
+              <h2 className="text-lg font-bold text-[#16323B] mt-1.5">
                 {stockCardData.product.name}
               </h2>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs">
-              <div>
-                <span className="text-[#577782]">HPP Rata-rata:</span>
-                <div className="font-mono font-bold text-[#16323B]">
+            {/* Financial Parameters & Current Stock Pill */}
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
+              <div className="bg-[#F8FDFE] border border-[#EAF4F6] px-3 py-1.5 rounded-xl">
+                <span className="text-[#577782] text-[10px] block uppercase font-semibold">HPP Rata-rata</span>
+                <span className="font-mono font-bold text-[#16323B]">
                   {formatRupiah(stockCardData.product.average_cost)}
-                </div>
+                </span>
               </div>
-              <div>
-                <span className="text-[#577782]">Harga Jual:</span>
-                <div className="font-mono font-bold text-[#167A93]">
+
+              <div className="bg-[#F8FDFE] border border-[#EAF4F6] px-3 py-1.5 rounded-xl">
+                <span className="text-[#577782] text-[10px] block uppercase font-semibold">Harga Jual</span>
+                <span className="font-mono font-bold text-[#167A93]">
                   {formatRupiah(stockCardData.product.selling_price)}
-                </div>
+                </span>
               </div>
-              <div className="px-3.5 py-1.5 bg-[#167A93] text-white rounded-xl text-right shadow-xs">
-                <span className="text-[11px] font-semibold text-[#D7EBEF] block">Stok Saat Ini</span>
-                <div className="text-base font-bold font-mono text-white">
+
+              <div className="px-4 py-2 bg-[#167A93] text-white rounded-xl shadow-xs text-right shrink-0">
+                <span className="text-[10px] font-semibold text-[#D7EBEF] block uppercase tracking-wider">Stok Fisik Saat Ini</span>
+                <div className="text-base font-extrabold font-mono text-white">
                   {stockCardData.product.current_stock} {stockCardData.product.unit_symbol}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 4 Stat Metric Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-[#577782]">Saldo Awal Periode</span>
-              <div className="text-xl font-bold font-mono text-[#16323B] mt-1">
+          {/* Panel Ringkasan Metrik Mutasi Periode */}
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#EAF4F6] bg-[#F8FDFE] border-t border-[#D7EBEF]">
+            {/* Saldo Awal Periode */}
+            <div className="p-3.5 sm:px-5">
+              <span className="text-[11px] font-semibold text-[#577782] uppercase tracking-wider">
+                Saldo Awal Periode
+              </span>
+              <div className="text-lg font-bold font-mono text-[#16323B] mt-0.5">
                 {stockCardData.summary.opening_balance}{' '}
                 <span className="text-xs font-normal text-[#577782]">
                   {stockCardData.product.unit_symbol}
@@ -215,9 +338,12 @@ export function StockCardPage() {
               </div>
             </div>
 
-            <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-emerald-700">Total Barang Masuk (+)</span>
-              <div className="text-xl font-bold font-mono text-emerald-600 mt-1">
+            {/* Total Barang Masuk */}
+            <div className="p-3.5 sm:px-5 bg-emerald-50/20">
+              <span className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">
+                Total Masuk (+)
+              </span>
+              <div className="text-lg font-bold font-mono text-emerald-600 mt-0.5">
                 +{stockCardData.summary.total_in}{' '}
                 <span className="text-xs font-normal text-[#577782]">
                   {stockCardData.product.unit_symbol}
@@ -225,9 +351,12 @@ export function StockCardPage() {
               </div>
             </div>
 
-            <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-rose-600">Total Barang Keluar (-)</span>
-              <div className="text-xl font-bold font-mono text-rose-600 mt-1">
+            {/* Total Barang Keluar */}
+            <div className="p-3.5 sm:px-5 bg-rose-50/20">
+              <span className="text-[11px] font-semibold text-rose-700 uppercase tracking-wider">
+                Total Keluar (&minus;)
+              </span>
+              <div className="text-lg font-bold font-mono text-rose-600 mt-0.5">
                 -{stockCardData.summary.total_out}{' '}
                 <span className="text-xs font-normal text-[#577782]">
                   {stockCardData.product.unit_symbol}
@@ -235,9 +364,12 @@ export function StockCardPage() {
               </div>
             </div>
 
-            <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs bg-linear-to-br from-white to-[#EAF8FA]">
-              <span className="text-[11px] font-semibold text-[#167A93]">Saldo Akhir Periode</span>
-              <div className="text-xl font-bold font-mono text-[#167A93] mt-1">
+            {/* Saldo Akhir Periode */}
+            <div className="p-3.5 sm:px-5 bg-gradient-to-br from-[#F8FDFE] to-[#EAF8FA]/50">
+              <span className="text-[11px] font-bold text-[#167A93] uppercase tracking-wider">
+                Saldo Akhir Periode
+              </span>
+              <div className="text-lg font-extrabold font-mono text-[#167A93] mt-0.5">
                 {stockCardData.summary.closing_balance}{' '}
                 <span className="text-xs font-normal text-[#577782]">
                   {stockCardData.product.unit_symbol}
@@ -245,115 +377,137 @@ export function StockCardPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Chronological Ledger Table */}
-          <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs">
-            <h3 className="text-sm font-bold text-[#16323B] mb-3">
+      {/* Tabel Kronologis Pergerakan Fisik Barang */}
+      {stockCardData && (
+        <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs">
+            <h3 className="font-bold uppercase tracking-wider text-[#16323B]">
               Riwayat Pergerakan Fisik Barang (Kronologis)
             </h3>
+            <span className="text-[#577782]">
+              Periode:{' '}
+              <strong className="text-[#16323B]">
+                {stockCardData.period.start_date?.startsWith('2020') && !startDate
+                  ? `Hingga ${formatDate(stockCardData.period.end_date)}`
+                  : `${formatDate(stockCardData.period.start_date)} s/d ${formatDate(stockCardData.period.end_date)}`}
+              </strong>
+            </span>
+          </div>
 
-            {isLoading ? (
-              <div className="py-12 text-center text-xs text-[#577782]">
-                Memuat riwayat kartu stok...
-              </div>
-            ) : stockCardData.movements.length === 0 ? (
-              <div className="py-12 text-center text-xs text-[#577782]">
-                Tidak ada mutasi pergerakan barang pada periode tanggal ini.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead>
-                    <tr className="border-b border-[#D7EBEF] text-[#577782] font-semibold bg-[#F8FDFE]">
-                      <th className="py-2.5 px-3">Tanggal</th>
-                      <th className="py-2.5 px-3">Jenis Mutasi</th>
-                      <th className="py-2.5 px-3">No Referensi</th>
-                      <th className="py-2.5 px-3">Keterangan</th>
-                      <th className="py-2.5 px-3 text-right">Masuk (+)</th>
-                      <th className="py-2.5 px-3 text-right">Keluar (-)</th>
-                      <th className="py-2.5 px-3 text-right">Saldo Stok</th>
-                      <th className="py-2.5 px-3">Operator</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#EAF4F6]">
-                    {/* Opening Balance Row */}
+          {isLoading ? (
+            <div className="py-12 text-center text-xs text-[#577782]">
+              <div className="animate-spin text-2xl mb-1.5">🔄</div>
+              Memuat mutasi kartu stok...
+            </div>
+          ) : displayMovements.length === 0 && !showOpeningBalanceRow ? (
+            <div className="py-12 text-center text-xs text-[#577782] bg-[#F8FDFE] rounded-xl border border-[#D7EBEF]">
+              <div className="text-2xl mb-1">📦</div>
+              Tidak ada mutasi pergerakan barang pada periode tanggal ini.
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-[#D7EBEF]">
+              <table className="w-full text-xs text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[#D7EBEF] text-[#577782] font-semibold bg-[#F0F9FB]">
+                    <th className="py-2.5 px-3.5 text-left whitespace-nowrap">Tanggal</th>
+                    <th className="py-2.5 px-3.5 text-left whitespace-nowrap">Jenis Mutasi</th>
+                    <th className="py-2.5 px-3.5 text-left whitespace-nowrap">No Referensi</th>
+                    <th className="py-2.5 px-3.5 text-left">Keterangan</th>
+                    <th className="py-2.5 px-3.5 text-right whitespace-nowrap w-28">Masuk (+)</th>
+                    <th className="py-2.5 px-3.5 text-right whitespace-nowrap w-28">Keluar (&minus;)</th>
+                    <th className="py-2.5 px-3.5 text-right whitespace-nowrap w-28">Saldo Stok</th>
+                    <th className="py-2.5 px-3.5 text-left whitespace-nowrap w-32">Operator</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#F0F9FB]">
+                  {/* Row Saldo Awal Periode (Hanya tampil jika ada filter periode dan bukan tahun 2020 lampau) */}
+                  {showOpeningBalanceRow && (
                     <tr className="bg-[#FAFDFE] font-semibold">
-                      <td className="py-2 px-3 text-[#577782]">{stockCardData.period.start_date}</td>
-                      <td className="py-2 px-3">
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-700 text-white whitespace-nowrap inline-block">
+                      <td className="py-2.5 px-3.5 text-[#577782] whitespace-nowrap">
+                        {formatDate(stockCardData.period.start_date)}
+                      </td>
+                      <td className="py-2.5 px-3.5 whitespace-nowrap">
+                        <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-slate-700 text-white whitespace-nowrap inline-flex items-center">
                           SALDO AWAL
                         </span>
                       </td>
-                      <td className="py-2 px-3 font-mono text-[#577782]">-</td>
-                      <td className="py-2 px-3 text-[#577782]">Saldo awal sebelum periode pencarian</td>
-                      <td className="py-2 px-3 text-right font-mono text-[#577782]">-</td>
-                      <td className="py-2 px-3 text-right font-mono text-[#577782]">-</td>
-                      <td className="py-2 px-3 text-right font-mono font-bold text-[#16323B]">
+                      <td className="py-2.5 px-3.5 font-mono text-[#8FA8B0]">-</td>
+                      <td className="py-2.5 px-3.5 text-[#577782]">Saldo awal sebelum periode pencarian</td>
+                      <td className="py-2.5 px-3.5 text-right font-mono text-[#8FA8B0]">-</td>
+                      <td className="py-2.5 px-3.5 text-right font-mono text-[#8FA8B0]">-</td>
+                      <td className="py-2.5 px-3.5 text-right font-mono tabular-nums font-bold text-xs text-[#16323B] whitespace-nowrap">
                         {stockCardData.summary.opening_balance}
                       </td>
-                      <td className="py-2 px-3 text-[#577782]">Sistem</td>
+                      <td className="py-2.5 px-3.5 text-[#577782] whitespace-nowrap">Sistem</td>
                     </tr>
+                  )}
 
-                    {/* Movement Rows */}
-                    {stockCardData.movements.map((mov) => (
-                      <tr key={mov.id} className="hover:bg-[#F8FDFE] transition">
-                        <td className="py-2.5 px-3 text-[#577782] whitespace-nowrap">
-                          {mov.movement_date}
-                        </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap">
-                          <span
-                            className={`px-2.5 py-0.5 text-[10px] font-bold rounded-md shadow-xs whitespace-nowrap inline-block ${getMovementBadgeClass(
-                              mov.movement_type
-                            )}`}
-                          >
-                            {mov.movement_type_label}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3 font-mono font-semibold text-[#167A93]">
-                          {mov.reference_number || mov.movement_code}
-                        </td>
-                        <td className="py-2.5 px-3 text-[#577782] max-w-xs truncate" title={mov.description}>
-                          {mov.description || '-'}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-600">
-                          {mov.quantity_in > 0 ? `+${mov.quantity_in}` : '-'}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-rose-600">
-                          {mov.quantity_out > 0 ? `-${mov.quantity_out}` : '-'}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-[#16323B]">
-                          {mov.balance}
-                        </td>
-                        <td className="py-2.5 px-3 text-[#577782] whitespace-nowrap">{mov.user_name}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="border-t-2 border-[#D7EBEF] font-bold bg-[#EAF8FA] text-[#167A93]">
-                      <td colSpan="4" className="py-2.5 px-3 text-right">
-                        TOTAL MUTASI PERIODE:
+                  {/* Movement Rows */}
+                  {displayMovements.map((mov) => (
+                    <tr key={mov.id} className="hover:bg-[#F8FDFE] transition border-b border-[#F0F9FB]">
+                      <td className="py-2.5 px-3.5 text-[#577782] whitespace-nowrap font-medium">
+                        {formatDate(mov.movement_date)}
                       </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-emerald-700">
-                        +{stockCardData.summary.total_in}
+                      <td className="py-2.5 px-3.5 whitespace-nowrap">
+                        <span
+                          className={`px-2.5 py-0.5 text-[10px] font-bold rounded-md shadow-2xs whitespace-nowrap inline-flex items-center gap-1 ${getMovementBadgeClass(
+                            mov.movement_type
+                          )}`}
+                        >
+                          {mov.movement_type_label}
+                        </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-rose-700">
-                        -{stockCardData.summary.total_out}
+                      <td className="py-2.5 px-3.5 font-mono font-semibold text-xs text-[#167A93] whitespace-nowrap">
+                        {mov.reference_number || mov.movement_code}
                       </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-[#16323B]">
-                        {stockCardData.summary.closing_balance} {stockCardData.product.unit_symbol}
+                      <td className="py-2.5 px-3.5 text-xs text-[#577782] max-w-xs truncate" title={mov.description}>
+                        {mov.description || '-'}
                       </td>
-                      <td></td>
+                      <td className="py-2.5 px-3.5 text-right font-mono tabular-nums font-bold text-xs text-emerald-600 whitespace-nowrap">
+                        {mov.quantity_in > 0 ? `+${mov.quantity_in}` : '-'}
+                      </td>
+                      <td className="py-2.5 px-3.5 text-right font-mono tabular-nums font-bold text-xs text-rose-600 whitespace-nowrap">
+                        {mov.quantity_out > 0 ? `-${mov.quantity_out}` : '-'}
+                      </td>
+                      <td className="py-2.5 px-3.5 text-right font-mono tabular-nums font-bold text-xs text-[#16323B] whitespace-nowrap">
+                        {mov.balance}
+                      </td>
+                      <td className="py-2.5 px-3.5 text-xs text-[#577782] whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#167A93]"></span>
+                          <span className="font-medium text-[#16323B]">{mov.user_name || 'Sistem'}</span>
+                        </div>
+                      </td>
                     </tr>
-                  </tfoot>
-                </table>
-              </div>
-            )}
-          </div>
-        </>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-[#D7EBEF] font-bold bg-[#EAF8FA] text-[#167A93]">
+                    <td colSpan="4" className="py-3 px-3.5 text-right uppercase tracking-wider text-[11px]">
+                      Total Mutasi Periode:
+                    </td>
+                    <td className="py-3 px-3.5 text-right font-mono tabular-nums text-xs text-emerald-700 whitespace-nowrap">
+                      +{stockCardData.summary.total_in}
+                    </td>
+                    <td className="py-3 px-3.5 text-right font-mono tabular-nums text-xs text-rose-700 whitespace-nowrap">
+                      -{stockCardData.summary.total_out}
+                    </td>
+                    <td className="py-3 px-3.5 text-right font-mono tabular-nums text-xs text-[#16323B] whitespace-nowrap">
+                      {stockCardData.summary.closing_balance} {stockCardData.product.unit_symbol}
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
 }
 
 export default StockCardPage;
-

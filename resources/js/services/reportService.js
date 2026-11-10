@@ -1,32 +1,7 @@
 import api from './api';
+import { downloadBlobFile, downloadBlob, downloadFromApi } from '../utils/downloadHelper';
 
-/**
- * Helper untuk mengunduh file blob (PDF / Excel) dari API response.
- */
-function downloadBlob(response, defaultFilename = 'download') {
-  const blob = new Blob([response.data], {
-    type: response.headers['content-type'] || 'application/octet-stream',
-  });
-  
-  // Ekstrak nama file dari header Content-Disposition jika tersedia
-  let filename = defaultFilename;
-  const disposition = response.headers['content-disposition'];
-  if (disposition && disposition.indexOf('filename=') !== -1) {
-    const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
-    if (matches != null && matches[1]) {
-      filename = matches[1].replace(/['"]/g, '');
-    }
-  }
-
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(url);
-}
+export { downloadBlobFile, downloadBlob, downloadFromApi };
 
 export const reportService = {
   // === DASHBOARD SERVICES ===
@@ -72,19 +47,11 @@ export const reportService = {
   },
 
   downloadIncomeStatementPdf: async (params = {}) => {
-    const response = await api.get('/reports/income-statement/export/pdf', {
-      params,
-      responseType: 'blob',
-    });
-    downloadBlob(response, 'laporan-laba-rugi.pdf');
+    return await downloadFromApi('/reports/income-statement/export/pdf', params, 'laporan-laba-rugi.pdf');
   },
 
   downloadIncomeStatementExcel: async (params = {}) => {
-    const response = await api.get('/reports/income-statement/export/excel', {
-      params,
-      responseType: 'blob',
-    });
-    downloadBlob(response, 'laporan-laba-rugi.xls');
+    return await downloadFromApi('/reports/income-statement/export/excel', params, 'laporan-laba-rugi.xlsx');
   },
 
   // === LAPORAN NERACA (BALANCE SHEET) ===
@@ -94,19 +61,11 @@ export const reportService = {
   },
 
   downloadBalanceSheetPdf: async (params = {}) => {
-    const response = await api.get('/reports/balance-sheet/export/pdf', {
-      params,
-      responseType: 'blob',
-    });
-    downloadBlob(response, 'laporan-neraca.pdf');
+    return await downloadFromApi('/reports/balance-sheet/export/pdf', params, 'laporan-neraca.pdf');
   },
 
   downloadBalanceSheetExcel: async (params = {}) => {
-    const response = await api.get('/reports/balance-sheet/export/excel', {
-      params,
-      responseType: 'blob',
-    });
-    downloadBlob(response, 'laporan-neraca.xls');
+    return await downloadFromApi('/reports/balance-sheet/export/excel', params, 'laporan-neraca.xlsx');
   },
 
   // === LAPORAN STOK & VALUASI (INVENTORY REPORT) ===
@@ -116,19 +75,11 @@ export const reportService = {
   },
 
   downloadInventoryReportPdf: async (params = {}) => {
-    const response = await api.get('/reports/inventory/export/pdf', {
-      params,
-      responseType: 'blob',
-    });
-    downloadBlob(response, 'laporan-stok-persediaan.pdf');
+    return await downloadFromApi('/reports/inventory/export/pdf', params, 'laporan-stok-persediaan.pdf');
   },
 
   downloadInventoryReportExcel: async (params = {}) => {
-    const response = await api.get('/reports/inventory/export/excel', {
-      params,
-      responseType: 'blob',
-    });
-    downloadBlob(response, 'laporan-stok-persediaan.xls');
+    return await downloadFromApi('/reports/inventory/export/excel', params, 'laporan-stok-persediaan.xlsx');
   },
 
   // === LAPORAN MUTASI STOK (STOCK MOVEMENTS) ===
@@ -138,21 +89,12 @@ export const reportService = {
   },
 
   downloadStockMovementsPdf: async (params = {}) => {
-    const response = await api.get('/reports/stock-movements/export/pdf', {
-      params,
-      responseType: 'blob',
-    });
-    downloadBlob(response, 'laporan-mutasi-persediaan.pdf');
+    return await downloadFromApi('/reports/stock-movements/export/pdf', params, 'laporan-mutasi-persediaan.pdf');
   },
 
   downloadStockMovementsExcel: async (params = {}) => {
-    const response = await api.get('/reports/stock-movements/export/excel', {
-      params,
-      responseType: 'blob',
-    });
-    downloadBlob(response, 'laporan-mutasi-persediaan.xls');
+    return await downloadFromApi('/reports/stock-movements/export/excel', params, 'laporan-mutasi-persediaan.xlsx');
   },
 };
 
 export default reportService;
-

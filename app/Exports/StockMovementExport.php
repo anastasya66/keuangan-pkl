@@ -2,146 +2,191 @@
 
 namespace App\Exports;
 
-use Illuminate\Http\Response;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Symfony\Component\HttpFoundation\Response;
 
-class StockMovementExport
+class StockMovementExport extends BaseExcelExport
 {
     public function __construct(
         protected array $data
     ) {}
 
     /**
-     * Generate response file Excel (.xls) berformat tabel terstruktur.
+     * Generate response file Excel (.xlsx) berformat workbook OpenXML valid.
      */
     public function download(?string $filename = null): Response
     {
-        $filename = $filename ?: 'riwayat-mutasi-persediaan-' . date('Ymd') . '.xls';
+        $filename = $filename ?: 'riwayat-mutasi-persediaan-' . date('Ymd') . '.xlsx';
 
-        $html = $this->buildHtmlTable();
+        $spreadsheet = $this->createSpreadsheet('Laporan Riwayat Mutasi Persediaan', 'Mutasi Stok');
+        $sheet = $spreadsheet->getActiveSheet();
 
-        return response($html, 200, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'Pragma' => 'no-cache',
-            'Expires' => '0',
+        $store = $this->getStoreInfo();
+        $generatedAt = $this->data['generated_at'] ?? date('d/m/Y H:i');
+        $totalMovements = (int) ($this->data['summary']['total_movements'] ?? 0);
+        $totalStockIn = (float) ($this->data['summary']['total_stock_in'] ?? 0);
+        $totalStockOut = (float) ($this->data['summary']['total_stock_out'] ?? 0);
+        $totalAdjustments = (float) ($this->data['summary']['total_adjustments'] ?? 0);
+
+        // 1. Header Banner
+        $sheet->setCellValue('A1', mb_strtoupper($store['name']) . ' — SISTEM MANAJEMEN KEUANGAN & PERSEDIAAN TOKO');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(13)->getColor()->setRGB(self::COLOR_DARK);
+
+        $sheet->setCellValue('A2', 'LAPORAN RIWAYAT MUTASI PERSEDIAAN (STOCK MOVEMENTS)');
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(11)->getColor()->setRGB(self::COLOR_PRIMARY);
+
+        $metaText = "Tanggal Cetak: {$generatedAt} | Total Transaksi: {$totalMovements} catatan | Total Masuk (+): " . number_format($totalStockIn, 2, ',', '.') . " unit | Total Keluar (-): " . number_format($totalStockOut, 2, ',', '.') . " unit | Penyesuaian: " . number_format($totalAdjustments, 2, ',', '.');
+        if (!empty($store['address'])) {
+            $metaText .= " | {$store['address']}";
+        }
+        $sheet->setCellValue('A3', $metaText);
+        $sheet->getStyle('A3')->getFont()->setSize(9)->setItalic(true)->getColor()->setRGB(self::COLOR_MUTED);
+
+        $row = 5;
+
+        // Table Headers
+        $headers = [
+            'A' => 'No',
+            'B' => 'Tanggal & Waktu',
+            'C' => 'Kode Mutasi',
+            'D' => 'No. Referensi',
+            'E' => 'SKU Produk',
+            'F' => 'Nama Produk',
+            'G' => 'Kategori',
+            'H' => 'Jenis Mutasi',
+            'I' => 'Masuk (+)',
+            'J' => 'Keluar (-)',
+            'K' => 'Satuan',
+            'L' => 'Saldo Sebelum',
+            'M' => 'Saldo Sesudah',
+            'N' => 'Keterangan / Alasan',
+            'O' => 'Petugas',
+        ];
+
+        foreach ($headers as $col => $title) {
+            $sheet->setCellValue("{$col}{$row}", $title);
+        }
+
+        $sheet->getStyle("A{$row}:O{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_PRIMARY]],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
         ]);
-    }
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("C{$row}:G{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle("H{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("I{$row}:J{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("K{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("L{$row}:M{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("N{$row}:O{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $row++;
 
-    protected function buildHtmlTable(): string
-    {
-        $generatedAt = htmlspecialchars($this->data['generated_at'] ?? date('Y-m-d H:i:s'));
-        $totalMovements = number_format($this->data['summary']['total_movements'] ?? 0, 0, ',', '.');
-        $totalStockIn = number_format($this->data['summary']['total_stock_in'] ?? 0, 2, ',', '.');
-        $totalStockOut = number_format($this->data['summary']['total_stock_out'] ?? 0, 2, ',', '.');
-        $totalAdjustments = number_format($this->data['summary']['total_adjustments'] ?? 0, 0, ',', '.');
+        $movements = $this->data['movements'] ?? [];
+        if (empty($movements)) {
+            $sheet->setCellValue("A{$row}", 'Tidak ada data riwayat mutasi persediaan');
+            $sheet->mergeCells("A{$row}:O{$row}");
+            $sheet->getStyle("A{$row}")->getFont()->setItalic(true)->getColor()->setRGB(self::COLOR_MUTED);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+        } else {
+            $calcIn = 0;
+            $calcOut = 0;
 
-        ob_start();
-        ?>
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:x="urn:schemas-microsoft-com:office:excel"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <!--[if gte mso 9]>
-    <xml>
-        <x:ExcelWorkbook>
-            <x:ExcelWorksheets>
-                <x:ExcelWorksheet>
-                    <x:Name>Mutasi Stok</x:Name>
-                    <x:WorksheetOptions>
-                        <x:DisplayGridlines/>
-                    </x:WorksheetOptions>
-                </x:ExcelWorksheet>
-            </x:ExcelWorksheets>
-        </x:ExcelWorkbook>
-    </xml>
-    <![endif]-->
-    <style>
-        body, table { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 10pt; color: #16323B; }
-        .doc-title { font-size: 15pt; font-weight: bold; color: #10262E; text-align: left; }
-        .doc-subtitle { font-size: 12pt; font-weight: bold; color: #167A93; text-align: left; }
-        .doc-meta { font-size: 10pt; color: #577782; text-align: left; }
-        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-        th { background-color: #27C5E5; color: #FFFFFF; font-weight: bold; border: 1px solid #1A9DB8; padding: 9px 8px; text-align: left; font-size: 10pt; }
-        th.center { text-align: center; }
-        th.right { text-align: right; }
-        td { border: 1px solid #D7EBEF; padding: 6px 8px; vertical-align: middle; }
-        td.center { text-align: center; }
-        td.right { text-align: right; mso-number-format: "\#\,\#\#0\.00"; }
-        td.mono { font-family: monospace; font-weight: bold; }
-        .type-in { background-color: #E8F8F0; color: #1B8751; font-weight: bold; text-align: center; }
-        .type-out { background-color: #FDEBED; color: #C53030; font-weight: bold; text-align: center; }
-        .type-adj { background-color: #EAF8FA; color: #167A93; font-weight: bold; text-align: center; }
-        .row-grand-total { background-color: #D6F4FA; color: #10262E; font-weight: bold; font-size: 11pt; border-top: 2px solid #27C5E5; border-bottom: 2px solid #27C5E5; }
-    </style>
-</head>
-<body>
-    <table>
-        <tr>
-            <td colspan="12" class="doc-title">FINTOKO — SISTEM MANAJEMEN KEUANGAN &amp; PERSEDIAAN TOKO</td>
-        </tr>
-        <tr>
-            <td colspan="12" class="doc-subtitle">LAPORAN RIWAYAT MUTASI PERSEDIAAN (STOCK MOVEMENTS)</td>
-        </tr>
-        <tr>
-            <td colspan="12" class="doc-meta">
-                Tanggal Cetak: <?= $generatedAt ?> &bull; Total Mutasi: <?= $totalMovements ?> &bull; Masuk (+): <?= $totalStockIn ?> &bull; Keluar (-): <?= $totalStockOut ?> &bull; Penyesuaian: <?= $totalAdjustments ?>
-            </td>
-        </tr>
-        <tr><td colspan="12" style="border:none; height:15px;"></td></tr>
-        <thead>
-            <tr>
-                <th class="center" style="width: 40px;">No</th>
-                <th style="width: 150px;">Kode Mutasi</th>
-                <th class="center" style="width: 95px;">Tanggal</th>
-                <th style="width: 110px;">SKU Barang</th>
-                <th style="width: 220px;">Nama Barang</th>
-                <th class="center" style="width: 130px;">Jenis Mutasi</th>
-                <th class="right" style="width: 100px;">Jumlah (Qty)</th>
-                <th class="center" style="width: 70px;">Satuan</th>
-                <th class="right" style="width: 95px;">Sebelum</th>
-                <th class="right" style="width: 95px;">Sesudah</th>
-                <th style="width: 130px;">No. Referensi</th>
-                <th style="width: 130px;">Pencatat</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (empty($this->data['movements'])): ?>
-                <tr>
-                    <td colspan="12" style="text-align: center; color: #8EA6AF; padding: 20px;">Belum ada riwayat mutasi stok tercatat.</td>
-                </tr>
-            <?php else: ?>
-                <?php $no = 1; foreach ($this->data['movements'] as $m): 
-                    $typeClass = 'type-in';
-                    $rawType = $m['movement_type'] ?? '';
-                    if (str_contains($rawType, 'out')) {
-                        $typeClass = 'type-out';
-                    } elseif (str_contains($rawType, 'adj')) {
-                        $typeClass = 'type-adj';
-                    }
-                ?>
-                    <tr>
-                        <td class="center"><?= $no++ ?></td>
-                        <td class="mono"><?= htmlspecialchars($m['movement_code']) ?></td>
-                        <td class="center"><?= htmlspecialchars($m['movement_date']) ?></td>
-                        <td class="mono"><?= htmlspecialchars($m['product_sku']) ?></td>
-                        <td><?= htmlspecialchars($m['product_name']) ?></td>
-                        <td class="<?= $typeClass ?>"><?= htmlspecialchars($m['movement_type_label']) ?></td>
-                        <td class="right"><?= number_format($m['quantity'], 2, ',', '.') ?></td>
-                        <td class="center"><?= htmlspecialchars($m['unit_symbol']) ?></td>
-                        <td class="right"><?= number_format($m['stock_before'], 2, ',', '.') ?></td>
-                        <td class="right"><?= number_format($m['stock_after'], 2, ',', '.') ?></td>
-                        <td><?= htmlspecialchars($m['reference_number'] ?: '-') ?></td>
-                        <td><?= htmlspecialchars($m['creator_name']) ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</body>
-</html>
-        <?php
-        return ob_get_clean();
+            foreach ($movements as $idx => $m) {
+                $code = (string) ($m['movement_code'] ?? $m['code'] ?? '');
+                $ref = (string) ($m['reference_number'] ?? $m['ref'] ?? '');
+                $dateFormatted = (string) ($m['date'] ?? $m['date_formatted'] ?? $m['movement_date'] ?? '');
+                $sku = (string) ($m['product_sku'] ?? $m['sku'] ?? '');
+                $productName = (string) ($m['product_name'] ?? '');
+                $category = (string) ($m['category_name'] ?? $m['category'] ?? '-');
+                $typeLabel = (string) ($m['movement_type_label'] ?? $m['type_label'] ?? 'Mutasi');
+                $rawType = (string) ($m['movement_type'] ?? $m['type'] ?? '');
+                $qty = (float) ($m['quantity'] ?? 0);
+                $unit = (string) ($m['unit_symbol'] ?? $m['unit'] ?? 'unit');
+                $stockBefore = isset($m['stock_before']) ? (float) $m['stock_before'] : null;
+                $stockAfter = isset($m['stock_after']) ? (float) $m['stock_after'] : null;
+                $desc = (string) ($m['description'] ?? $m['notes'] ?? '-');
+                $creator = (string) ($m['creator_name'] ?? $m['creator'] ?? 'Administrator');
+
+                $isIn = in_array($rawType, ['stock_in', 'purchase', 'initial_stock', 'sale_return']) || ($m['type_category'] ?? '') === 'in';
+                $isOut = in_array($rawType, ['stock_out', 'sale', 'purchase_reversal', 'purchase_return']) || ($m['type_category'] ?? '') === 'out';
+
+                $qtyIn = $isIn ? $qty : 0;
+                $qtyOut = $isOut ? $qty : 0;
+                $calcIn += $qtyIn;
+                $calcOut += $qtyOut;
+
+                $sheet->setCellValue("A{$row}", $idx + 1);
+                $sheet->setCellValue("B{$row}", $dateFormatted);
+                $sheet->setCellValueExplicit("C{$row}", $code, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit("D{$row}", $ref, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit("E{$row}", $sku, DataType::TYPE_STRING);
+                $sheet->setCellValue("F{$row}", $productName);
+                $sheet->setCellValue("G{$row}", $category);
+                $sheet->setCellValue("H{$row}", $typeLabel);
+                $sheet->setCellValue("I{$row}", $qtyIn > 0 ? $qtyIn : 0);
+                $sheet->setCellValue("J{$row}", $qtyOut > 0 ? $qtyOut : 0);
+                $sheet->setCellValue("K{$row}", $unit);
+                $sheet->setCellValue("L{$row}", $stockBefore !== null ? $stockBefore : 0);
+                $sheet->setCellValue("M{$row}", $stockAfter !== null ? $stockAfter : 0);
+                $sheet->setCellValue("N{$row}", $desc);
+                $sheet->setCellValue("O{$row}", $creator);
+
+                // Alignments
+                $sheet->getStyle("A{$row}:B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("H{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("K{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("I{$row}:J{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_QTY);
+                $sheet->getStyle("L{$row}:M{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_QTY);
+
+                // Type label text color
+                if ($isIn) {
+                    $sheet->getStyle("H{$row}")->getFont()->getColor()->setRGB(self::COLOR_PROFIT);
+                    $sheet->getStyle("I{$row}")->getFont()->getColor()->setRGB(self::COLOR_PROFIT);
+                } elseif ($isOut) {
+                    $sheet->getStyle("H{$row}")->getFont()->getColor()->setRGB(self::COLOR_LOSS);
+                    $sheet->getStyle("J{$row}")->getFont()->getColor()->setRGB(self::COLOR_LOSS);
+                } else {
+                    $sheet->getStyle("H{$row}")->getFont()->getColor()->setRGB(self::COLOR_PRIMARY);
+                }
+
+                $sheet->getStyle("A{$row}:O{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB(self::COLOR_BORDER);
+                $row++;
+            }
+
+            if ($totalStockIn <= 0) $totalStockIn = $calcIn;
+            if ($totalStockOut <= 0) $totalStockOut = $calcOut;
+        }
+
+        // Summary Row
+        $sheet->setCellValue("A{$row}", 'GRAND TOTAL');
+        $sheet->mergeCells("A{$row}:H{$row}");
+        $sheet->setCellValue("I{$row}", $totalStockIn);
+        $sheet->setCellValue("J{$row}", $totalStockOut);
+        $sheet->setCellValue("K{$row}", '');
+        $sheet->setCellValue("L{$row}", '');
+        $sheet->setCellValue("M{$row}", '');
+        $sheet->setCellValue("N{$row}", '');
+        $sheet->setCellValue("O{$row}", '');
+
+        $sheet->getStyle("A{$row}:O{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => self::COLOR_DARK], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_SECTION]],
+            'borders' => [
+                'top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+                'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => self::COLOR_PRIMARY]],
+            ],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("I{$row}:J{$row}")->getNumberFormat()->setFormatCode(self::FORMAT_QTY);
+
+        // Auto-fit column widths
+        $this->autoFitColumns($sheet, 'O');
+
+        return $this->streamXlsx($spreadsheet, $filename);
     }
 }

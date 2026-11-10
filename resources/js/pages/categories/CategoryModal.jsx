@@ -66,7 +66,7 @@ export function CategoryModal({
             <span className="p-2 rounded-xl bg-[#EAF8FA] text-[#27C5E5]">
               <IconTag className="w-5 h-5" />
             </span>
-            <span>{isEdit ? 'Ubah Kategori Barang' : 'Tambah Kategori Baru'}</span>
+            <span>{isEdit ? 'Ubah Kategori' : 'Tambah Kategori'}</span>
           </h3>
           <button
             type="button"

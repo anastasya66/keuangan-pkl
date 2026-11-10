@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import posService from '../../services/posService';
 import { formatRupiah } from '../../utils/currency';
 import DataTable from '../../components/common/DataTable';
 import Pagination from '../../components/common/Pagination';
 import SearchInput from '../../components/common/SearchInput';
-import { IconPos, IconPrinter } from '../../components/common/Icons';
+import { IconPos, IconPrinter, IconStockCard } from '../../components/common/Icons';
 
 export function SalesHistoryPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const location = useLocation();
 
   const [sales, setSales] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -75,6 +77,18 @@ export function SalesHistoryPage() {
   useEffect(() => {
     fetchSales(currentPage, search, statusFilter, paymentMethodFilter, startDate, endDate);
   }, [currentPage, search, statusFilter, paymentMethodFilter, startDate, endDate, fetchSales]);
+
+  // Auto-open receipt and notification if redirected immediately after completed sale
+  useEffect(() => {
+    if (location.state?.newSaleId && location.state?.justCompleted) {
+      handleOpenReceipt(location.state.newSaleId);
+      showToast(
+        `Transaksi ${location.state.transactionNumber || ''} berhasil disimpan! Mutasi stok telah otomatis dicatat di Kartu Stok.`,
+        'success'
+      );
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleOpenReceipt = async (saleId) => {
     try {
@@ -231,10 +245,39 @@ export function SalesHistoryPage() {
             <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
               <IconPos className="w-5 h-5" />
             </span>
-            Riwayat Transaksi Penjualan Kasir
+            Riwayat Penjualan
           </h1>
           <p className="text-xs text-[#577782] mt-1">
-            Daftar seluruh transaksi kasir POS, cetak ulang struk, dan status pembatalan
+            Daftar seluruh transaksi kasir penjualan, cetak ulang struk, dan riwayat mutasi stok
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <Link
+            to={isAdmin ? '/admin/inventory/stock-card' : '/staff/inventory/stock-card'}
+            className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-white border border-[#D7EBEF] hover:bg-[#F3FBFC] text-[#16323B] font-semibold rounded-xl text-xs shadow-xs transition cursor-pointer"
+          >
+            <IconStockCard className="w-4 h-4 text-[#167A93]" />
+            <span>Kartu Stok</span>
+          </Link>
+
+          <Link
+            to={isAdmin ? '/admin/pos' : '/staff/pos'}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold rounded-xl text-xs shadow-xs transition cursor-pointer"
+          >
+            <IconPos className="w-4 h-4" />
+            <span>+ Kasir / Penjualan Baru</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Integration Notice Banner */}
+      <div className="bg-[#EBF9FC] border border-[#BCE8F3] rounded-2xl p-4 shadow-2xs flex items-center gap-3 text-xs text-[#16323B]">
+        <span className="text-2xl shrink-0">🧾</span>
+        <div>
+          <div className="font-bold text-[#105668]">Terintegrasi Otomatis ke Kartu Stok:</div>
+          <p className="text-[#577782] mt-0.5">
+            Seluruh barang yang terjual melalui kasir Penjualan secara otomatis memotong stok produk dan langsung tercatat sebagai mutasi keluar (-) di menu <strong>Kartu Stok</strong>.
           </p>
         </div>
       </div>

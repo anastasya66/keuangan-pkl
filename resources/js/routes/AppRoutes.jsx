@@ -23,7 +23,6 @@ import StockMovementReportPage from '../pages/reports/StockMovementReportPage';
 import StaffDashboardPage from '../pages/staff/StaffDashboardPage';
 import UnitPage from '../pages/units/UnitPage';
 import PosPage from '../pages/pos/PosPage';
-import SalesHistoryPage from '../pages/pos/SalesHistoryPage';
 import SupplierPage from '../pages/suppliers/SupplierPage';
 import PurchasePage from '../pages/purchases/PurchasePage';
 import PurchaseDetailPage from '../pages/purchases/PurchaseDetailPage';
@@ -95,14 +94,17 @@ export function AppRoutes() {
         <Route path="settings" element={<SettingsPage />} />
         {/* POS & Kasir Routes (Admin) */}
         <Route path="pos" element={<PosPage />} />
-        <Route path="pos/sales" element={<SalesHistoryPage />} />
+        <Route path="penjualan" element={<PosPage />} />
+        <Route path="pos/sales" element={<Navigate to="/admin/pos" replace />} />
         {/* Purchases & Suppliers (Admin) */}
         <Route path="suppliers" element={<SupplierPage />} />
         <Route path="purchases" element={<PurchasePage />} />
         <Route path="purchases/:id" element={<PurchaseDetailPage />} />
         {/* Inventory Stock Card & Valuation (Admin) */}
         <Route path="inventory/stock-card" element={<StockCardPage />} />
+        <Route path="kartu-stok" element={<StockCardPage />} />
         <Route path="inventory/valuation" element={<InventoryValuationPage />} />
+        <Route path="nilai-persediaan" element={<InventoryValuationPage />} />
         {/* Accounting Routes (Admin) */}
         <Route path="accounting/accounts" element={<ChartOfAccountsPage />} />
         <Route path="accounting/journals" element={<GeneralJournalPage />} />
@@ -113,6 +115,9 @@ export function AppRoutes() {
         <Route path="reports/income-statement" element={<IncomeStatementPage />} />
         <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
         <Route path="reports/inventory" element={<InventoryReportPage />} />
+        <Route path="inventory/stock" element={<InventoryReportPage />} />
+        <Route path="inventory/stocks" element={<InventoryReportPage />} />
+        <Route path="sisa-stok" element={<InventoryReportPage />} />
         <Route path="reports/stock-movements" element={<StockMovementReportPage />} />
       </Route>
 
@@ -132,9 +137,13 @@ export function AppRoutes() {
         <Route path="units" element={<UnitPage />} />
         {/* POS & Kasir Routes (Staff) */}
         <Route path="pos" element={<PosPage />} />
-        <Route path="pos/sales" element={<SalesHistoryPage />} />
-        {/* Inventory Stock Card (Staff) */}
+        <Route path="penjualan" element={<PosPage />} />
+        <Route path="pos/sales" element={<Navigate to="/staff/pos" replace />} />
+        {/* Inventory Stock Card & Valuation (Staff) */}
         <Route path="inventory/stock-card" element={<StockCardPage />} />
+        <Route path="kartu-stok" element={<StockCardPage />} />
+        <Route path="inventory/valuation" element={<InventoryValuationPage />} />
+        <Route path="nilai-persediaan" element={<InventoryValuationPage />} />
         {/* Accounting Routes (Staff) */}
         <Route path="accounting/accounts" element={<ChartOfAccountsPage />} />
         <Route path="accounting/journals" element={<GeneralJournalPage />} />
@@ -145,6 +154,9 @@ export function AppRoutes() {
         <Route path="reports/income-statement" element={<IncomeStatementPage />} />
         <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
         <Route path="reports/inventory" element={<InventoryReportPage />} />
+        <Route path="inventory/stock" element={<InventoryReportPage />} />
+        <Route path="inventory/stocks" element={<InventoryReportPage />} />
+        <Route path="sisa-stok" element={<InventoryReportPage />} />
         <Route path="reports/stock-movements" element={<StockMovementReportPage />} />
       </Route>
 

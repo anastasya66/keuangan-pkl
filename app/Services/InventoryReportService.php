@@ -35,6 +35,24 @@ class InventoryReportService
 
         $allProducts = $query->orderBy('name')->get();
 
+        // Ambil data mutasi masuk dan keluar per produk
+        $productIds = $allProducts->pluck('id')->all();
+
+        $inTypes = ['stock_in', 'purchase', 'adjustment_in', 'initial_stock', 'sale_return'];
+        $outTypes = ['stock_out', 'sale', 'adjustment_out', 'purchase_reversal', 'purchase_return'];
+
+        $inMovements = InventoryMovement::whereIn('product_id', $productIds)
+            ->whereIn('movement_type', $inTypes)
+            ->selectRaw('product_id, SUM(quantity) as total_qty')
+            ->groupBy('product_id')
+            ->pluck('total_qty', 'product_id');
+
+        $outMovements = InventoryMovement::whereIn('product_id', $productIds)
+            ->whereIn('movement_type', $outTypes)
+            ->selectRaw('product_id, SUM(quantity) as total_qty')
+            ->groupBy('product_id')
+            ->pluck('total_qty', 'product_id');
+
         // Filter stock_status di collection
         if (!empty($filters['stock_status'])) {
             $status = $filters['stock_status'];
@@ -59,12 +77,22 @@ class InventoryReportService
         $availableCount = 0;
         $lowStockCount = 0;
         $outOfStockCount = 0;
+        $totalQtyIn = 0.0;
+        $totalQtyOut = 0.0;
 
         foreach ($allProducts as $p) {
             $stock = (float) $p->stock;
             $purchasePrice = (float) $p->purchase_price;
             $sellingPrice = (float) $p->selling_price;
             $inventoryValue = round($stock * $purchasePrice, 2);
+
+            $qtyIn = (float) ($inMovements[$p->id] ?? 0);
+            $qtyOut = (float) ($outMovements[$p->id] ?? 0);
+
+            // Bila mutasi tercatat belum mencakup stok awal, selaraskan mutasi masuk agar sisa stok = in - out
+            if (($qtyIn - $qtyOut) < $stock) {
+                $qtyIn += ($stock - ($qtyIn - $qtyOut));
+            }
 
             if ($stock <= 0) {
                 $status = 'out_of_stock';
@@ -82,19 +110,29 @@ class InventoryReportService
 
             $totalUnits += $stock;
             $totalValue += $inventoryValue;
+            $totalQtyIn += $qtyIn;
+            $totalQtyOut += $qtyOut;
 
             $items[] = [
                 'id' => $p->id,
                 'sku' => $p->sku,
                 'barcode' => $p->barcode,
                 'name' => $p->name,
+                'category' => $p->category?->name ?? '-',
                 'category_name' => $p->category?->name ?? '-',
+                'unit' => $p->unit?->symbol ?? 'unit',
                 'unit_symbol' => $p->unit?->symbol ?? 'unit',
                 'stock' => $stock,
+                'total_in' => $qtyIn,
+                'total_out' => $qtyOut,
                 'purchase_price' => $purchasePrice,
+                'average_cost' => $purchasePrice,
                 'selling_price' => $sellingPrice,
                 'inventory_value' => $inventoryValue,
+                'valuation' => $inventoryValue,
+                'status' => $status,
                 'stock_status' => $status,
+                'status_label' => $statusLabel,
                 'stock_status_label' => $statusLabel,
             ];
         }
@@ -102,13 +140,18 @@ class InventoryReportService
         return [
             'summary' => [
                 'total_products' => count($items),
+                'total_units' => round($totalUnits, 2),
                 'total_stock_units' => round($totalUnits, 2),
+                'total_valuation' => round($totalValue, 2),
                 'total_inventory_value' => round($totalValue, 2),
+                'total_in' => round($totalQtyIn, 2),
+                'total_out' => round($totalQtyOut, 2),
                 'available_count' => $availableCount,
                 'low_stock_count' => $lowStockCount,
                 'out_of_stock_count' => $outOfStockCount,
             ],
             'products' => $items,
+            'items' => $items,
             'generated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ];
     }
@@ -121,22 +164,41 @@ class InventoryReportService
      */
     public function getStockMovementsReport(array $filters = []): array
     {
-        $query = InventoryMovement::with(['product.unit', 'creator']);
+        $query = InventoryMovement::with(['product.unit', 'product.category', 'creator']);
 
         if (!empty($filters['product_id'])) {
             $query->where('product_id', $filters['product_id']);
         }
 
         if (!empty($filters['movement_type']) && $filters['movement_type'] !== 'all') {
-            $query->where('movement_type', $filters['movement_type']);
+            $mType = $filters['movement_type'];
+            if ($mType === 'in' || $mType === 'stock_in') {
+                $query->whereIn('movement_type', ['stock_in', 'purchase', 'adjustment_in', 'initial_stock', 'sale_return']);
+            } elseif ($mType === 'out' || $mType === 'stock_out') {
+                $query->whereIn('movement_type', ['stock_out', 'sale', 'adjustment_out', 'purchase_reversal', 'purchase_return']);
+            } elseif ($mType === 'adjustment') {
+                $query->whereIn('movement_type', ['adjustment_in', 'adjustment_out']);
+            } else {
+                $query->where('movement_type', $mType);
+            }
         }
 
         if (!empty($filters['start_date'])) {
-            $query->whereDate('movement_date', '>=', $filters['start_date']);
+            $query->where(function ($q) use ($filters) {
+                $q->whereDate('movement_date', '>=', $filters['start_date'])
+                  ->orWhere(function ($sub) use ($filters) {
+                      $sub->whereNull('movement_date')->whereDate('created_at', '>=', $filters['start_date']);
+                  });
+            });
         }
 
         if (!empty($filters['end_date'])) {
-            $query->whereDate('movement_date', '<=', $filters['end_date']);
+            $query->where(function ($q) use ($filters) {
+                $q->whereDate('movement_date', '<=', $filters['end_date'])
+                  ->orWhere(function ($sub) use ($filters) {
+                      $sub->whereNull('movement_date')->whereDate('created_at', '<=', $filters['end_date']);
+                  });
+            });
         }
 
         if (!empty($filters['search'])) {
@@ -149,14 +211,23 @@ class InventoryReportService
             });
         }
 
-        $movements = $query->orderByDesc('movement_date')->orderByDesc('id')->get();
+        $movements = $query->orderByDesc('movement_date')->orderByDesc('created_at')->orderByDesc('id')->get();
 
         $typeLabels = [
+            'purchase' => 'Masuk (Pembelian)',
             'stock_in' => 'Stok Masuk',
+            'sale' => 'Keluar (Penjualan)',
             'stock_out' => 'Stok Keluar',
             'adjustment_in' => 'Opname Bertambah',
             'adjustment_out' => 'Opname Berkurang',
+            'initial_stock' => 'Stok Awal',
+            'sale_return' => 'Retur Penjualan',
+            'purchase_return' => 'Retur Pembelian',
+            'purchase_reversal' => 'Batal Pembelian',
         ];
+
+        $inTypes = ['stock_in', 'purchase', 'adjustment_in', 'initial_stock', 'sale_return'];
+        $outTypes = ['stock_out', 'sale', 'adjustment_out', 'purchase_reversal', 'purchase_return'];
 
         $totalIn = 0.0;
         $totalOut = 0.0;
@@ -165,29 +236,93 @@ class InventoryReportService
 
         foreach ($movements as $m) {
             $qty = (float) $m->quantity;
-            if ($m->movement_type === 'stock_in') {
+            $type = $m->movement_type;
+
+            if (in_array($type, ['stock_in', 'purchase', 'initial_stock', 'sale_return'])) {
                 $totalIn += $qty;
-            } elseif ($m->movement_type === 'stock_out') {
+                $category = 'in';
+            } elseif (in_array($type, ['stock_out', 'sale', 'purchase_reversal', 'purchase_return'])) {
                 $totalOut += $qty;
+                $category = 'out';
             } else {
                 $totalAdj += $qty;
+                $category = 'adj';
             }
+
+            // Kode mutasi & nomor referensi fallback
+            $rawCode = $m->movement_code ?: ($m->reference_number ?: ('MUT-' . str_pad($m->id, 5, '0', STR_PAD_LEFT)));
+            $refNumber = $m->reference_number ?: $rawCode;
+
+            // Format tanggal dan jam
+            $dateObj = $m->created_at ?: ($m->movement_date ? Carbon::parse($m->movement_date) : null);
+            $formattedDate = $dateObj ? $dateObj->format('d M Y, H:i') : ($m->movement_date ? Carbon::parse($m->movement_date)->format('d M Y') : '-');
+            $dateOnly = $m->movement_date ? Carbon::parse($m->movement_date)->format('Y-m-d') : ($dateObj ? $dateObj->format('Y-m-d') : date('Y-m-d'));
+
+            // Fallback keterangan / alasan
+            $desc = $m->description ?: $m->adjustment_reason;
+            if (empty($desc)) {
+                if ($type === 'sale') {
+                    $desc = 'Penjualan Kasir POS' . ($m->reference_number ? " ({$m->reference_number})" : '');
+                } elseif ($type === 'purchase') {
+                    $desc = 'Pembelian Stok' . ($m->reference_number ? " ({$m->reference_number})" : '');
+                } elseif ($type === 'stock_in') {
+                    $desc = 'Stok Masuk Penerimaan Barang';
+                } elseif ($type === 'stock_out') {
+                    $desc = 'Stok Keluar Operasional';
+                } elseif ($type === 'adjustment_in') {
+                    $desc = 'Penyesuaian Opname Bertambah';
+                } elseif ($type === 'adjustment_out') {
+                    $desc = 'Penyesuaian Opname Berkurang';
+                } else {
+                    $desc = 'Penyesuaian Stok Toko';
+                }
+            }
+
+            // Fallback nama petugas
+            $creatorName = $m->creator?->name ?? 'Administrator';
+            $typeLabel = $typeLabels[$type] ?? (in_array($type, $inTypes) ? 'Barang Masuk' : (in_array($type, $outTypes) ? 'Barang Keluar' : 'Penyesuaian'));
 
             $items[] = [
                 'id' => $m->id,
-                'movement_code' => $m->movement_code,
-                'movement_date' => $m->movement_date->format('Y-m-d'),
-                'movement_type' => $m->movement_type,
-                'movement_type_label' => $typeLabels[$m->movement_type] ?? ucfirst($m->movement_type),
-                'product_name' => $m->product?->name ?? '-',
+                // Kode mutasi & referensi
+                'movement_code' => $rawCode,
+                'code' => $rawCode,
+                'reference_number' => $m->reference_number,
+                'ref' => $m->reference_number,
+
+                // Tanggal & waktu
+                'movement_date' => $dateOnly,
+                'date' => $formattedDate,
+                'date_formatted' => $formattedDate,
+                'created_at' => $m->created_at?->toISOString(),
+
+                // Tipe mutasi
+                'movement_type' => $type,
+                'type' => $type,
+                'type_category' => $category, // 'in', 'out', 'adj'
+                'movement_type_label' => $typeLabel,
+                'type_label' => $typeLabel,
+
+                // Detail produk
+                'product_id' => $m->product_id,
+                'product_name' => $m->product?->name ?? 'Produk Dihapus',
                 'product_sku' => $m->product?->sku ?? '-',
+                'sku' => $m->product?->sku ?? '-',
                 'unit_symbol' => $m->product?->unit?->symbol ?? 'unit',
+                'unit' => $m->product?->unit?->symbol ?? 'unit',
+                'category_name' => $m->product?->category?->name ?? '-',
+
+                // Jumlah & sisa stok
                 'quantity' => $qty,
                 'stock_before' => (float) $m->stock_before,
                 'stock_after' => (float) $m->stock_after,
-                'reference_number' => $m->reference_number,
-                'description' => $m->description ?: $m->adjustment_reason,
-                'creator_name' => $m->creator?->name ?? 'Sistem',
+                'cost_price' => (float) ($m->cost_price ?? $m->product?->purchase_price ?? 0),
+
+                // Keterangan & Petugas
+                'description' => $desc,
+                'notes' => $desc,
+                'creator_name' => $creatorName,
+                'creator' => $creatorName,
             ];
         }
 
@@ -199,6 +334,7 @@ class InventoryReportService
                 'total_adjustments' => round($totalAdj, 2),
             ],
             'movements' => $items,
+            'items' => $items,
             'generated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ];
     }

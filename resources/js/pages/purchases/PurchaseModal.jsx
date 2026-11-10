@@ -34,8 +34,18 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
             supplierService.getActiveSuppliers(),
             productService.getProducts({ all: true, is_active: true }),
           ]);
-          if (supRes.success) setSuppliers(supRes.data);
-          if (prodRes.success) setProducts(prodRes.data);
+          if (supRes.success && supRes.data) {
+            setSuppliers(supRes.data);
+            if (supRes.data.length > 0) {
+              setFormData((prev) => ({
+                ...prev,
+                supplier_id: prev.supplier_id || String(supRes.data[0].id),
+              }));
+            }
+          }
+          if (prodRes.success && prodRes.data) {
+            setProducts(prodRes.data);
+          }
         } catch (err) {
           console.error('Gagal memuat supplier/produk:', err);
         }
@@ -76,7 +86,7 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
       if (field === 'product_id') {
         const prod = products.find((p) => String(p.id) === String(value));
         if (prod) {
-          item.purchase_price = Number(prod.purchase_price) || 0;
+          item.purchase_price = Number(prod.purchase_price_numeric ?? prod.purchase_price) || 0;
         }
       }
 
@@ -144,16 +154,16 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
         <div className="px-6 py-4 border-b border-[#EAF4F6] flex items-center justify-between bg-[#F8FDFE]">
           <div>
             <h3 className="text-base font-bold text-[#16323B]">
-              Buat Transaksi Pembelian Toko
+              Input Pembelian Barang (Stok Toko)
             </h3>
             <p className="text-xs text-[#577782]">
-              Catat pembelian stok barang masuk dari distributor atau pemasok
+              Pilih produk yang ingin dibeli, masukkan jumlah (qty), dan harga beli/satuan untuk stok toko
             </p>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="text-[#577782] hover:text-[#16323B] p-1.5 rounded-lg hover:bg-[#EAF8FA] transition"
+            className="text-[#577782] hover:text-[#16323B] p-1.5 rounded-lg hover:bg-[#EAF8FA] transition cursor-pointer"
           >
             ✕
           </button>
@@ -173,9 +183,8 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
                   setFormData({ ...formData, supplier_id: e.target.value });
                   setErrors({ ...errors, supplier_id: null });
                 }}
-                className={`w-full px-3 py-2 bg-[#F8FDFE] border ${
-                  errors.supplier_id ? 'border-rose-400' : 'border-[#D7EBEF]'
-                } rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]`}
+                className={`w-full px-3 py-2 bg-[#F8FDFE] border ${errors.supplier_id ? 'border-rose-400' : 'border-[#D7EBEF]'
+                  } rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]`}
               >
                 <option value="">-- Pilih Supplier --</option>
                 {suppliers.map((s) => (
@@ -257,9 +266,8 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
                   type="date"
                   value={formData.due_date}
                   onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                  className={`w-full px-3 py-2 bg-[#F8FDFE] border ${
-                    errors.due_date ? 'border-rose-400' : 'border-[#D7EBEF]'
-                  } rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]`}
+                  className={`w-full px-3 py-2 bg-[#F8FDFE] border ${errors.due_date ? 'border-rose-400' : 'border-[#D7EBEF]'
+                    } rounded-xl text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]`}
                 />
                 {errors.due_date && <p className="text-xs text-rose-500 mt-0.5">{errors.due_date}</p>}
               </div>
@@ -315,80 +323,113 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
 
             {errors.items && <p className="text-xs text-rose-500">{errors.items}</p>}
 
-            <div className="space-y-2">
-              {items.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl grid grid-cols-1 md:grid-cols-12 gap-3 items-center"
-                >
-                  <div className="md:col-span-5">
-                    <label className="block text-[11px] font-semibold text-[#577782] mb-1">
-                      Produk
-                    </label>
-                    <select
-                      value={item.product_id}
-                      onChange={(e) => handleItemChange(idx, 'product_id', e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-white border border-[#D7EBEF] rounded-lg text-xs text-[#16323B]"
-                    >
-                      <option value="">-- Pilih Produk --</option>
-                      {products.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.sku}) — Stok: {p.stock} {p.unit?.symbol || 'pcs'}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+            <div className="space-y-3">
+              {items.map((item, idx) => {
+                const prod = products.find((p) => String(p.id) === String(item.product_id));
+                const currentStock = Number(prod?.stock || 0);
+                const inputQty = Number(item.quantity) || 0;
+                const projectedStock = currentStock + inputQty;
+                const unitSymbol = prod?.unit?.symbol || 'pcs';
 
-                  <div className="md:col-span-2">
-                    <label className="block text-[11px] font-semibold text-[#577782] mb-1">
-                      Kuantitas
-                    </label>
-                    <input
-                      type="number"
-                      min="0.01"
-                      step="any"
-                      value={item.quantity}
-                      onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
-                      className="w-full px-2 py-1.5 bg-white border border-[#D7EBEF] rounded-lg text-xs text-right font-mono"
-                    />
-                  </div>
+                return (
+                  <div
+                    key={idx}
+                    className="p-3.5 bg-[#F8FDFE] border border-[#D7EBEF] rounded-xl space-y-2.5 transition hover:border-[#27C5E5]/50"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                      <div className="md:col-span-5">
+                        <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+                          Produk (Barang Toko) <span className="text-rose-500">*</span>
+                        </label>
+                        <select
+                          value={item.product_id}
+                          onChange={(e) => handleItemChange(idx, 'product_id', e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-white border border-[#D7EBEF] rounded-lg text-xs text-[#16323B] focus:outline-none focus:border-[#27C5E5]"
+                        >
+                          <option value="">-- Pilih Barang yang Dibeli --</option>
+                          {products.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} ({p.sku}) — Stok: {Number(p.stock || 0).toLocaleString('id-ID')} {p.unit?.symbol || 'pcs'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-[11px] font-semibold text-[#577782] mb-1">
-                      Harga Beli Satuan
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={item.purchase_price}
-                      onChange={(e) => handleItemChange(idx, 'purchase_price', e.target.value)}
-                      className="w-full px-2 py-1.5 bg-white border border-[#D7EBEF] rounded-lg text-xs text-right font-mono"
-                    />
-                  </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+                          Jumlah (Qty) <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min="0.01"
+                          step="any"
+                          placeholder="1"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
+                          className="w-full px-2 py-1.5 bg-white border border-[#D7EBEF] rounded-lg text-xs text-right font-mono focus:outline-none focus:border-[#27C5E5]"
+                        />
+                      </div>
 
-                  <div className="md:col-span-2 text-right">
-                    <label className="block text-[11px] font-semibold text-[#577782] mb-1">
-                      Subtotal
-                    </label>
-                    <div className="text-xs font-bold text-[#16323B] font-mono py-1.5">
-                      {formatRupiah(item.subtotal || 0)}
+                      <div className="md:col-span-2">
+                        <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+                          Harga Beli/Satuan <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          placeholder="0"
+                          value={item.purchase_price}
+                          onChange={(e) => handleItemChange(idx, 'purchase_price', e.target.value)}
+                          className="w-full px-2 py-1.5 bg-white border border-[#D7EBEF] rounded-lg text-xs text-right font-mono focus:outline-none focus:border-[#27C5E5]"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2 text-right">
+                        <label className="block text-[11px] font-semibold text-[#577782] mb-1">
+                          Subtotal Pembelian
+                        </label>
+                        <div className="text-xs font-bold text-[#16323B] font-mono py-1.5">
+                          {formatRupiah(item.subtotal || 0)}
+                        </div>
+                      </div>
+
+                      <div className="md:col-span-1 text-center">
+                        <label className="block text-[11px] text-transparent mb-1">Aksi</label>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(idx)}
+                          disabled={items.length <= 1}
+                          className="text-rose-400 hover:text-rose-600 p-1.5 rounded disabled:opacity-30 cursor-pointer"
+                          title="Hapus baris"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="md:col-span-1 text-center">
-                    <label className="block text-[11px] text-transparent mb-1">Aksi</label>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem(idx)}
-                      disabled={items.length <= 1}
-                      className="text-rose-400 hover:text-rose-600 p-1.5 rounded disabled:opacity-30"
-                      title="Hapus baris"
-                    >
-                      🗑️
-                    </button>
+                    {/* Stock impact helper badge */}
+                    {prod && (
+                      <div className="px-3 py-1.5 bg-[#EAF8FA] border border-[#D7EBEF] rounded-lg text-[11px] flex flex-wrap items-center justify-between text-[#577782]">
+                        <div className="flex items-center gap-1.5">
+                          <span>📦 Stok Saat Ini:</span>
+                          <strong className="text-[#16323B] font-mono">
+                            {currentStock.toLocaleString('id-ID')} {unitSymbol}
+                          </strong>
+                          <span className="text-[#8EA6AF]">&rarr;</span>
+                          <span>Setelah Pembelian Masuk:</span>
+                          <strong className="text-emerald-700 font-mono">
+                            {projectedStock.toLocaleString('id-ID')} {unitSymbol}
+                          </strong>
+                        </div>
+                        <div className="text-[10px] text-[#167A93]">
+                          Harga Terakhir: <span className="font-mono font-semibold">{formatRupiah(prod.purchase_price || 0)}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -440,9 +481,9 @@ export function PurchaseModal({ isOpen, onClose, onSubmit, isLoading = false }) 
             <button
               type="submit"
               disabled={isLoading}
-              className="px-6 py-2 rounded-xl text-xs font-semibold bg-[#27C5E5] hover:bg-[#167A93] text-white shadow-xs transition disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl text-xs font-semibold bg-[#27C5E5] hover:bg-[#167A93] text-white shadow-xs transition disabled:opacity-50 cursor-pointer"
             >
-              {isLoading ? 'Menyimpan...' : 'Simpan Pembelian'}
+              {isLoading ? 'Menyimpan...' : 'Simpan & Tambahkan ke Stok Toko'}
             </button>
           </div>
         </form>

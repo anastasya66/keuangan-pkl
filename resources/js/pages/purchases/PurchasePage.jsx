@@ -10,6 +10,24 @@ import SearchInput from '../../components/common/SearchInput';
 import PurchaseModal from './PurchaseModal';
 import { IconPurchase } from '../../components/common/Icons';
 
+/**
+ * Format tanggal ramah pengguna (contoh: 10 Nov 2026)
+ */
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(d);
+  } catch {
+    return dateStr;
+  }
+}
+
 export function PurchasePage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -134,14 +152,16 @@ export function PurchasePage() {
       key: 'invoice_number',
       label: 'No Invoice',
       render: (item) => (
-        <div>
+        <div className="space-y-0.5">
           <Link
             to={`/admin/purchases/${item.id}`}
-            className="font-mono text-xs font-bold text-[#167A93] hover:underline"
+            className="font-mono text-xs font-bold text-[#167A93] hover:underline block"
           >
             {item.invoice_number}
           </Link>
-          <div className="text-[11px] text-[#577782]">{item.purchase_date}</div>
+          <div className="text-[11px] text-[#577782] font-medium">
+            {formatDate(item.purchase_date)}
+          </div>
         </div>
       ),
     },
@@ -149,9 +169,15 @@ export function PurchasePage() {
       key: 'supplier',
       label: 'Supplier',
       render: (item) => (
-        <div>
-          <div className="font-semibold text-[#16323B]">{item.supplier?.name || '-'}</div>
-          <div className="text-[11px] text-[#577782] font-mono">{item.supplier?.code}</div>
+        <div className="space-y-0.5">
+          <div className="font-semibold text-xs text-[#16323B] leading-tight">
+            {item.supplier?.name || '-'}
+          </div>
+          {item.supplier?.code && (
+            <div className="text-[10px] text-[#8FA8B0] font-mono">
+              {item.supplier.code}
+            </div>
+          )}
         </div>
       ),
     },
@@ -159,7 +185,7 @@ export function PurchasePage() {
       key: 'items_count',
       label: 'Jumlah Item',
       render: (item) => (
-        <span className="text-xs text-[#16323B] font-medium whitespace-nowrap">
+        <span className="text-xs text-[#577782] font-medium whitespace-nowrap">
           {item.items?.length || 0} macam
         </span>
       ),
@@ -170,21 +196,24 @@ export function PurchasePage() {
       render: (item) => {
         if (item.status === 'received') {
           return (
-            <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-emerald-600 text-white whitespace-nowrap inline-block shadow-2xs">
-              ✓ Diterima
+            <span className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap inline-flex items-center gap-1.5 shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Diterima
             </span>
           );
         }
         if (item.status === 'draft') {
           return (
-            <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-amber-600 text-white whitespace-nowrap inline-block shadow-2xs">
-              ⏳ Draft
+            <span className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap inline-flex items-center gap-1.5 shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              Draft
             </span>
           );
         }
         return (
-          <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-rose-600 text-white whitespace-nowrap inline-block shadow-2xs">
-            ✕ Batal
+          <span className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap inline-flex items-center gap-1.5 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+            Batal
           </span>
         );
       },
@@ -195,22 +224,37 @@ export function PurchasePage() {
       render: (item) => {
         const isPaid = item.payment_status === 'paid';
         const isPartial = item.payment_status === 'partial';
+        const methodLabel = item.payment_method
+          ? item.payment_method === 'cash'
+            ? 'Cash'
+            : item.payment_method === 'transfer'
+            ? 'Transfer'
+            : item.payment_method === 'tempo'
+            ? 'Tempo'
+            : item.payment_method
+          : '-';
+
         return (
-          <div>
+          <div className="inline-flex flex-col items-start gap-1">
             <span
-              className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md whitespace-nowrap inline-block shadow-2xs ${
+              className={`px-2.5 py-0.5 text-[10px] font-bold rounded-md whitespace-nowrap inline-flex items-center gap-1.5 shadow-2xs ${
                 isPaid
-                  ? 'bg-emerald-600 text-white'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                   : isPartial
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-rose-600 text-white'
+                  ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                  : 'bg-rose-50 text-rose-700 border border-rose-200'
               }`}
             >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isPaid ? 'bg-emerald-500' : isPartial ? 'bg-sky-500' : 'bg-rose-500'
+                }`}
+              />
               {isPaid ? 'Lunas' : isPartial ? 'Sebagian (DP)' : 'Belum Bayar'}
             </span>
-            <div className="text-[10px] text-[#577782] mt-0.5 capitalize whitespace-nowrap font-medium">
-              {item.payment_method}
-            </div>
+            <span className="text-[10px] text-[#577782] font-semibold pl-1 uppercase tracking-wider">
+              {methodLabel}
+            </span>
           </div>
         );
       },
@@ -249,9 +293,10 @@ export function PurchasePage() {
       render: (item) => (
         <Link
           to={`/admin/purchases/${item.id}`}
-          className="px-2.5 py-1 text-xs font-semibold text-[#167A93] hover:bg-[#EAF8FA] rounded-lg transition"
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#167A93] bg-[#F0F9FB] hover:bg-[#EAF8FA] rounded-lg border border-[#D7EBEF]/60 transition"
         >
-          Detail →
+          <span>Detail</span>
+          <span>&rarr;</span>
         </Link>
       ),
     },
@@ -280,20 +325,20 @@ export function PurchasePage() {
             <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
               <IconPurchase className="w-5 h-5" />
             </span>
-            Pembelian Toko
+            Pembelian
           </h1>
-          <p className="text-xs text-[#577782] mt-1">
-            Pencatatan faktur barang masuk dari supplier, kalkulasi HPP rata-rata, dan utang tempo
+          <p className="text-xs text-[#577782] mt-0.5">
+            Pencatatan faktur barang masuk dan pembaruan stok.
           </p>
         </div>
 
         {isAdmin && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold rounded-xl text-xs shadow-xs transition"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold rounded-xl text-xs shadow-xs transition cursor-pointer"
           >
             <span>+</span>
-            <span>Buat Pembelian Baru</span>
+            <span>Input Pembelian</span>
           </button>
         )}
       </div>
@@ -428,7 +473,7 @@ export function PurchasePage() {
       </div>
 
       {/* Table Data */}
-      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs">
+      <div className="space-y-4">
         <DataTable
           columns={columns}
           data={purchases}
@@ -437,7 +482,7 @@ export function PurchasePage() {
         />
 
         {pagination && pagination.total > pagination.per_page && (
-          <div className="mt-4 pt-4 border-t border-[#EAF4F6]">
+          <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs">
             <Pagination
               currentPage={pagination.current_page}
               lastPage={pagination.last_page}
@@ -461,4 +506,3 @@ export function PurchasePage() {
 }
 
 export default PurchasePage;
-

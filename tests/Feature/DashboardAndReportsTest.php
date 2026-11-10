@@ -417,7 +417,7 @@ class DashboardAndReportsTest extends TestCase
     }
 
     /**
-     * 15. Export Excel / CSV berhasil untuk seluruh laporan.
+     * 15. Export Excel (.xlsx) berhasil untuk seluruh laporan.
      */
     public function test_excel_export_for_all_reports(): void
     {
@@ -431,11 +431,9 @@ class DashboardAndReportsTest extends TestCase
         foreach ($routes as $route) {
             $resp = $this->actingAs($this->admin, 'sanctum')->get($route);
             $resp->assertStatus(200);
-            $this->assertTrue(
-                str_contains($resp->headers->get('Content-Type'), 'application/vnd.ms-excel') ||
-                str_contains($resp->headers->get('Content-Type'), 'text/csv')
-            );
+            $this->assertStringContainsString('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $resp->headers->get('Content-Type'));
             $this->assertStringContainsString('attachment;', $resp->headers->get('Content-Disposition'));
+            $this->assertStringContainsString('.xlsx', $resp->headers->get('Content-Disposition'));
         }
     }
 

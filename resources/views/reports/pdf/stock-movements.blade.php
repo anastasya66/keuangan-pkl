@@ -19,33 +19,48 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 15%;" class="text-left">Kode Mutasi</th>
-                <th style="width: 10%;" class="text-center">Tanggal</th>
-                <th style="width: 25%;" class="text-left">Nama Produk</th>
-                <th style="width: 16%;" class="text-center">Jenis Mutasi</th>
-                <th style="width: 10%;" class="text-right">Qty</th>
-                <th style="width: 12%;" class="text-right">Stok Akhir</th>
-                <th style="width: 12%;" class="text-left">Pencatat</th>
+                <th style="width: 14%;" class="text-left">Kode Mutasi</th>
+                <th style="width: 13%;" class="text-center">Tanggal &amp; Waktu</th>
+                <th style="width: 22%;" class="text-left">Nama Produk</th>
+                <th style="width: 14%;" class="text-center">Jenis Mutasi</th>
+                <th style="width: 9%;" class="text-right">Qty</th>
+                <th style="width: 14%;" class="text-left">Keterangan</th>
+                <th style="width: 14%;" class="text-left">Petugas</th>
             </tr>
         </thead>
         <tbody>
             @forelse($data['movements'] as $m)
+                @php
+                    $rawType = $m['movement_type'] ?? $m['type'] ?? '';
+                    $isIn = in_array($rawType, ['stock_in', 'purchase', 'initial_stock', 'sale_return']) || ($m['type_category'] ?? '') === 'in';
+                    $isOut = in_array($rawType, ['stock_out', 'sale', 'adjustment_out', 'purchase_reversal', 'purchase_return']) || ($m['type_category'] ?? '') === 'out';
+                @endphp
                 <tr>
-                    <td class="font-mono">{{ $m['movement_code'] }}</td>
-                    <td class="text-center font-mono">{{ $m['movement_date'] }}</td>
-                    <td><strong>{{ $m['product_name'] }}</strong></td>
-                    <td class="text-center">
-                        @if($m['movement_type'] === 'stock_in')
-                            <span class="badge badge-success">Masuk</span>
-                        @elseif($m['movement_type'] === 'stock_out')
-                            <span class="badge badge-danger">Keluar</span>
-                        @else
-                            <span class="badge badge-warning">Opname</span>
+                    <td class="font-mono">
+                        {{ $m['movement_code'] ?? $m['code'] }}
+                        @if(!empty($m['reference_number']) && $m['reference_number'] !== ($m['movement_code'] ?? ''))
+                            <br><small style="color: #64748b;">Ref: {{ $m['reference_number'] }}</small>
                         @endif
                     </td>
-                    <td class="text-right font-mono font-bold">{{ number_format($m['quantity'], 2, ',', '.') }}</td>
-                    <td class="text-right font-mono">{{ number_format($m['stock_after'], 2, ',', '.') }} {{ $m['unit_symbol'] }}</td>
-                    <td>{{ $m['creator_name'] }}</td>
+                    <td class="text-center font-mono">{{ $m['date'] ?? $m['movement_date'] }}</td>
+                    <td>
+                        <strong>{{ $m['product_name'] }}</strong>
+                        <br><small style="color: #64748b;">SKU: {{ $m['product_sku'] ?? $m['sku'] ?? '-' }}</small>
+                    </td>
+                    <td class="text-center">
+                        @if($isIn)
+                            <span class="badge badge-success">{{ $m['movement_type_label'] ?? 'Masuk' }}</span>
+                        @elseif($isOut)
+                            <span class="badge badge-danger">{{ $m['movement_type_label'] ?? 'Keluar' }}</span>
+                        @else
+                            <span class="badge badge-warning">{{ $m['movement_type_label'] ?? 'Opname' }}</span>
+                        @endif
+                    </td>
+                    <td class="text-right font-mono font-bold" style="color: {{ $isIn ? '#059669' : ($isOut ? '#e11d48' : '#d97706') }};">
+                        {{ $isIn ? '+' : '-' }}{{ number_format($m['quantity'], 2, ',', '.') }} {{ $m['unit_symbol'] ?? '' }}
+                    </td>
+                    <td style="font-size: 8.5px; color: #334155;">{{ $m['description'] ?? $m['notes'] ?? '-' }}</td>
+                    <td>{{ $m['creator_name'] ?? $m['creator'] ?? 'Administrator' }}</td>
                 </tr>
             @empty
                 <tr>

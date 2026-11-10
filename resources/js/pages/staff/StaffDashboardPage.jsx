@@ -43,10 +43,10 @@ export function StaffDashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#10262E] tracking-tight">
-              Halo, {user?.name}! 👋
+              Halo, {user?.name}!
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-[#577782]">
-              Semangat bekerja! Pantau uang kas masuk, keluar hari ini, dan stok barang toko dengan mudah.
+              Ringkasan aktivitas kas dan stok toko hari ini.
             </p>
           </div>
           <Link
@@ -73,7 +73,7 @@ export function StaffDashboardPage() {
           <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
             {loading ? '...' : formatRupiah(summary?.total_income || 0)}
           </div>
-          <p className="text-xs text-[#36B878] mt-1 font-semibold">Kas masuk tercatat hari ini</p>
+          <p className="text-xs text-[#36B878] mt-1 font-medium">Pemasukan tercatat hari ini</p>
         </div>
 
         <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#E66D79]/50 card-interactive">
@@ -88,7 +88,7 @@ export function StaffDashboardPage() {
           <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
             {loading ? '...' : formatRupiah(summary?.total_expense || 0)}
           </div>
-          <p className="text-xs text-[#E66D79] mt-1 font-semibold">Biaya belanja toko hari ini</p>
+          <p className="text-xs text-[#E66D79] mt-1 font-medium">Pengeluaran tercatat hari ini</p>
         </div>
 
         <div className="bg-white border border-[#D7EBEF] rounded-3xl p-5 shadow-xs hover:border-[#38BFE0]/50 card-interactive">
@@ -103,8 +103,8 @@ export function StaffDashboardPage() {
           <div className="text-2xl font-black text-[#167A93] mt-3 font-mono">
             {loading ? '...' : `${inventorySummary?.total_products || 0} Barang`}
           </div>
-          <p className="text-xs text-[#577782] mt-1">
-            Total {inventorySummary?.total_units || 0} unit fisik di etalase
+          <p className="text-xs text-[#577782] mt-1 font-medium">
+            Total {inventorySummary?.total_units || 0} unit tersedia
           </p>
         </div>
       </div>
@@ -116,7 +116,7 @@ export function StaffDashboardPage() {
             <span className="p-1 rounded-md bg-amber-50 text-amber-600">⚠️</span>
             <span>Barang yang Perlu Ditambah (Stok Menipis)</span>
           </h3>
-          <span className="text-xs text-[#8EA6AF]">Segera lakukan restock barang</span>
+          <span className="text-[11px] font-medium text-[#577782] bg-[#F8FDFF] border border-[#D7EBEF] px-2.5 py-1 rounded-lg">Batas: &le; 10 unit</span>
         </div>
 
         {lowStock.length === 0 ? (
@@ -148,11 +148,10 @@ export function StaffDashboardPage() {
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${
-                          prod.stock <= 0
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${prod.stock <= 0
                             ? 'bg-rose-600 text-white'
                             : 'bg-amber-600 text-white'
-                        }`}
+                          }`}
                       >
                         {prod.status_label || (prod.stock <= 0 ? 'Habis' : 'Menipis')}
                       </span>

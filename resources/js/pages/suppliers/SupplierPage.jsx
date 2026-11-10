@@ -110,6 +110,7 @@ export function SupplierPage() {
     {
       key: 'code',
       label: 'Kode',
+      className: 'whitespace-nowrap',
       render: (item) => (
         <span className="font-mono text-xs font-bold text-white bg-[#167A93] px-2.5 py-0.5 rounded-md shadow-2xs whitespace-nowrap inline-block">
           {item.code}
@@ -119,11 +120,16 @@ export function SupplierPage() {
     {
       key: 'name',
       label: 'Nama Supplier',
+      className: 'min-w-[220px]',
       render: (item) => (
-        <div>
-          <div className="font-semibold text-[#16323B]">{item.name}</div>
+        <div className="min-w-[200px] space-y-0.5">
+          <div className="font-semibold text-xs sm:text-[13px] text-[#16323B] leading-snug">
+            {item.name}
+          </div>
           {item.contact_person && (
-            <div className="text-[11px] text-[#577782]">PIC: {item.contact_person}</div>
+            <div className="text-[11px] text-[#577782] font-medium leading-tight">
+              PIC: {item.contact_person}
+            </div>
           )}
         </div>
       ),
@@ -131,10 +137,21 @@ export function SupplierPage() {
     {
       key: 'phone',
       label: 'Kontak',
+      className: 'min-w-[190px]',
       render: (item) => (
-        <div className="text-xs space-y-0.5">
-          {item.phone && <div className="text-[#16323B]">📞 {item.phone}</div>}
-          {item.email && <div className="text-[#577782]">✉️ {item.email}</div>}
+        <div className="text-xs space-y-1">
+          {item.phone && (
+            <div className="flex items-center gap-1.5 whitespace-nowrap text-[#16323B]">
+              <span>📞</span>
+              <span>{item.phone}</span>
+            </div>
+          )}
+          {item.email && (
+            <div className="flex items-center gap-1.5 whitespace-nowrap text-[#577782]">
+              <span>✉️</span>
+              <span>{item.email}</span>
+            </div>
+          )}
           {!item.phone && !item.email && <span className="text-[#8FA8B0]">-</span>}
         </div>
       ),
@@ -142,8 +159,9 @@ export function SupplierPage() {
     {
       key: 'address',
       label: 'Alamat',
+      className: 'max-w-[200px]',
       render: (item) => (
-        <div className="text-xs text-[#577782] max-w-xs truncate" title={item.address}>
+        <div className="text-xs text-[#577782] max-w-[200px] truncate" title={item.address}>
           {item.address || '-'}
         </div>
       ),
@@ -151,8 +169,10 @@ export function SupplierPage() {
     {
       key: 'purchases_count',
       label: 'Transaksi',
+      align: 'center',
+      className: 'whitespace-nowrap text-center',
       render: (item) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#167A93] text-white text-xs font-bold whitespace-nowrap shadow-2xs">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EAF8FA] text-[#167A93] border border-[#38BFE0]/30 text-xs font-bold whitespace-nowrap shadow-2xs">
           {item.purchases_count ?? 0} transaksi
         </span>
       ),
@@ -160,25 +180,27 @@ export function SupplierPage() {
     {
       key: 'is_active',
       label: 'Status',
+      className: 'whitespace-nowrap',
       render: (item) => <StatusBadge isActive={item.is_active} />,
     },
     {
       key: 'actions',
       label: 'Aksi',
       align: 'right',
+      className: 'min-w-[130px] text-right whitespace-nowrap',
       render: (item) => (
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
           {isAdmin && (
             <>
               <button
                 onClick={() => handleOpenEditModal(item)}
-                className="px-2.5 py-1 text-xs font-semibold text-[#167A93] hover:bg-[#EAF8FA] rounded-lg transition"
+                className="px-2.5 py-1 text-xs font-semibold text-[#167A93] bg-[#F0F9FB] hover:bg-[#EAF8FA] rounded-lg border border-[#D7EBEF]/60 transition cursor-pointer"
               >
                 Edit
               </button>
               <button
                 onClick={() => setDeleteTarget(item)}
-                className="px-2.5 py-1 text-xs font-semibold text-rose-500 hover:bg-rose-50 rounded-lg transition"
+                className="px-2.5 py-1 text-xs font-semibold text-rose-600 bg-rose-50/70 hover:bg-rose-100/70 rounded-lg border border-rose-200/60 transition cursor-pointer"
               >
                 Hapus
               </button>
@@ -212,17 +234,17 @@ export function SupplierPage() {
             <span className="p-2 bg-[#167A93] text-white rounded-xl shadow-xs">
               <IconSupplier className="w-5 h-5" />
             </span>
-            Data Mitra Supplier
+            Data Supplier
           </h1>
-          <p className="text-xs text-[#577782] mt-1">
-            Kelola data distributor dan pemasok barang pembelian toko
+          <p className="text-xs text-[#577782] mt-0.5">
+            Kelola daftar pemasok dan kontak distributor toko.
           </p>
         </div>
 
         {isAdmin && (
           <button
             onClick={handleOpenAddModal}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold rounded-xl text-xs shadow-xs transition"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold rounded-xl text-xs shadow-xs transition cursor-pointer"
           >
             <span>+</span>
             <span>Tambah Supplier</span>
@@ -260,7 +282,7 @@ export function SupplierPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white border border-[#D7EBEF] rounded-2xl p-5 shadow-xs">
+      <div className="space-y-4">
         <DataTable
           columns={columns}
           data={suppliers}
@@ -269,7 +291,7 @@ export function SupplierPage() {
         />
 
         {pagination && pagination.total > pagination.per_page && (
-          <div className="mt-4 pt-4 border-t border-[#EAF4F6]">
+          <div className="bg-white border border-[#D7EBEF] rounded-2xl p-4 shadow-xs">
             <Pagination
               currentPage={pagination.current_page}
               lastPage={pagination.last_page}
@@ -306,4 +328,3 @@ export function SupplierPage() {
 }
 
 export default SupplierPage;
-

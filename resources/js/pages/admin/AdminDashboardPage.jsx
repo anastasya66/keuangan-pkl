@@ -90,10 +90,10 @@ export function AdminDashboardPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#10262E] tracking-tight">
-              Halo, {user?.name}! 👋
+              Halo, {user?.name}!
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-[#577782] max-w-2xl leading-relaxed">
-              Yuk pantau arus uang kas, penjualan, dan stok barang tokomu hari ini dengan rapi.
+              Ringkasan aktivitas keuangan dan inventori toko secara real-time.
             </p>
           </div>
 
@@ -134,11 +134,10 @@ export function AdminDashboardPage() {
                 key={p.key}
                 type="button"
                 onClick={() => handlePeriodChange(p.key)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer btn-press ${
-                  period === p.key
-                    ? 'bg-[#27C5E5] text-white shadow-sm shadow-[#27C5E5]/30'
-                    : 'bg-white hover:bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF]'
-                }`}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer btn-press ${period === p.key
+                  ? 'bg-[#27C5E5] text-white shadow-sm shadow-[#27C5E5]/30'
+                  : 'bg-white hover:bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF]'
+                  }`}
               >
                 {p.label}
               </button>
@@ -201,8 +200,8 @@ export function AdminDashboardPage() {
           <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
             {loading ? '...' : formatRupiah(summary?.total_income || 0)}
           </div>
-          <div className="mt-2 text-xs font-semibold text-[#36B878]">
-            Kas masuk tercatat
+          <div className="mt-2 text-xs font-medium text-[#36B878]">
+            Pemasukan periode ini
           </div>
         </div>
 
@@ -219,8 +218,8 @@ export function AdminDashboardPage() {
           <div className="text-2xl font-black text-[#10262E] mt-3 font-mono">
             {loading ? '...' : formatRupiah(summary?.total_expense || 0)}
           </div>
-          <div className="mt-2 text-xs font-semibold text-[#E66D79]">
-            Biaya &amp; belanja toko
+          <div className="mt-2 text-xs font-medium text-[#E66D79]">
+            Pengeluaran &amp; operasional
           </div>
         </div>
 
@@ -238,7 +237,7 @@ export function AdminDashboardPage() {
             {loading ? '...' : formatRupiah(summary?.cash_balance || 0)}
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-[#577782]">
-            <span>Uang siap pakai saat ini</span>
+            <span>Saldo likuid tersedia</span>
           </div>
         </div>
 
@@ -256,8 +255,8 @@ export function AdminDashboardPage() {
             {loading ? '...' : `${inventorySummary?.total_products || 0} Barang`}
           </div>
           <div className="flex items-center justify-between mt-2 text-xs">
-            <span className="text-[#577782]">{inventorySummary?.total_units || 0} unit fisik</span>
-            <Link to="/admin/reports/inventory" className="text-[#167A93] font-bold hover:underline">
+            <span className="text-[#577782] font-medium">{inventorySummary?.total_units || 0} unit</span>
+            <Link to="/admin/reports/inventory" className="text-[#167A93] font-semibold hover:underline">
               Cek Stok &rarr;
             </Link>
           </div>
@@ -273,10 +272,10 @@ export function AdminDashboardPage() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#10262E]">
-                Keseimbangan Saldo Keuangan Toko
+                Posisi Keuangan Toko
               </h3>
               <p className="text-xs text-[#577782]">
-                Prinsip Keseimbangan: Total Aset = Total Hutang Toko + Modal Pemilik
+                Aset = Kewajiban + Ekuitas
               </p>
             </div>
           </div>
@@ -284,11 +283,11 @@ export function AdminDashboardPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="p-3.5 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#167A93]">Total Aset Toko</div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#167A93]">TOTAL ASET</div>
             <div className="text-lg font-black font-mono text-[#10262E] mt-1">
               {loading ? '...' : formatRupiah(summary?.total_assets || 0)}
             </div>
-            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Uang kas, rekening bank, &amp; nilai barang</div>
+            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Kas, bank, &amp; stok</div>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
@@ -296,7 +295,7 @@ export function AdminDashboardPage() {
             <div className="text-lg font-black font-mono text-[#10262E] mt-1">
               {loading ? '...' : formatRupiah(summary?.total_liabilities || 0)}
             </div>
-            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Hutang ke supplier &amp; operasional</div>
+            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Hutang &amp; kewajiban</div>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-[#F8FDFF] border border-[#EBF5F8]">
@@ -304,7 +303,7 @@ export function AdminDashboardPage() {
             <div className="text-lg font-black font-mono text-[#10262E] mt-1">
               {loading ? '...' : formatRupiah(summary?.total_equity || 0)}
             </div>
-            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Modal awal + laba bersih toko</div>
+            <div className="text-[11px] text-[#8EA6AF] mt-0.5">Modal &amp; laba bersih</div>
           </div>
         </div>
       </div>
@@ -366,7 +365,7 @@ export function AdminDashboardPage() {
               <div className="text-xs font-black text-emerald-700">
                 {inventorySummary?.available_count || 0}
               </div>
-              <div className="text-[10px] text-[#577782] font-medium">Stok Aman</div>
+              <div className="text-[10px] text-[#577782] font-medium">Aman</div>
             </div>
             <div className="p-2 rounded-xl bg-amber-50 border border-amber-100">
               <div className="text-xs font-black text-amber-700">
@@ -390,7 +389,7 @@ export function AdminDashboardPage() {
               <span className="p-1 rounded-md bg-amber-50 text-amber-600">⚠️</span>
               <span>Barang yang Perlu Ditambah (Stok Menipis)</span>
             </h3>
-            <span className="text-xs text-[#8EA6AF]">Batas Menipis: &le; 10 unit</span>
+            <span className="text-[11px] font-medium text-[#577782] bg-[#F8FDFF] border border-[#D7EBEF] px-2.5 py-1 rounded-lg">Batas: &le; 10 unit</span>
           </div>
 
           {lowStock.length === 0 ? (
@@ -422,11 +421,10 @@ export function AdminDashboardPage() {
                       </td>
                       <td className="py-2.5 px-3 text-center whitespace-nowrap">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${
-                            prod.stock <= 0
-                              ? 'bg-rose-600 text-white'
-                              : 'bg-amber-600 text-white'
-                          }`}
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap ${prod.stock <= 0
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-amber-600 text-white'
+                            }`}
                         >
                           {prod.status_label || (prod.stock <= 0 ? 'Habis' : 'Menipis')}
                         </span>
@@ -449,7 +447,7 @@ export function AdminDashboardPage() {
               <span>Catatan Transaksi Terkini</span>
             </h3>
             <p className="text-xs text-[#577782] mt-0.5">
-              5 transaksi terakhir yang tercatat di toko Anda
+              Aktivitas transaksi terbaru.
             </p>
           </div>
           <Link
@@ -471,14 +469,13 @@ export function AdminDashboardPage() {
                 key={act.id}
                 className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#F3FBFC] px-3 rounded-2xl transition-colors card-interactive"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
-                    act.type === 'income'
-                      ? 'bg-emerald-50 text-[#36B878] border-emerald-100'
-                      : act.type === 'expense'
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${act.type === 'income'
+                    ? 'bg-emerald-50 text-[#36B878] border-emerald-100'
+                    : act.type === 'expense'
                       ? 'bg-rose-50 text-[#E66D79] border-rose-100'
                       : 'bg-[#F0FAFC] text-[#27C5E5] border-[#D7EBEF]'
-                  }`}>
+                    }`}>
                     {act.type === 'income' ? (
                       <IconTrendingUp className="w-4 h-4" />
                     ) : act.type === 'expense' ? (
@@ -487,35 +484,33 @@ export function AdminDashboardPage() {
                       <IconBox className="w-4 h-4" />
                     )}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-[#10262E]">{act.title}</span>
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold shadow-xs whitespace-nowrap ${
-                          act.type === 'income'
-                            ? 'bg-emerald-600 text-white'
-                            : act.type === 'expense'
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold shadow-xs whitespace-nowrap ${act.type === 'income'
+                          ? 'bg-emerald-600 text-white'
+                          : act.type === 'expense'
                             ? 'bg-rose-600 text-white'
                             : 'bg-[#167A93] text-white'
-                        }`}
+                          }`}
                       >
                         {act.type_label}
                       </span>
                     </div>
-                    <p className="text-xs text-[#577782] mt-0.5">{act.description}</p>
+                    <p className="text-xs text-[#577782] mt-0.5 truncate max-w-xs sm:max-w-md">{act.description}</p>
                   </div>
                 </div>
 
-                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center text-xs">
+                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center text-xs shrink-0">
                   {act.amount !== null && (
                     <span
-                      className={`font-mono font-bold ${
-                        act.type === 'income'
-                          ? 'text-[#36B878]'
-                          : act.type === 'expense'
+                      className={`font-mono font-bold ${act.type === 'income'
+                        ? 'text-[#36B878]'
+                        : act.type === 'expense'
                           ? 'text-[#E66D79]'
                           : 'text-[#10262E]'
-                      }`}
+                        }`}
                     >
                       {formatRupiah(act.amount)}
                     </span>

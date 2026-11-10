@@ -141,7 +141,7 @@ export function ProductModal({
             <span className="p-2 rounded-xl bg-[#EAF8FA] text-[#27C5E5]">
               <IconBox className="w-5 h-5" />
             </span>
-            <span>{isEdit ? 'Ubah Data Barang' : 'Tambah Barang Baru'}</span>
+            <span>{isEdit ? 'Ubah Data Barang' : 'Tambah Barang'}</span>
           </h3>
           <button
             type="button"
@@ -180,7 +180,7 @@ export function ProductModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Kategori Barang <span className="text-rose-500">*</span>
+                Kategori <span className="text-rose-500">*</span>
               </label>
               <select
                 name="category_id"
@@ -192,7 +192,7 @@ export function ProductModal({
                   fieldErrors.category_id ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
                 }`}
               >
-                <option value="">-- Pilih Kategori --</option>
+                <option value="">Pilih Kategori</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -208,7 +208,7 @@ export function ProductModal({
 
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Satuan Ukuran <span className="text-rose-500">*</span>
+                Satuan <span className="text-rose-500">*</span>
               </label>
               <select
                 name="unit_id"
@@ -220,7 +220,7 @@ export function ProductModal({
                   fieldErrors.unit_id ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
                 }`}
               >
-                <option value="">-- Pilih Satuan --</option>
+                <option value="">Pilih Satuan</option>
                 {units.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name} ({u.symbol})
@@ -261,7 +261,7 @@ export function ProductModal({
 
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Harga Modal (Beli) <span className="text-rose-500">*</span>
+                Harga Beli <span className="text-rose-500">*</span>
               </label>
               <input
                 type="number"
@@ -290,7 +290,7 @@ export function ProductModal({
 
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Harga Jual Toko <span className="text-rose-500">*</span>
+                Harga Jual <span className="text-rose-500">*</span>
               </label>
               <input
                 type="number"
@@ -301,12 +301,12 @@ export function ProductModal({
                 value={formData.selling_price}
                 onChange={handleChange}
                 placeholder="0"
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs font-mono font-bold text-[#27C5E5] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow ${
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs font-mono font-bold text-[#167A93] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow ${
                   fieldErrors.selling_price ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
                 }`}
               />
               {formData.selling_price !== '' && !isNaN(formData.selling_price) && (
-                <p className="mt-1 text-[10px] text-[#27C5E5] font-mono font-bold">
+                <p className="mt-1 text-[10px] text-[#167A93] font-mono font-bold">
                   {formatRupiah(formData.selling_price)}
                 </p>
               )}
@@ -322,7 +322,7 @@ export function ProductModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Kode Barcode (Opsional)
+                Barcode (Opsional)
               </label>
               <input
                 type="text"
@@ -335,14 +335,14 @@ export function ProductModal({
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Catatan Barang (Opsional)
+                Deskripsi (Opsional)
               </label>
               <input
                 type="text"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                placeholder="Catatan merek, rasa, atau spesifikasi barang"
+                placeholder="Keterangan singkat barang..."
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow"
               />
             </div>
@@ -359,7 +359,7 @@ export function ProductModal({
                 className="w-4 h-4 rounded text-[#27C5E5] focus:ring-[#27C5E5] border-[#D7EBEF]"
               />
               <span className="text-xs font-semibold text-[#16323B]">
-                Barang Aktif (Siap dijual dan ditransaksikan)
+                Status Barang Aktif
               </span>
             </label>
           </div>
@@ -377,12 +377,12 @@ export function ProductModal({
             <button
               type="submit"
               disabled={isLoading}
-              className="px-5 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#38BFE0] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2 btn-press"
+              className="px-5 py-2.5 rounded-xl bg-[#27C5E5] hover:bg-[#167A93] text-white font-semibold text-xs shadow-md shadow-[#27C5E5]/20 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2 btn-press"
             >
               {isLoading && (
                 <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
               )}
-              {isEdit ? 'Simpan Perubahan' : 'Tambah Barang'}
+              {isEdit ? 'Simpan Perubahan' : 'Simpan'}
             </button>
           </div>
         </form>

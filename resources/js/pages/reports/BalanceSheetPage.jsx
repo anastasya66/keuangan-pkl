@@ -39,7 +39,7 @@ export default function BalanceSheetPage() {
     try {
       await reportService.downloadBalanceSheetPdf({ as_of_date: asOfDate });
     } catch (err) {
-      alert('Gagal mengunduh PDF Neraca.');
+      alert(err.message || 'Gagal mengunduh PDF Neraca.');
     } finally {
       setExportingPdf(false);
     }
@@ -50,7 +50,7 @@ export default function BalanceSheetPage() {
     try {
       await reportService.downloadBalanceSheetExcel({ as_of_date: asOfDate });
     } catch (err) {
-      alert('Gagal mengunduh Excel Neraca.');
+      alert(err.message || 'Gagal mengunduh Excel Neraca.');
     } finally {
       setExportingExcel(false);
     }

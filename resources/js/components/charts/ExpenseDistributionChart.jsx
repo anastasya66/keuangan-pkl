@@ -34,7 +34,7 @@ export default function ExpenseDistributionChart({
             <span>🏷️</span> Distribusi Pengeluaran
           </h3>
           <p className="text-xs text-[#577782] mt-0.5">
-            Komposisi biaya per kategori transaksi
+            Persentase pengeluaran operasional.
           </p>
         </div>
         <div className="text-right">
@@ -46,7 +46,7 @@ export default function ExpenseDistributionChart({
       </div>
 
       {/* Segmented Progress Bar */}
-      <div className="h-3.5 w-full bg-[#F3FBFC] rounded-full overflow-hidden flex mb-5 p-0.5 gap-0.5 border border-[#D7EBEF]">
+      <div className="h-3.5 w-full bg-[#F3FBFC] rounded-full overflow-hidden flex mb-4 p-0.5 gap-0.5 border border-[#D7EBEF]">
         {categories.map((cat, idx) => {
           const color = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
           return (
@@ -61,26 +61,26 @@ export default function ExpenseDistributionChart({
       </div>
 
       {/* Categories List */}
-      <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1 no-scrollbar">
+      <div className="space-y-2 max-h-56 overflow-y-auto pr-1 no-scrollbar">
         {categories.map((cat, idx) => {
           const color = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
           return (
             <div
               key={cat.category_id || idx}
-              className="flex items-center justify-between p-2.5 rounded-xl bg-[#F8FDFF] hover:bg-[#F0FAFC] border border-[#EBF5F8] transition-colors"
+              className="flex items-center justify-between py-2 px-2.5 rounded-xl bg-[#F8FDFF] hover:bg-[#F0FAFC] border border-[#EBF5F8] transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <span className={`w-3 h-3 rounded-md ${color} shrink-0`}></span>
-                <div>
-                  <div className="text-xs font-bold text-[#10262E]">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className={`w-2.5 h-2.5 rounded-md ${color} shrink-0`}></span>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-[#10262E] truncate">
                     {cat.category_name}
                   </div>
                   <div className="text-[11px] text-[#577782]">
-                    {cat.transaction_count} transaksi ({cat.percentage}%)
+                    {cat.transaction_count} transaksi &bull; {cat.percentage}%
                   </div>
                 </div>
               </div>
-              <div className="text-xs font-mono font-bold text-[#10262E]">
+              <div className="text-xs font-mono font-bold text-[#10262E] shrink-0 ml-2">
                 {formatRupiah(cat.amount)}
               </div>
             </div>

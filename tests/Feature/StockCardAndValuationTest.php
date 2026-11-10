@@ -121,9 +121,8 @@ class StockCardAndValuationTest extends TestCase
             ->get('/api/v1/inventory/valuation/export/excel');
 
         $response->assertOk();
-        $this->assertStringContainsString('application/vnd.ms-excel', $response->headers->get('content-type'));
-        $this->assertStringContainsString('Beras Pandan Wangi 5kg', $response->getContent());
-        $this->assertStringContainsString('LAPORAN NILAI PERSEDIAAN BARANG', $response->getContent());
+        $this->assertStringContainsString('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $response->headers->get('content-type'));
+        $this->assertStringContainsString('.xlsx', $response->headers->get('content-disposition'));
     }
 
     public function test_inventory_valuation_export_pdf_returns_pdf_file(): void

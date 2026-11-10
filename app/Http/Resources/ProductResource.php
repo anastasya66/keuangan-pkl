@@ -24,6 +24,9 @@ class ProductResource extends JsonResource
             'selling_price' => (string) number_format((float) $this->selling_price, 2, '.', ''),
             'purchase_price_numeric' => (float) $this->purchase_price,
             'selling_price_numeric' => (float) $this->selling_price,
+            'stock' => (float) $this->stock,
+            'average_cost' => (float) $this->average_cost,
+            'min_stock' => (float) $this->min_stock,
             'is_active' => (bool) $this->is_active,
             'category' => $this->whenLoaded('category', function () {
                 return [

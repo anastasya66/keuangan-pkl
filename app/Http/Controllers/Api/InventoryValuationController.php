@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exports\InventoryValuationExport;
 use App\Http\Controllers\Controller;
 use App\Services\InventoryValuationService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ReportExportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 class InventoryValuationController extends Controller
 {
     public function __construct(
-        protected InventoryValuationService $valuationService
+        protected InventoryValuationService $valuationService,
+        protected ReportExportService $exportService
     ) {}
 
     /**
@@ -43,14 +43,12 @@ class InventoryValuationController extends Controller
     }
 
     /**
-     * Export data nilai persediaan ke format Excel (.xls).
+     * Export data nilai persediaan ke format Excel (.xlsx).
      */
     public function exportExcel(Request $request): Response
     {
         $exportData = $this->valuationService->getFullExportData($request->all());
-        $exporter = new InventoryValuationExport($exportData);
-
-        return $exporter->download('nilai-persediaan-' . date('Ymd-His') . '.xls');
+        return $this->exportService->exportInventoryValuationExcel($exportData);
     }
 
     /**
@@ -59,12 +57,6 @@ class InventoryValuationController extends Controller
     public function exportPdf(Request $request): Response
     {
         $exportData = $this->valuationService->getFullExportData($request->all());
-        $filename = 'nilai-persediaan-' . date('Ymd-His') . '.pdf';
-
-        $pdf = Pdf::loadView('reports.pdf.inventory-valuation', ['data' => $exportData])
-            ->setPaper('a4', 'portrait');
-
-        return $pdf->download($filename);
+        return $this->exportService->exportInventoryValuationPdf($exportData);
     }
 }
-

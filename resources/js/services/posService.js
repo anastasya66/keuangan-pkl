@@ -35,6 +35,11 @@ export const posService = {
     const response = await api.post(`/pos/sales/${id}/cancel`, data);
     return response.data;
   },
+
+  async getPaymentMethods() {
+    const response = await api.get('/payment-methods', { params: { active_only: 1 } });
+    return response.data;
+  },
 };
 
 export default posService;
