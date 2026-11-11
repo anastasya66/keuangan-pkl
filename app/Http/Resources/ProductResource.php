@@ -20,6 +20,8 @@ class ProductResource extends JsonResource
             'barcode' => $this->barcode,
             'name' => $this->name,
             'description' => $this->description,
+            'image' => $this->image,
+            'image_url' => $this->image_url,
             'purchase_price' => (string) number_format((float) $this->purchase_price, 2, '.', ''),
             'selling_price' => (string) number_format((float) $this->selling_price, 2, '.', ''),
             'purchase_price_numeric' => (float) $this->purchase_price,

@@ -369,10 +369,16 @@ class DashboardService
             ->take($limit)
             ->get()
             ->map(function ($j) {
+                $statusMap = [
+                    'posted' => 'Jurnal Terposting',
+                    'draft' => 'Jurnal Draf',
+                    'reversed' => 'Jurnal Pembalik',
+                ];
+
                 return [
                     'id' => "jrn-{$j->id}",
                     'type' => 'journal',
-                    'type_label' => 'Jurnal ' . ucfirst($j->status),
+                    'type_label' => $statusMap[$j->status] ?? ('Jurnal ' . ucfirst($j->status)),
                     'title' => $j->journal_number,
                     'description' => $j->description,
                     'amount' => (float) $j->total_debit,

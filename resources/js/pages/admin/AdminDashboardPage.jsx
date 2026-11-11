@@ -92,11 +92,11 @@ export function AdminDashboardPage() {
 
   // Filter activities based on tab
   const transactionTabs = [
-    { id: 'all', label: 'All Transactions' },
-    { id: 'sale', label: 'Sale' },
-    { id: 'purchase', label: 'Purchase' },
-    { id: 'expense', label: 'Expenses' },
-    { id: 'invoice', label: 'Invoices' },
+    { id: 'all', label: 'Semua Transaksi' },
+    { id: 'sale', label: 'Penjualan' },
+    { id: 'purchase', label: 'Pembelian' },
+    { id: 'expense', label: 'Pengeluaran' },
+    { id: 'invoice', label: 'Tagihan' },
   ];
 
   const filteredActivities = activities.filter((act) => {
@@ -117,11 +117,11 @@ export function AdminDashboardPage() {
           icon={Layers}
           iconBg="bg-[#E5F6FA]"
           iconColor="text-[#37AFCB]"
-          label="Profit"
+          label="Keuntungan"
           value={loading ? '...' : formatRupiah(summary?.net_profit || 0)}
           trend="+35%"
           trendDirection="up"
-          trendPeriod="vs Last Month"
+          trendPeriod="vs Bulan Lalu"
         />
 
         {/* Card 2: Total Sales / Invoice Due */}
@@ -129,11 +129,11 @@ export function AdminDashboardPage() {
           icon={Clock}
           iconBg="bg-[#EBF7F2]"
           iconColor="text-[#48B58B]"
-          label="Invoice Due / Total Sales"
+          label="Tagihan Jatuh Tempo / Total Penjualan"
           value={loading ? '...' : formatRupiah(summary?.total_income || 0)}
           trend="+35%"
           trendDirection="up"
-          trendPeriod="vs Last Month"
+          trendPeriod="vs Bulan Lalu"
         />
 
         {/* Card 3: Total Expenses */}
@@ -141,11 +141,11 @@ export function AdminDashboardPage() {
           icon={ArrowDownRight}
           iconBg="bg-[#FEF7EB]"
           iconColor="text-[#E9B45D]"
-          label="Total Expenses"
+          label="Total Pengeluaran"
           value={loading ? '...' : formatRupiah(summary?.total_expense || 0)}
           trend="+35%"
           trendDirection="up"
-          trendPeriod="vs Last Month"
+          trendPeriod="vs Bulan Lalu"
         />
 
         {/* Card 4: Total Payment Returns / Purchase */}
@@ -153,11 +153,11 @@ export function AdminDashboardPage() {
           icon={Hash}
           iconBg="bg-[#F3EFFE]"
           iconColor="text-[#8B5CF6]"
-          label="Total Purchases / Liabilities"
+          label="Total Pembelian / Kewajiban"
           value={loading ? '...' : formatRupiah(summary?.total_liabilities || 0)}
           trend="-20%"
           trendDirection="down"
-          trendPeriod="vs Last Month"
+          trendPeriod="vs Bulan Lalu"
         />
       </div>
 
@@ -182,12 +182,12 @@ export function AdminDashboardPage() {
       <div className="bg-white rounded-2xl p-6 border border-[#E7ECEE] shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-[#D5E3E7] transition-all">
         {/* Header with Title & View All button */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-[#20282D]">Recent Transactions</h3>
+          <h3 className="text-base font-bold text-[#20282D]">Transaksi Terbaru</h3>
           <Link
             to="/admin/financial/income"
             className="px-4 py-1.5 rounded-full text-xs font-semibold border border-[#E7ECEE] text-[#20282D] hover:bg-[#F1F4F5] transition-all"
           >
-            View All
+            Lihat Semua
           </Link>
         </div>
 
@@ -205,10 +205,10 @@ export function AdminDashboardPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-[#F1F4F5] text-[11px] font-semibold text-[#879197] uppercase tracking-wider">
-                <th className="py-3 px-4 font-medium">Customer / Deskripsi</th>
-                <th className="py-3 px-4 font-medium">Date</th>
-                <th className="py-3 px-4 font-medium">Status</th>
-                <th className="py-3 px-4 font-medium text-right">Total</th>
+                <th className="py-3 px-4 font-medium">PELANGGAN / DESKRIPSI</th>
+                <th className="py-3 px-4 font-medium">TANGGAL</th>
+                <th className="py-3 px-4 font-medium">STATUS</th>
+                <th className="py-3 px-4 font-medium text-right">TOTAL</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F8FAFA] text-xs">
@@ -242,6 +242,11 @@ export function AdminDashboardPage() {
                     'bg-[#FDF3F3] text-[#E47777]',
                   ];
                   const avatarColor = avatarColors[idx % avatarColors.length];
+                  const displayTypeLabel = act.type_label === 'Jurnal Posted'
+                    ? 'Jurnal Terposting'
+                    : act.type_label === 'Jurnal Draft'
+                    ? 'Jurnal Draf'
+                    : act.type_label || act.type;
 
                   return (
                     <tr
@@ -261,7 +266,7 @@ export function AdminDashboardPage() {
                               {act.title}
                             </div>
                             <div className="text-[11px] text-[#879197]">
-                              #{act.id ? String(act.id).padStart(5, '0') : '114589'} &bull; {act.type_label || act.type}
+                              #{act.id ? String(act.id).padStart(5, '0') : '114589'} &bull; {displayTypeLabel}
                             </div>
                           </div>
                         </div>
@@ -276,7 +281,7 @@ export function AdminDashboardPage() {
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <StatusBadge
                           status={isPositive ? 'completed' : 'draft'}
-                          label={isPositive ? 'Completed' : 'Draft'}
+                          label={isPositive ? 'Selesai' : 'Draf'}
                         />
                       </td>
 

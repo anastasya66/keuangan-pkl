@@ -29,7 +29,22 @@ class StoreStockAdjustmentRequest extends BaseApiRequest
                 },
             ],
             'actual_stock' => [
-                'required',
+                'nullable',
+                'numeric',
+                'gte:0',
+            ],
+            'type' => [
+                'nullable',
+                'string',
+                'in:in,out',
+            ],
+            'quantity' => [
+                'nullable',
+                'numeric',
+                'gt:0',
+            ],
+            'cost_price' => [
+                'nullable',
                 'numeric',
                 'gte:0',
             ],
@@ -39,7 +54,7 @@ class StoreStockAdjustmentRequest extends BaseApiRequest
                 'max:500',
             ],
             'movement_date' => [
-                'required',
+                'nullable',
                 'date',
             ],
             'description' => [

@@ -91,6 +91,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::patch('units/{unit}/status', [UnitController::class, 'updateStatus']);
 
     // Master Data: Products
+    Route::get('products/generate-sku', [ProductController::class, 'generateSku']);
     Route::apiResource('products', ProductController::class);
     Route::patch('products/{product}/status', [ProductController::class, 'updateStatus']);
 
@@ -100,6 +101,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
     // Modul Pembelian Toko (Purchases)
     Route::get('purchases', [PurchaseController::class, 'index']);
+    Route::get('purchases/generate-invoice', [PurchaseController::class, 'generateInvoiceNumber']);
     Route::post('purchases', [PurchaseController::class, 'store']);
     Route::get('purchases/{id}', [PurchaseController::class, 'show'])->whereNumber('id');
     Route::post('purchases/{id}/receive', [PurchaseController::class, 'receive'])->whereNumber('id');

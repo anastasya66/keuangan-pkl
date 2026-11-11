@@ -37,6 +37,23 @@ class PurchaseController extends Controller
     }
 
     /**
+     * Dapatkan nomor invoice pembelian otomatis berurutan (PO-YYYYMMDD-XXXX).
+     */
+    public function generateInvoiceNumber(Request $request): JsonResponse
+    {
+        $date = $request->query('date', now()->toDateString());
+        $invoiceNumber = Purchase::generateInvoiceNumber($date);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nomor invoice pembelian berhasil dibuat',
+            'data' => [
+                'invoice_number' => $invoiceNumber,
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    /**
      * Buat transaksi pembelian baru (Admin only).
      */
     public function store(Request $request): JsonResponse
@@ -52,7 +69,7 @@ class PurchaseController extends Controller
             'invoice_number' => ['nullable', 'string', 'max:50', 'unique:purchases,invoice_number'],
             'supplier_id' => ['required', 'exists:suppliers,id'],
             'purchase_date' => ['nullable', 'date'],
-            'status' => ['nullable', 'in:draft,received'],
+            'status' => ['nullable', 'in:draft,received,pending'],
             'payment_method' => ['required', 'in:cash,transfer,tempo'],
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
@@ -64,6 +81,10 @@ class PurchaseController extends Controller
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'items.*.purchase_price' => ['required', 'numeric', 'min:0'],
         ]);
+
+        if (isset($validated['status']) && $validated['status'] === 'pending') {
+            $validated['status'] = 'draft';
+        }
 
         $purchase = $this->purchaseService->createPurchase($validated, $request->user()->id);
 

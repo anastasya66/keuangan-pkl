@@ -62,6 +62,27 @@ export function PurchasePage() {
     setTimeout(() => setToast(null), 4000);
   };
 
+  const hasActiveFilter = Boolean(
+    search ||
+    statusFilter ||
+    paymentMethodFilter ||
+    paymentStatusFilter ||
+    supplierFilter ||
+    startDate ||
+    endDate
+  );
+
+  const handleResetFilter = () => {
+    setSearch('');
+    setStatusFilter('');
+    setPaymentMethodFilter('');
+    setPaymentStatusFilter('');
+    setSupplierFilter('');
+    setStartDate('');
+    setEndDate('');
+    setCurrentPage(1);
+  };
+
   useEffect(() => {
     async function loadSuppliers() {
       try {
@@ -152,9 +173,11 @@ export function PurchasePage() {
   const columns = [
     {
       key: 'invoice_number',
-      label: 'No Invoice',
+      label: 'NO INVOICE',
+      align: 'left',
+      className: 'text-left min-w-[130px]',
       render: (item) => (
-        <div className="space-y-0.5">
+        <div className="space-y-0.5 text-left">
           <Link
             to={`/admin/purchases/${item.id}`}
             className="font-mono text-xs font-bold text-[#37AFCB] hover:underline block"
@@ -169,9 +192,11 @@ export function PurchasePage() {
     },
     {
       key: 'supplier',
-      label: 'Supplier',
+      label: 'SUPPLIER',
+      align: 'left',
+      className: 'text-left min-w-[160px]',
       render: (item) => (
-        <div className="space-y-0.5">
+        <div className="space-y-0.5 text-left">
           <div className="font-semibold text-xs text-[#20282D] leading-tight">
             {item.supplier?.name || '-'}
           </div>
@@ -185,16 +210,20 @@ export function PurchasePage() {
     },
     {
       key: 'items_count',
-      label: 'Jumlah Item',
+      label: 'JUMLAH ITEM',
+      align: 'center',
+      className: 'text-center whitespace-nowrap min-w-[100px]',
       render: (item) => (
-        <span className="text-xs text-[#879197] font-medium whitespace-nowrap">
+        <div className="text-center font-medium text-xs text-[#879197]">
           {item.items?.length || 0} macam
-        </span>
+        </div>
       ),
     },
     {
       key: 'status',
-      label: 'Status Barang',
+      label: 'STATUS BARANG',
+      align: 'center',
+      className: 'text-center whitespace-nowrap min-w-[110px]',
       render: (item) => {
         const statusMap = {
           received: { status: 'completed', label: 'Diterima' },
@@ -202,12 +231,18 @@ export function PurchasePage() {
           cancelled: { status: 'cancelled', label: 'Dibatalkan' },
         };
         const cfg = statusMap[item.status] || { status: 'info', label: item.status };
-        return <StatusBadge status={cfg.status} label={cfg.label} />;
+        return (
+          <div className="flex justify-center">
+            <StatusBadge status={cfg.status} label={cfg.label} />
+          </div>
+        );
       },
     },
     {
       key: 'payment_status',
-      label: 'Status Bayar',
+      label: 'STATUS BAYAR',
+      align: 'center',
+      className: 'text-center whitespace-nowrap min-w-[130px]',
       render: (item) => {
         const isPaid = item.payment_status === 'paid';
         const isPartial = item.payment_status === 'partial';
@@ -224,7 +259,7 @@ export function PurchasePage() {
           : '-';
 
         return (
-          <div className="inline-flex flex-col items-start gap-1">
+          <div className="flex flex-col items-center gap-0.5">
             <StatusBadge status={statusKey} label={labelText} />
             <span className="text-[10px] text-[#879197] font-medium">Metode: {methodLabel}</span>
           </div>
@@ -233,23 +268,25 @@ export function PurchasePage() {
     },
     {
       key: 'grand_total',
-      label: 'Total Belanja',
+      label: 'TOTAL BELANJA',
       align: 'right',
+      className: 'text-right whitespace-nowrap min-w-[130px]',
       render: (item) => (
-        <div className="font-mono text-xs font-black text-[#20282D]">
+        <div className="font-mono text-xs font-black text-[#20282D] text-right">
           {formatRupiah(item.grand_total || 0)}
         </div>
       ),
     },
     {
       key: 'remaining_debt',
-      label: 'Sisa Utang',
+      label: 'SISA UTANG',
       align: 'right',
+      className: 'text-right whitespace-nowrap min-w-[120px]',
       render: (item) => {
         const debt = Math.max(0, Number(item.grand_total) - Number(item.paid_amount));
         return (
           <div
-            className={`font-mono text-xs font-bold ${
+            className={`font-mono text-xs font-bold text-right ${
               debt > 0 ? 'text-[#E47777]' : 'text-[#879197]'
             }`}
           >
@@ -260,16 +297,19 @@ export function PurchasePage() {
     },
     {
       key: 'actions',
-      label: 'Aksi',
-      align: 'right',
+      label: 'AKSI',
+      align: 'center',
+      className: 'text-center whitespace-nowrap w-24',
       render: (item) => (
-        <Link
-          to={`/admin/purchases/${item.id}`}
-          className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#20282D] bg-[#F1F4F5] hover:bg-[#E7ECEE] rounded-full transition"
-        >
-          <span>Detail</span>
-          <span>&rarr;</span>
-        </Link>
+        <div className="flex justify-center">
+          <Link
+            to={`/admin/purchases/${item.id}`}
+            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#20282D] bg-[#F1F4F5] hover:bg-[#E7ECEE] rounded-full transition"
+          >
+            <span>Detail</span>
+            <span>&rarr;</span>
+          </Link>
+        </div>
       ),
     },
   ];
@@ -292,25 +332,27 @@ export function PurchasePage() {
 
       {/* Header Bar */}
       <PageHeader
-        title="Pembelian Toko"
+        title="Pembelian"
         subtitle="Pencatatan faktur barang masuk dan pembaruan stok otomatis."
-      >
-        {isAdmin && (
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#20282D] hover:bg-black text-white font-bold rounded-full text-xs shadow-xs transition cursor-pointer"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Input Pembelian</span>
-          </button>
-        )}
-      </PageHeader>
+        actions={
+          isAdmin && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#20282D] hover:bg-black text-white font-bold rounded-full text-xs shadow-xs transition cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ Input Pembelian</span>
+            </button>
+          )
+        }
+      />
 
       {/* Filter and Search Bar */}
       <div className="bg-white border border-[#E7ECEE] rounded-2xl p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Baris 1: Filter Utama */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
           <div>
-            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1.5">
               Pencarian
             </label>
             <SearchInput
@@ -324,7 +366,7 @@ export function PurchasePage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1.5">
               Supplier
             </label>
             <select
@@ -333,7 +375,7 @@ export function PurchasePage() {
                 setSupplierFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
+              className="w-full h-9 px-3 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             >
               <option value="">Semua Supplier</option>
               {suppliers.map((s) => (
@@ -345,7 +387,7 @@ export function PurchasePage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1.5">
               Status Barang
             </label>
             <select
@@ -354,17 +396,17 @@ export function PurchasePage() {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
+              className="w-full h-9 px-3 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             >
               <option value="">Semua Status Barang</option>
               <option value="received">Diterima</option>
-              <option value="draft">Draft (Menunggu)</option>
+              <option value="draft">Draft (Pending)</option>
               <option value="cancelled">Dibatalkan</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1.5">
               Status Pembayaran
             </label>
             <select
@@ -373,7 +415,7 @@ export function PurchasePage() {
                 setPaymentStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
+              className="w-full h-9 px-3 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             >
               <option value="">Semua Status Bayar</option>
               <option value="paid">Lunas</option>
@@ -383,9 +425,10 @@ export function PurchasePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#F1F4F5]">
+        {/* Baris 2: Metode Bayar & Rentang Tanggal */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5 pt-3.5 border-t border-[#F1F4F5] items-end">
           <div>
-            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1.5">
               Metode Pembayaran
             </label>
             <select
@@ -394,17 +437,17 @@ export function PurchasePage() {
                 setPaymentMethodFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
+              className="w-full h-9 px-3 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             >
               <option value="">Semua Metode</option>
-              <option value="cash">Tunai (Kas)</option>
+              <option value="cash">Tunai (Cash)</option>
               <option value="transfer">Transfer Bank</option>
               <option value="tempo">Tempo (Kredit)</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1.5">
               Tanggal Mulai
             </label>
             <input
@@ -414,12 +457,12 @@ export function PurchasePage() {
                 setStartDate(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
+              className="w-full h-9 px-3 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             />
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#879197] mb-1">
+            <label className="block text-[11px] font-semibold text-[#879197] mb-1.5">
               Tanggal Akhir
             </label>
             <input
@@ -429,8 +472,21 @@ export function PurchasePage() {
                 setEndDate(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
+              className="w-full h-9 px-3 bg-[#F8FAFA] border border-[#E7ECEE] rounded-xl text-xs text-[#20282D] font-medium focus:outline-none focus:border-[#55BFD8]"
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            {hasActiveFilter && (
+              <button
+                type="button"
+                onClick={handleResetFilter}
+                className="w-full h-9 px-3 rounded-xl border border-[#D7EBEF] bg-[#F8FAFA] hover:bg-[#EAEFF1] text-[#5A7C85] hover:text-[#20282D] text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>↺</span>
+                <span>Reset Filter</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

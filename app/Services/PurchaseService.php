@@ -129,20 +129,17 @@ class PurchaseService
             $grandTotal = max(0.00, round($subtotal - $discount + $tax, 2));
 
             // Tentukan status pembayaran awal
-            $paidAmount = 0.00;
-            if ($paymentMethod === 'cash' || $paymentMethod === 'transfer') {
+            $paidAmount = isset($data['paid_amount']) ? (float) $data['paid_amount'] : 0.00;
+            if (($paymentMethod === 'cash' || $paymentMethod === 'transfer') && (!isset($data['paid_amount']) || $paidAmount <= 0)) {
                 $paidAmount = $grandTotal;
+            }
+
+            if ($paidAmount >= $grandTotal && $grandTotal > 0) {
                 $paymentStatus = 'paid';
+            } elseif ($paidAmount > 0) {
+                $paymentStatus = 'partial';
             } else {
-                // tempo
-                $paidAmount = (float) ($data['paid_amount'] ?? 0);
-                if ($paidAmount >= $grandTotal && $grandTotal > 0) {
-                    $paymentStatus = 'paid';
-                } elseif ($paidAmount > 0) {
-                    $paymentStatus = 'partial';
-                } else {
-                    $paymentStatus = 'unpaid';
-                }
+                $paymentStatus = 'unpaid';
             }
 
             $purchase = Purchase::create([

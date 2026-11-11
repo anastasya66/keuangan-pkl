@@ -68,12 +68,12 @@ export function AdminLayout({ children }) {
       group: 'TRANSAKSI',
       items: [
         { to: '/admin/pos', label: 'Penjualan (Kasir POS)', icon: ShoppingCart },
-        { to: '/admin/purchases', label: 'Pembelian Toko', icon: ShoppingBag },
+        { to: '/admin/purchases', label: 'Pembelian', icon: ShoppingBag },
         { to: '/admin/suppliers', label: 'Data Supplier', icon: Truck },
       ],
     },
     {
-      group: 'INVENTORY',
+      group: 'INVENTARIS',
       items: [
         { to: '/admin/products', label: 'Katalog Produk', icon: Package },
         { to: '/admin/categories', label: 'Kategori Produk', icon: Tag },
@@ -135,7 +135,7 @@ export function AdminLayout({ children }) {
                     FinToko
                   </span>
                   <span className="text-[10px] font-bold text-[#55BFD8] uppercase tracking-wider">
-                    Inventory & Finance
+                    INVENTARIS &amp; KEUANGAN
                   </span>
                 </div>
               )}
@@ -259,7 +259,7 @@ export function AdminLayout({ children }) {
             <SearchPill
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
-              placeholder="Search here..."
+              placeholder="Cari di sini..."
               className="w-full max-w-xs sm:max-w-sm"
             />
           </div>
@@ -356,7 +356,7 @@ export function AdminLayout({ children }) {
 
         {/* Clean Minimalist Footer */}
         <footer className="border-t border-[#E7ECEE] bg-white/60 text-center py-4 text-xs font-medium text-[#A6AFB3]">
-          FinToko &copy; 2026 &bull; Modern Inventory &amp; Financial Management System
+          FinToko &copy; 2026 &bull; Sistem Manajemen Inventaris &amp; Keuangan Modern
         </footer>
       </div>
     </div>

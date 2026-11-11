@@ -217,7 +217,7 @@ export function StaffLayout({ children }) {
             <SearchPill
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
-              placeholder="Search here..."
+              placeholder="Cari di sini..."
               className="w-full max-w-xs sm:max-w-sm"
             />
           </div>
@@ -295,7 +295,7 @@ export function StaffLayout({ children }) {
         </main>
 
         <footer className="border-t border-[#E7ECEE] bg-white/60 text-center py-4 text-xs font-medium text-[#A6AFB3]">
-          FinToko &copy; 2026 &bull; Modern Inventory &amp; Financial Management System
+          FinToko &copy; 2026 &bull; Sistem Manajemen Inventaris &amp; Keuangan Modern
         </footer>
       </div>
     </div>

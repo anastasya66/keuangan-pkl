@@ -17,6 +17,12 @@ export default function InventoryReportPage() {
   const [exportingExcel, setExportingExcel] = useState(false);
   const [error, setError] = useState(null);
   const [lastRefreshed, setLastRefreshed] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   // Load master categories once
   useEffect(() => {
@@ -125,17 +131,40 @@ export default function InventoryReportPage() {
 
   return (
     <div className="space-y-5">
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`p-4 rounded-2xl border flex items-center justify-between text-xs font-semibold shadow-md transition-all animate-toast ${
+            toast.type === 'error'
+              ? 'bg-rose-50 border-rose-200 text-rose-700'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span>{toast.type === 'error' ? '⚠️' : '✅'}</span>
+            <span>{toast.message}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            className="text-xs text-[#8EA6AF] hover:text-[#16323B] cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* 1. Header Section */}
       <PageHeader
         title="Sisa Stok Toko"
         subtitle="Informasi pergerakan inventaris fisik dari pembelian dan penjualan kasir."
       >
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 flex-nowrap">
           <button
             onClick={fetchReport}
             disabled={loading}
             title="Sinkronisasi data stok terbaru"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white border border-[#E7ECEE] hover:bg-[#F1F4F5] text-[#20282D] font-bold text-xs transition shadow-xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white border border-[#E7ECEE] hover:bg-[#F1F4F5] text-[#20282D] font-bold text-xs transition shadow-xs cursor-pointer disabled:opacity-50 whitespace-nowrap"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#55BFD8]' : ''}`} />
             <span>{loading ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
@@ -144,7 +173,7 @@ export default function InventoryReportPage() {
           <button
             onClick={handleExportPdf}
             disabled={exportingPdf || loading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#E5F6FA] text-[#37AFCB] hover:bg-[#D0F1F8] font-bold text-xs transition shadow-xs disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#E5F6FA] text-[#37AFCB] hover:bg-[#D0F1F8] font-bold text-xs transition shadow-xs disabled:opacity-50 cursor-pointer whitespace-nowrap"
           >
             <FileText className="w-3.5 h-3.5" />
             <span>{exportingPdf ? 'Mengunduh...' : 'PDF'}</span>
@@ -153,7 +182,7 @@ export default function InventoryReportPage() {
           <button
             onClick={handleExportExcel}
             disabled={exportingExcel || loading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#EBF7F2] text-[#48B58B] hover:bg-[#D5EFE3] font-bold text-xs transition shadow-xs disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#EBF7F2] text-[#48B58B] hover:bg-[#D5EFE3] font-bold text-xs transition shadow-xs disabled:opacity-50 cursor-pointer whitespace-nowrap"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>{exportingExcel ? 'Mengunduh...' : 'Excel'}</span>

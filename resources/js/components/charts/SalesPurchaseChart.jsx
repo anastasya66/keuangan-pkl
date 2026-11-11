@@ -9,23 +9,36 @@ export function SalesPurchaseChart({
 }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
+  const MONTH_NAME_MAP = {
+    May: 'Mei',
+    Aug: 'Agu',
+    Oct: 'Okt',
+    Dec: 'Des',
+  };
+
+  const translateMonth = (lbl) => MONTH_NAME_MAP[lbl] || lbl;
+
   // Normalize points or fallback to default distribution if empty
   const defaultPoints = [
     { label: 'Jan', income: 45000000, expense: 32000000 },
     { label: 'Feb', income: 38000000, expense: 28000000 },
     { label: 'Mar', income: 52000000, expense: 41000000 },
     { label: 'Apr', income: 61000000, expense: 48000000 },
-    { label: 'May', income: 55000000, expense: 39000000 },
+    { label: 'Mei', income: 55000000, expense: 39000000 },
     { label: 'Jun', income: 72000000, expense: 50000000 },
     { label: 'Jul', income: 68000000, expense: 45000000 },
-    { label: 'Aug', income: 80000000, expense: 58000000 },
+    { label: 'Agu', income: 80000000, expense: 58000000 },
     { label: 'Sep', income: 74000000, expense: 52000000 },
-    { label: 'Oct', income: 89000000, expense: 62000000 },
+    { label: 'Okt', income: 89000000, expense: 62000000 },
     { label: 'Nov', income: 95000000, expense: 67000000 },
-    { label: 'Dec', income: 105000000, expense: 71000000 },
+    { label: 'Des', income: 105000000, expense: 71000000 },
   ];
 
-  const data = points && points.length > 0 ? points : defaultPoints;
+  const rawData = points && points.length > 0 ? points : defaultPoints;
+  const data = rawData.map((d) => ({
+    ...d,
+    label: translateMonth(d.label),
+  }));
 
   const maxVal = Math.max(
     ...data.map((d) => Math.max(Number(d.income) || 0, Number(d.expense) || 0)),
@@ -55,7 +68,7 @@ export function SalesPurchaseChart({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
-          <h3 className="text-base font-bold text-[#20282D]">Sales &amp; Purchase</h3>
+          <h3 className="text-base font-bold text-[#20282D]">Penjualan &amp; Pembelian</h3>
           <p className="text-xs text-[#879197] mt-0.5">Analisis tren penjualan dan pembelian toko</p>
         </div>
 
@@ -64,11 +77,11 @@ export function SalesPurchaseChart({
           <div className="flex items-center gap-3 text-xs font-medium text-[#879197]">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-[3px] bg-[#B6ECF6] border border-[#79D5E8]" />
-              <span>Total Purchase</span>
+              <span>Total Pembelian</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-[3px] bg-[#55BFD8]" />
-              <span className="text-[#20282D] font-semibold">Total Sales</span>
+              <span className="text-[#20282D] font-semibold">Total Penjualan</span>
             </div>
           </div>
 
@@ -80,10 +93,10 @@ export function SalesPurchaseChart({
                 onChange={(e) => onPeriodChange?.(e.target.value)}
                 className="appearance-none bg-[#F1F4F5] hover:bg-[#E7ECEE] text-[#20282D] text-xs font-semibold px-3 py-1.5 pr-7 rounded-full border-none cursor-pointer focus:outline-none transition-colors"
               >
-                <option value="this_month">This Month</option>
-                <option value="this_year">This Year</option>
-                <option value="this_week">This Week</option>
-                <option value="today">Today</option>
+                <option value="this_year">Tahun Ini</option>
+                <option value="this_month">Bulan Ini</option>
+                <option value="this_week">Minggu Ini</option>
+                <option value="today">Hari Ini</option>
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-[#879197] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -230,10 +243,10 @@ export function SalesPurchaseChart({
           </span>
           <div className="flex items-center gap-4">
             <span className="text-[#37AFCB] font-bold">
-              Sales: {formatRupiah(data[hoveredIdx].income || 0)}
+              Penjualan: {formatRupiah(data[hoveredIdx].income || 0)}
             </span>
             <span className="text-[#879197] font-medium">
-              Purchase: {formatRupiah(data[hoveredIdx].expense || 0)}
+              Pembelian: {formatRupiah(data[hoveredIdx].expense || 0)}
             </span>
           </div>
         </div>

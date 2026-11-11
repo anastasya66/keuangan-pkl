@@ -59,6 +59,8 @@ class UpdateProductRequest extends BaseApiRequest
             'description' => ['nullable', 'string'],
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
+            'min_stock' => ['nullable', 'numeric', 'min:0'],
+            'image' => ['nullable'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

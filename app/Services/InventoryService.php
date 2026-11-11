@@ -123,7 +123,23 @@ class InventoryService
             }
 
             $stockBefore = (float) $product->stock;
-            $actualStock = (float) $data['actual_stock'];
+
+            // Support either actual_stock or type + quantity
+            if (isset($data['actual_stock']) && $data['actual_stock'] !== '' && $data['actual_stock'] !== null) {
+                $actualStock = (float) $data['actual_stock'];
+            } elseif (isset($data['type']) && isset($data['quantity'])) {
+                $qty = (float) $data['quantity'];
+                $actualStock = ($data['type'] === 'in') ? ($stockBefore + $qty) : ($stockBefore - $qty);
+                if ($actualStock < 0) {
+                    throw ValidationException::withMessages([
+                        'quantity' => ['Stok keluar melebihi stok yang tersedia saat ini (stok saat ini: ' . $stockBefore . ').'],
+                    ]);
+                }
+            } else {
+                throw ValidationException::withMessages([
+                    'actual_stock' => ['Jumlah stok fisik atau kuantitas penyesuaian wajib diisi.'],
+                ]);
+            }
 
             // Cek apakah ada perubahan
             if ($actualStock === $stockBefore) {
@@ -144,21 +160,32 @@ class InventoryService
 
             $stockAfter = $actualStock;
 
+            // Handle cost_price if given (e.g. for stock in or revaluation)
+            if (!empty($data['cost_price']) && (float) $data['cost_price'] > 0) {
+                $costPrice = (float) $data['cost_price'];
+                $product->purchase_price = $costPrice;
+            } else {
+                $costPrice = (float) $product->purchase_price;
+            }
+
             // Update stok produk ke nilai aktual
             $product->stock = $stockAfter;
             $product->save();
 
+            $movementDate = !empty($data['movement_date']) ? $data['movement_date'] : now()->format('Y-m-d');
+
             // Buat catatan mutasi penyesuaian
             $movement = InventoryMovement::create([
-                'movement_code' => InventoryMovement::generateMovementCode($data['movement_date'] ?? null),
+                'movement_code' => InventoryMovement::generateMovementCode($movementDate),
                 'product_id' => $product->id,
                 'movement_type' => $movementType,
                 'quantity' => $quantity,
+                'cost_price' => $costPrice,
                 'stock_before' => $stockBefore,
                 'stock_after' => $stockAfter,
                 'adjustment_reason' => $data['adjustment_reason'],
                 'description' => $data['description'] ?? null,
-                'movement_date' => $data['movement_date'],
+                'movement_date' => $movementDate,
                 'created_by' => $userId,
             ]);
 

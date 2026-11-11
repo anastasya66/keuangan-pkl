@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import categoryService from '../../services/categoryService';
 import unitService from '../../services/unitService';
+import productService from '../../services/productService';
 import { formatRupiah } from '../../utils/currency';
 import { IconBox } from '../../components/common/Icons';
 
@@ -24,10 +25,14 @@ export function ProductModal({
     description: '',
     purchase_price: '',
     selling_price: '',
+    min_stock: '5',
     is_active: true,
   });
 
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,8 +42,8 @@ export function ProductModal({
       setIsLoadingDropdowns(true);
       try {
         const [catRes, unitRes] = await Promise.all([
-          categoryService.getCategories({ all: true }),
-          unitService.getUnits({ all: true }),
+          categoryService.getCategories({ all: true, is_active: true }),
+          unitService.getUnits({ all: true, is_active: true }),
         ]);
 
         if (isMounted) {
@@ -69,8 +74,10 @@ export function ProductModal({
         description: product.description || '',
         purchase_price: product.purchase_price_numeric ?? product.purchase_price ?? '',
         selling_price: product.selling_price_numeric ?? product.selling_price ?? '',
+        min_stock: product.min_stock ?? '5',
         is_active: product.is_active ?? true,
       });
+      setImagePreview(product.image_url || product.image || null);
     } else {
       setFormData({
         category_id: '',
@@ -81,9 +88,12 @@ export function ProductModal({
         description: '',
         purchase_price: '',
         selling_price: '',
+        min_stock: '5',
         is_active: true,
       });
+      setImagePreview(null);
     }
+    setImageFile(null);
     setFieldErrors({});
   }, [product, isOpen]);
 
@@ -96,21 +106,61 @@ export function ProductModal({
       [name]: type === 'checkbox' ? checked : value,
     }));
     setFieldErrors((prev) => ({ ...prev, [name]: null }));
+
+    // Jika kategori berubah dan SKU masih kosong, beri rekomendasi SKU
+    if (name === 'category_id' && value && !formData.sku && !product) {
+      handleAutoGenerateSku(value);
+    }
+  };
+
+  const handleAutoGenerateSku = async (catId) => {
+    try {
+      const res = await productService.getNextSku(catId || formData.category_id);
+      if (res.success && res.data?.sku) {
+        setFormData((prev) => ({ ...prev, sku: res.data.sku }));
+      }
+    } catch {
+      // Abaikan jika gagal
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setFieldErrors((prev) => ({ ...prev, image: 'Berkas harus berupa gambar (JPG, PNG, WebP).' }));
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setFieldErrors((prev) => ({ ...prev, image: 'Ukuran foto maksimal 5 MB.' }));
+        return;
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+      setFieldErrors((prev) => ({ ...prev, image: null }));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = {};
 
-    if (!formData.name.trim()) errors.name = 'Nama barang wajib diisi.';
-    if (!formData.sku.trim()) errors.sku = 'Kode SKU barang wajib diisi.';
-    if (!formData.category_id) errors.category_id = 'Pilih kategori barang.';
-    if (!formData.unit_id) errors.unit_id = 'Pilih satuan barang.';
+    if (!formData.name.trim()) errors.name = 'Nama produk wajib diisi.';
+    if (!formData.category_id) errors.category_id = 'Pilih kategori produk.';
+    if (!formData.unit_id) errors.unit_id = 'Pilih satuan produk.';
     if (formData.purchase_price === '' || isNaN(formData.purchase_price) || Number(formData.purchase_price) < 0) {
-      errors.purchase_price = 'Harga beli harus berupa angka tidak negatif.';
+      errors.purchase_price = 'Harga beli dasar (HPP) harus berupa angka tidak negatif.';
     }
     if (formData.selling_price === '' || isNaN(formData.selling_price) || Number(formData.selling_price) < 0) {
-      errors.selling_price = 'Harga jual harus berupa angka tidak negatif.';
+      errors.selling_price = 'Harga jual kasir harus berupa angka tidak negatif.';
     }
 
     if (Object.keys(errors).length > 0) {
@@ -118,14 +168,27 @@ export function ProductModal({
       return;
     }
 
-    const payload = {
-      ...formData,
-      purchase_price: Number(formData.purchase_price),
-      selling_price: Number(formData.selling_price),
-      barcode: formData.barcode?.trim() || null,
-    };
+    // Gunakan FormData agar pengunggahan file foto tersimpan ke storage/app/public/products
+    const submitData = new FormData();
+    submitData.append('name', formData.name.trim());
+    if (formData.sku.trim()) submitData.append('sku', formData.sku.trim());
+    if (formData.barcode?.trim()) submitData.append('barcode', formData.barcode.trim());
+    submitData.append('category_id', formData.category_id);
+    submitData.append('unit_id', formData.unit_id);
+    submitData.append('purchase_price', Number(formData.purchase_price));
+    submitData.append('selling_price', Number(formData.selling_price));
+    submitData.append('min_stock', Number(formData.min_stock || 0));
+    if (formData.description?.trim()) submitData.append('description', formData.description.trim());
+    submitData.append('is_active', formData.is_active ? '1' : '0');
 
-    const result = await onSubmit(payload);
+    if (imageFile) {
+      submitData.append('image', imageFile);
+    } else if (imagePreview === null && product?.image) {
+      // User menghapus foto yang sudah ada
+      submitData.append('image', '');
+    }
+
+    const result = await onSubmit(submitData);
     if (result && !result.success && result.errors) {
       setFieldErrors(result.errors);
     }
@@ -134,53 +197,132 @@ export function ProductModal({
   const isEdit = Boolean(product?.id);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10262E]/35 backdrop-blur-xs overflow-y-auto animate-backdrop">
-      <div className="bg-white border border-[#D7EBEF] rounded-3xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 text-[#16323B] my-8 animate-modal-pop">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#10262E]/40 backdrop-blur-xs overflow-y-auto animate-backdrop">
+      <div className="bg-white border border-[#D7EBEF] rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full p-5 sm:p-7 text-[#16323B] my-6 animate-modal-pop max-h-[92vh] overflow-y-auto">
+        {/* Modal Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#D7EBEF]">
           <h3 className="text-base sm:text-lg font-bold text-[#10262E] flex items-center gap-2">
             <span className="p-2 rounded-xl bg-[#EAF8FA] text-[#27C5E5]">
               <IconBox className="w-5 h-5" />
             </span>
-            <span>{isEdit ? 'Ubah Data Barang' : 'Tambah Barang'}</span>
+            <span>{isEdit ? 'Ubah Data Produk' : 'Tambah Produk Baru'}</span>
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-[#F3FBFC] hover:bg-[#EAF8FA] text-[#8EA6AF] hover:text-[#16323B] transition-colors flex items-center justify-center cursor-pointer btn-press"
+            className="w-8 h-8 rounded-xl bg-[#F3FBFC] hover:bg-[#EAF8FA] text-[#8EA6AF] hover:text-[#16323B] transition-colors flex items-center justify-center cursor-pointer"
           >
             ✕
           </button>
         </div>
 
+        {/* Modal Form */}
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-          {/* Row 1: Product Name */}
-          <div>
-            <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-              Nama Barang <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="name"
-              required
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Contoh: Beras Ramos 5kg, Minyak Goreng 1L"
-              className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow ${
-                fieldErrors.name ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
-              }`}
-            />
-            {fieldErrors.name && (
-              <p className="mt-1 text-[11px] text-rose-500 font-medium">
-                {Array.isArray(fieldErrors.name) ? fieldErrors.name[0] : fieldErrors.name}
-              </p>
-            )}
+          {/* Row 1: Nama Produk & Foto Preview */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start">
+            {/* Foto Produk Upload Box */}
+            <div className="w-full sm:w-36 flex flex-col items-center">
+              <label className="block text-[11px] font-semibold text-[#16323B] mb-1.5 self-start">
+                Foto Produk
+              </label>
+              <div className="relative w-32 h-32 rounded-2xl border-2 border-dashed border-[#D7EBEF] hover:border-[#27C5E5] bg-[#F8FDFF] flex flex-col items-center justify-center overflow-hidden transition group">
+                {imagePreview ? (
+                  <>
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-1.5 bg-white text-[#16323B] rounded-lg text-xs font-bold shadow hover:bg-[#EAF8FA]"
+                        title="Ganti Foto"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="p-1.5 bg-rose-500 text-white rounded-lg text-xs font-bold shadow hover:bg-rose-600"
+                        title="Hapus Foto"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full h-full flex flex-col items-center justify-center p-2 text-center text-[#577782] hover:text-[#167A93] cursor-pointer"
+                  >
+                    <span className="text-2xl mb-1">📷</span>
+                    <span className="text-[10px] font-semibold leading-tight">Unggah Foto</span>
+                    <span className="text-[9px] text-[#8EA6AF] mt-0.5">Maks 5MB</span>
+                  </button>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </div>
+              {fieldErrors.image && (
+                <p className="mt-1 text-[10px] text-rose-500 font-medium text-center">
+                  {fieldErrors.image}
+                </p>
+              )}
+            </div>
+
+            {/* Nama Produk & Deskripsi */}
+            <div className="flex-1 space-y-3 w-full">
+              <div>
+                <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
+                  Nama Produk <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Contoh: Indomie Goreng Spesial 85g, Teh Botol 450ml"
+                  className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all ${
+                    fieldErrors.name ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
+                  }`}
+                />
+                {fieldErrors.name && (
+                  <p className="mt-1 text-[11px] text-rose-500 font-medium">
+                    {Array.isArray(fieldErrors.name) ? fieldErrors.name[0] : fieldErrors.name}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
+                  Deskripsi / Keterangan (Opsional)
+                </label>
+                <input
+                  type="text"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Keterangan rasa, varian, atau spesifikasi barang..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all"
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Row 2: Category and Unit Dropdowns */}
+          {/* Row 2: Kategori & Satuan Ukuran */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Kategori <span className="text-rose-500">*</span>
+                Kategori Produk <span className="text-rose-500">*</span>
               </label>
               <select
                 name="category_id"
@@ -188,11 +330,11 @@ export function ProductModal({
                 value={formData.category_id}
                 onChange={handleChange}
                 disabled={isLoadingDropdowns}
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow ${
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all ${
                   fieldErrors.category_id ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
                 }`}
               >
-                <option value="">Pilih Kategori</option>
+                <option value="">-- Pilih Kategori Produk --</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -208,7 +350,7 @@ export function ProductModal({
 
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Satuan <span className="text-rose-500">*</span>
+                Satuan Ukuran <span className="text-rose-500">*</span>
               </label>
               <select
                 name="unit_id"
@@ -216,11 +358,11 @@ export function ProductModal({
                 value={formData.unit_id}
                 onChange={handleChange}
                 disabled={isLoadingDropdowns}
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow ${
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all ${
                   fieldErrors.unit_id ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
                 }`}
               >
-                <option value="">Pilih Satuan</option>
+                <option value="">-- Pilih Satuan Ukuran --</option>
                 {units.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name} ({u.symbol})
@@ -235,20 +377,28 @@ export function ProductModal({
             </div>
           </div>
 
-          {/* Row 3: SKU and Prices */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Row 3: Kode SKU & Barcode */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Kode SKU <span className="text-rose-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-[#16323B]">
+                  Kode SKU <span className="text-[#879197] font-normal">(Otomatis/Manual)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => handleAutoGenerateSku()}
+                  className="text-[10px] font-semibold text-[#167A93] hover:underline"
+                >
+                  Generate SKU
+                </button>
+              </div>
               <input
                 type="text"
                 name="sku"
-                required
                 value={formData.sku}
                 onChange={handleChange}
-                placeholder="Contoh: BRS-001"
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs font-mono uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow ${
+                placeholder="Contoh: PRD-MNM-0001 (Otomatis jika kosong)"
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs font-mono uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all ${
                   fieldErrors.sku ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
                 }`}
               />
@@ -261,7 +411,24 @@ export function ProductModal({
 
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Harga Beli <span className="text-rose-500">*</span>
+                Barcode Scanner (Opsional)
+              </label>
+              <input
+                type="text"
+                name="barcode"
+                value={formData.barcode}
+                onChange={handleChange}
+                placeholder="Scan barcode fisik produk..."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Row 4: Harga Beli Dasar (HPP), Harga Jual Kasir, & Stok Minimal */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
+                Harga Beli Dasar (HPP) <span className="text-rose-500">*</span>
               </label>
               <input
                 type="number"
@@ -272,7 +439,7 @@ export function ProductModal({
                 value={formData.purchase_price}
                 onChange={handleChange}
                 placeholder="0"
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow ${
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all ${
                   fieldErrors.purchase_price ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
                 }`}
               />
@@ -290,7 +457,7 @@ export function ProductModal({
 
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Harga Jual <span className="text-rose-500">*</span>
+                Harga Jual Kasir (POS) <span className="text-rose-500">*</span>
               </label>
               <input
                 type="number"
@@ -301,7 +468,7 @@ export function ProductModal({
                 value={formData.selling_price}
                 onChange={handleChange}
                 placeholder="0"
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs font-mono font-bold text-[#167A93] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow ${
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border text-[#16323B] text-xs font-mono font-bold text-[#167A93] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all ${
                   fieldErrors.selling_price ? 'border-rose-300 focus:border-rose-500' : 'border-[#D7EBEF] focus:border-[#38BFE0]'
                 }`}
               />
@@ -316,40 +483,30 @@ export function ProductModal({
                 </p>
               )}
             </div>
-          </div>
 
-          {/* Row 4: Barcode & Description */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Barcode (Opsional)
+                Stok Minimal (Peringatan) <span className="text-rose-500">*</span>
               </label>
               <input
-                type="text"
-                name="barcode"
-                value={formData.barcode}
+                type="number"
+                name="min_stock"
+                min="0"
+                step="any"
+                required
+                value={formData.min_stock}
                 onChange={handleChange}
-                placeholder="Contoh: 89912345678"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow"
+                placeholder="5"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all"
               />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-[#16323B] mb-1.5">
-                Deskripsi (Opsional)
-              </label>
-              <input
-                type="text"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Keterangan singkat barang..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#F8FDFF] border border-[#D7EBEF] text-[#16323B] text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#38BFE0]/25 transition-all input-focus-glow"
-              />
+              <p className="mt-1 text-[10px] text-[#8EA6AF]">
+                Batas peringatan stok menipis
+              </p>
             </div>
           </div>
 
-          {/* Active Status Checkbox */}
-          <div className="pt-2">
+          {/* Status Aktif */}
+          <div className="pt-1">
             <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -359,18 +516,18 @@ export function ProductModal({
                 className="w-4 h-4 rounded text-[#27C5E5] focus:ring-[#27C5E5] border-[#D7EBEF]"
               />
               <span className="text-xs font-semibold text-[#16323B]">
-                Status Barang Aktif
+                Produk Aktif (Dapat dijual di Kasir POS dan dibeli dari Supplier)
               </span>
             </label>
           </div>
 
-          {/* Action Buttons */}
-          <div className="pt-5 mt-4 border-t border-[#D7EBEF] flex items-center justify-end gap-3">
+          {/* Modal Footer */}
+          <div className="pt-4 border-t border-[#D7EBEF] flex items-center justify-end gap-3">
             <button
               type="button"
               disabled={isLoading}
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl bg-white hover:bg-[#F3FBFC] border border-[#D7EBEF] text-xs font-semibold text-[#577782] transition-colors cursor-pointer disabled:opacity-50 btn-press"
+              className="px-4 py-2.5 rounded-xl bg-white hover:bg-[#F3FBFC] border border-[#D7EBEF] text-xs font-semibold text-[#577782] transition-colors cursor-pointer disabled:opacity-50"
             >
               Batal
             </button>
@@ -382,7 +539,7 @@ export function ProductModal({
               {isLoading && (
                 <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
               )}
-              {isEdit ? 'Simpan Perubahan' : 'Simpan Barang'}
+              {isEdit ? 'Simpan Perubahan' : 'Tambah Produk'}
             </button>
           </div>
         </form>

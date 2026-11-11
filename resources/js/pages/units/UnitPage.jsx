@@ -173,7 +173,7 @@ export function UnitPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#20282D] hover:bg-black text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Tambah Satuan</span>
+            <span>+ Tambah Satuan</span>
           </button>
         )}
       </PageHeader>

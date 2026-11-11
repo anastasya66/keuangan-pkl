@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 export function SearchPill({
   value,
   onChange,
-  placeholder = 'Search here...',
+  placeholder = 'Cari di sini...',
   className = '',
   autoFocus = false,
 }) {

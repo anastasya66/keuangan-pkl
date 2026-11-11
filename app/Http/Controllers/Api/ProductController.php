@@ -85,6 +85,22 @@ class ProductController extends Controller
     }
 
     /**
+     * Dapatkan kode SKU berikutnya secara otomatis.
+     */
+    public function generateSku(Request $request): JsonResponse
+    {
+        $categoryId = $request->query('category_id') ? (int) $request->query('category_id') : null;
+        $sku = Product::generateSku($categoryId);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'sku' => $sku,
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    /**
      * Store a newly created product using DB transaction.
      */
     public function store(StoreProductRequest $request): JsonResponse
@@ -93,17 +109,20 @@ class ProductController extends Controller
 
         $product = DB::transaction(function () use ($request) {
             $validated = $request->validated();
-            return Product::create([
-                'category_id' => $validated['category_id'],
-                'unit_id' => $validated['unit_id'],
-                'sku' => $validated['sku'],
-                'barcode' => $validated['barcode'] ?? null,
-                'name' => $validated['name'],
-                'description' => $validated['description'] ?? null,
-                'purchase_price' => $validated['purchase_price'],
-                'selling_price' => $validated['selling_price'],
-                'is_active' => $validated['is_active'] ?? true,
-            ]);
+
+            if (empty($validated['sku'])) {
+                $validated['sku'] = Product::generateSku($validated['category_id'] ?? null);
+            }
+
+            if ($request->hasFile('image')) {
+                $validated['image'] = $request->file('image')->store('products', 'public');
+            }
+
+            if (!isset($validated['average_cost']) || (float) $validated['average_cost'] <= 0) {
+                $validated['average_cost'] = $validated['purchase_price'];
+            }
+
+            return Product::create($validated);
         });
 
         $product->load(['category', 'unit']);
@@ -139,7 +158,23 @@ class ProductController extends Controller
         $this->authorize('update', $product);
 
         DB::transaction(function () use ($request, $product) {
-            $product->update($request->validated());
+            $validated = $request->validated();
+
+            if ($request->hasFile('image')) {
+                if ($product->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($product->image)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image);
+                }
+                $validated['image'] = $request->file('image')->store('products', 'public');
+            } elseif (array_key_exists('image', $validated) && is_null($validated['image'])) {
+                if ($product->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($product->image)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image);
+                }
+                $validated['image'] = null;
+            } else {
+                unset($validated['image']);
+            }
+
+            $product->update($validated);
         });
 
         $product->load(['category', 'unit']);

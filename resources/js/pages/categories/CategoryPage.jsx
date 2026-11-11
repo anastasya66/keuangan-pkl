@@ -178,7 +178,7 @@ export function CategoryPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#20282D] hover:bg-black text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Tambah Kategori</span>
+            <span>+ Tambah Kategori</span>
           </button>
         )}
       </PageHeader>

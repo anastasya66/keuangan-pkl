@@ -24,12 +24,22 @@ class Product extends Model
         'barcode',
         'name',
         'description',
+        'image',
         'purchase_price',
         'selling_price',
         'average_cost',
         'stock',
         'min_stock',
         'is_active',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'image_url',
     ];
 
     /**
@@ -115,6 +125,47 @@ class Product extends Model
     public function getIsLowStockAttribute(): bool
     {
         return (float) $this->stock <= (float) $this->min_stock;
+    }
+
+    /**
+     * URL Foto Produk yang dapat diakses publik.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
+        }
+        return asset('storage/' . ltrim($this->image, '/'));
+    }
+
+    /**
+     * Generate format SKU produk otomatis jika dikosongkan.
+     */
+    public static function generateSku(?int $categoryId = null): string
+    {
+        $prefix = 'PRD-';
+        if ($categoryId) {
+            $cat = Category::find($categoryId);
+            if ($cat && !empty($cat->name)) {
+                $cleanName = strtoupper(preg_replace('/[^A-Za-z]/', '', $cat->name));
+                $prefix .= (strlen($cleanName) >= 3 ? substr($cleanName, 0, 3) : str_pad($cleanName, 3, 'X')) . '-';
+            }
+        }
+
+        $last = self::withTrashed()
+            ->where('sku', 'like', "{$prefix}%")
+            ->orderByDesc('id')
+            ->first();
+
+        $nextNumber = 1;
+        if ($last && preg_match('/' . preg_quote($prefix, '/') . '(\d+)/', $last->sku, $matches)) {
+            $nextNumber = ((int) $matches[1]) + 1;
+        }
+
+        return sprintf('%s%04d', $prefix, $nextNumber);
     }
 
     /**

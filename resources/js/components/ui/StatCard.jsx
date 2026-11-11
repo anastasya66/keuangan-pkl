@@ -9,7 +9,7 @@ export function StatCard({
   value,
   trend,
   trendDirection = 'up',
-  trendPeriod = 'vs Last Month',
+  trendPeriod = 'vs Bulan Lalu',
   onOptionsClick,
   className = '',
 }) {

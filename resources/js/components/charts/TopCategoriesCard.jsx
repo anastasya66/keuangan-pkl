@@ -30,16 +30,16 @@ export function TopCategoriesCard({
     <div className="bg-white rounded-2xl p-6 border border-[#E7ECEE] shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-[#D5E3E7] transition-all flex flex-col justify-between">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-bold text-[#20282D]">Top Categories</h3>
+        <h3 className="text-base font-bold text-[#20282D]">Kategori Teratas</h3>
         <div className="relative">
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
             className="appearance-none bg-[#F1F4F5] hover:bg-[#E7ECEE] text-[#20282D] text-xs font-semibold px-3 py-1.5 pr-7 rounded-full border-none cursor-pointer focus:outline-none transition-colors"
           >
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="all">All Time</option>
+            <option value="weekly">Mingguan</option>
+            <option value="monthly">Bulanan</option>
+            <option value="all">Semua</option>
           </select>
           <ChevronDown className="w-3.5 h-3.5 text-[#879197] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -120,7 +120,7 @@ export function TopCategoriesCard({
               {totalScore > 999 ? '1000+' : totalScore}
             </span>
             <span className="text-[10px] font-semibold text-[#879197] uppercase tracking-wider mt-0.5">
-              Top Score
+              SKOR TERTINGGI
             </span>
           </div>
         </div>
@@ -136,7 +136,7 @@ export function TopCategoriesCard({
                     {cat.category_name}
                   </span>
                   <span className="font-bold text-[#20282D]">
-                    {cat.transaction_count || Math.round(cat.percentage * 10)} Sales
+                    {cat.transaction_count || Math.round(cat.percentage * 10)} Terjual
                   </span>
                 </div>
                 {/* Horizontal patterned progress bar */}
@@ -160,7 +160,7 @@ export function TopCategoriesCard({
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#20282D]" />
-            <span className="text-[#879197] font-medium">Total Number of Categories</span>
+            <span className="text-[#879197] font-medium">Total Jumlah Kategori</span>
           </div>
           <span className="font-black text-[#20282D]">{catCount}</span>
         </div>
@@ -168,7 +168,7 @@ export function TopCategoriesCard({
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#E9B45D]" />
-            <span className="text-[#879197] font-medium">Total Number of Products</span>
+            <span className="text-[#879197] font-medium">Total Jumlah Produk</span>
           </div>
           <span className="font-black text-[#20282D]">{prodCount}</span>
         </div>

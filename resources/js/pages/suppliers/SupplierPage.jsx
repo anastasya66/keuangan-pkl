@@ -240,7 +240,7 @@ export function SupplierPage() {
             className="flex items-center gap-2 px-4 py-2 bg-[#20282D] hover:bg-black text-white font-bold rounded-full text-xs shadow-xs transition cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Tambah Supplier</span>
+            <span>+ Tambah Supplier</span>
           </button>
         )}
       </PageHeader>

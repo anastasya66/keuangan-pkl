@@ -206,8 +206,8 @@ export function ProductPage() {
 
       {/* Header & Controls */}
       <PageHeader
-        title="Katalog Barang"
-        subtitle="Kelola daftar produk, kategori, dan harga jual barang."
+        title="Katalog Produk"
+        subtitle="Kelola daftar produk, kategori, harga jual, dan stok barang."
       >
         {isAdmin && (
           <button
@@ -219,7 +219,7 @@ export function ProductPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#20282D] hover:bg-black text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Tambah Barang</span>
+            <span>+ Tambah Produk</span>
           </button>
         )}
       </PageHeader>
@@ -327,21 +327,39 @@ export function ProductPage() {
 
             {/* Name & Category */}
             <td className="px-4 py-3.5">
-              <div className="font-bold text-xs sm:text-[13px] text-[#10262E] leading-snug">
-                {prod.name}
-              </div>
-              <div className="inline-flex items-center gap-1.5 mt-1">
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF] font-medium whitespace-nowrap shrink-0">
-                  {prod.category?.name || 'Tanpa Kategori'}
-                </span>
-                {prod.description && (
-                  <span
-                    className="text-[11px] text-[#8EA6AF] truncate max-w-[180px]"
-                    title={prod.description}
-                  >
-                    • {prod.description}
-                  </span>
+              <div className="flex items-center gap-3">
+                {prod.image_url ? (
+                  <img
+                    src={prod.image_url}
+                    alt={prod.name}
+                    className="w-10 h-10 rounded-xl object-cover border border-[#D7EBEF] bg-[#F8FDFF] shrink-0"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-[#EAF8FA] border border-[#D7EBEF] flex items-center justify-center text-sm shrink-0">
+                    📦
+                  </div>
                 )}
+                <div className="min-w-0">
+                  <div className="font-bold text-xs sm:text-[13px] text-[#10262E] leading-snug">
+                    {prod.name}
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 mt-1">
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF] font-medium whitespace-nowrap shrink-0">
+                      {prod.category?.name || 'Tanpa Kategori'}
+                    </span>
+                    {prod.description && (
+                      <span
+                        className="text-[11px] text-[#8EA6AF] truncate max-w-[180px]"
+                        title={prod.description}
+                      >
+                        • {prod.description}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </td>
 

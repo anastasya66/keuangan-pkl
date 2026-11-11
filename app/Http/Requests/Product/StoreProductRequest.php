@@ -41,7 +41,7 @@ class StoreProductRequest extends BaseApiRequest
                 },
             ],
             'sku' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('products', 'sku')->whereNull('deleted_at'),
@@ -56,6 +56,8 @@ class StoreProductRequest extends BaseApiRequest
             'description' => ['nullable', 'string'],
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
+            'min_stock' => ['nullable', 'numeric', 'min:0'],
+            'image' => ['nullable'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

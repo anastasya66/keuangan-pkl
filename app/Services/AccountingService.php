@@ -329,11 +329,11 @@ class AccountingService
                 'credit' => 0.00,
             ]);
 
-            // 2. Kredit: Kas/Bank atau Utang Usaha (atau split jika tempo dengan uang muka)
-            if ($purchase->payment_method === 'tempo') {
-                $paid = (float) $purchase->paid_amount;
-                $unpaid = round($grandTotal - $paid, 2);
+            // 2. Kredit: Kas/Bank atau Utang Usaha (atau split jika ada sisa utang yang belum dibayar)
+            $paid = (float) $purchase->paid_amount;
+            $unpaid = round($grandTotal - $paid, 2);
 
+            if ($unpaid > 0) {
                 if ($paid > 0) {
                     JournalEntryDetail::create([
                         'journal_id' => $journal->id,
@@ -344,15 +344,13 @@ class AccountingService
                     ]);
                 }
 
-                if ($unpaid > 0) {
-                    JournalEntryDetail::create([
-                        'journal_id' => $journal->id,
-                        'account_id' => $payableAccount->id,
-                        'description' => "Utang Usaha Tempo Pembelian {$purchase->invoice_number}",
-                        'debit' => 0.00,
-                        'credit' => $unpaid,
-                    ]);
-                }
+                JournalEntryDetail::create([
+                    'journal_id' => $journal->id,
+                    'account_id' => $payableAccount->id,
+                    'description' => "Utang Usaha Pembelian {$purchase->invoice_number}",
+                    'debit' => 0.00,
+                    'credit' => $unpaid,
+                ]);
             } else {
                 JournalEntryDetail::create([
                     'journal_id' => $journal->id,

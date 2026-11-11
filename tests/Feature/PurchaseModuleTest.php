@@ -242,6 +242,18 @@ class PurchaseModuleTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_generate_next_invoice_number(): void
+    {
+        $response = $this->withHeader('Authorization', "Bearer {$this->adminToken}")
+            ->getJson('/api/v1/purchases/generate-invoice?date=' . now()->toDateString());
+
+        $response->assertOk()
+            ->assertJsonPath('success', true);
+
+        $invoiceNumber = $response->json('data.invoice_number');
+        $this->assertMatchesRegularExpression('/^PO-\d{8}-\d{4}$/', $invoiceNumber);
+    }
+
     public function test_staff_cannot_create_purchase(): void
     {
         $response = $this->withHeader('Authorization', "Bearer {$this->staffToken}")

@@ -2,14 +2,14 @@ import React from 'react';
 
 const STATUS_CONFIGS = {
   // Completed / Success / Selesai / Lunas
-  completed: { bg: 'bg-[#EBF7F2]', text: 'text-[#48B58B]', label: 'Completed' },
+  completed: { bg: 'bg-[#EBF7F2]', text: 'text-[#48B58B]', label: 'Selesai' },
   success: { bg: 'bg-[#EBF7F2]', text: 'text-[#48B58B]', label: 'Sukses' },
   lunas: { bg: 'bg-[#EBF7F2]', text: 'text-[#48B58B]', label: 'Lunas' },
   active: { bg: 'bg-[#EBF7F2]', text: 'text-[#48B58B]', label: 'Aktif' },
   diterima: { bg: 'bg-[#EBF7F2]', text: 'text-[#48B58B]', label: 'Diterima' },
 
   // Draft / Warning / Sebagian
-  draft: { bg: 'bg-[#FDF3F3]', text: 'text-[#E47777]', label: 'Draft' },
+  draft: { bg: 'bg-[#FDF3F3]', text: 'text-[#E47777]', label: 'Draf' },
   sebagian: { bg: 'bg-[#FEF7EB]', text: 'text-[#E9B45D]', label: 'Sebagian' },
   pending: { bg: 'bg-[#FEF7EB]', text: 'text-[#E9B45D]', label: 'Pending' },
   menipis: { bg: 'bg-[#FEF7EB]', text: 'text-[#E9B45D]', label: 'Stok Menipis' },

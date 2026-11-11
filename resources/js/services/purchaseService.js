@@ -6,6 +6,12 @@ export const purchaseService = {
     return response.data;
   },
 
+  async getNextInvoiceNumber(date = '') {
+    const params = date ? { date } : {};
+    const response = await api.get('/purchases/generate-invoice', { params });
+    return response.data;
+  },
+
   async getPurchase(id) {
     const response = await api.get(`/purchases/${id}`);
     return response.data;

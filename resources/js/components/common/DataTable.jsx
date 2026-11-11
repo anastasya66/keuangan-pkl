@@ -17,7 +17,9 @@ export function DataTable({
                 <th
                   key={index}
                   scope="col"
-                  className={`px-4 py-3.5 font-medium ${col.className || ''}`}
+                  className={`px-4 py-3.5 font-medium ${
+                    col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                  } ${col.className || ''}`}
                 >
                   {col.header || col.label}
                 </th>
