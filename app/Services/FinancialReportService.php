@@ -22,6 +22,7 @@ class FinancialReportService
 
         // 1. Akun Pendapatan (Revenue)
         $revenueAccounts = ChartOfAccount::where('account_type', 'revenue')
+            ->where('is_active', true)
             ->orderBy('account_code')
             ->get();
 
@@ -29,14 +30,15 @@ class FinancialReportService
         $totalRevenue = 0.0;
 
         foreach ($revenueAccounts as $acc) {
-            $sum = (float) JournalEntryDetail::where('account_id', $acc->id)
+            $baseQuery = JournalEntryDetail::where('account_id', $acc->id)
                 ->whereHas('journal', function ($q) use ($start, $end) {
                     $q->whereIn('status', ['posted', 'reversed'])
                       ->whereDate('journal_date', '>=', $start)
                       ->whereDate('journal_date', '<=', $end);
-                })
-                ->selectRaw('COALESCE(SUM(credit - debit), 0) as balance')
-                ->value('balance');
+                });
+
+            $sum = (float) (clone $baseQuery)->selectRaw('COALESCE(SUM(credit - debit), 0) as balance')->value('balance');
+            $txCount = (int) (clone $baseQuery)->count();
 
             $amount = round($sum, 2);
             $totalRevenue += $amount;
@@ -46,11 +48,14 @@ class FinancialReportService
                 'account_code' => $acc->account_code,
                 'account_name' => $acc->account_name,
                 'amount' => $amount,
+                'balance' => $amount,
+                'transaction_count' => $txCount,
             ];
         }
 
         // 2. Akun Beban (Expenses)
         $expenseAccounts = ChartOfAccount::where('account_type', 'expenses')
+            ->where('is_active', true)
             ->orderBy('account_code')
             ->get();
 
@@ -58,14 +63,15 @@ class FinancialReportService
         $totalExpenses = 0.0;
 
         foreach ($expenseAccounts as $acc) {
-            $sum = (float) JournalEntryDetail::where('account_id', $acc->id)
+            $baseQuery = JournalEntryDetail::where('account_id', $acc->id)
                 ->whereHas('journal', function ($q) use ($start, $end) {
                     $q->whereIn('status', ['posted', 'reversed'])
                       ->whereDate('journal_date', '>=', $start)
                       ->whereDate('journal_date', '<=', $end);
-                })
-                ->selectRaw('COALESCE(SUM(debit - credit), 0) as balance')
-                ->value('balance');
+                });
+
+            $sum = (float) (clone $baseQuery)->selectRaw('COALESCE(SUM(debit - credit), 0) as balance')->value('balance');
+            $txCount = (int) (clone $baseQuery)->count();
 
             $amount = round($sum, 2);
             $totalExpenses += $amount;
@@ -75,12 +81,15 @@ class FinancialReportService
                 'account_code' => $acc->account_code,
                 'account_name' => $acc->account_name,
                 'amount' => $amount,
+                'balance' => $amount,
+                'transaction_count' => $txCount,
             ];
         }
 
         $totalRevenue = round($totalRevenue, 2);
         $totalExpenses = round($totalExpenses, 2);
         $netProfit = round($totalRevenue - $totalExpenses, 2);
+        $isProfitable = ($netProfit >= 0);
 
         return [
             'period' => [
@@ -90,14 +99,18 @@ class FinancialReportService
             ],
             'revenues' => [
                 'items' => $revenueItems,
+                'accounts' => $revenueItems,
                 'total' => $totalRevenue,
             ],
             'expenses' => [
                 'items' => $expenseItems,
+                'accounts' => $expenseItems,
                 'total' => $totalExpenses,
             ],
             'net_profit' => $netProfit,
-            'is_profit' => $netProfit >= 0,
+            'is_profit' => $isProfitable,
+            'is_profitable' => $isProfitable,
+            'profit_label' => $isProfitable ? 'LABA BERSIH PERIODE BERJALAN' : 'RUGI BERSIH PERIODE BERJALAN',
             'generated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ];
     }
@@ -114,34 +127,54 @@ class FinancialReportService
 
         // 1. Aset (Assets)
         $assetAccounts = ChartOfAccount::where('account_type', 'assets')
+            ->where('is_active', true)
             ->orderBy('account_code')
             ->get();
 
         $assetItems = [];
+        $currentAssetItems = [];
+        $fixedAssetItems = [];
+        $totalCurrentAssets = 0.0;
+        $totalFixedAssets = 0.0;
         $totalAssets = 0.0;
 
         foreach ($assetAccounts as $acc) {
-            $sum = (float) JournalEntryDetail::where('account_id', $acc->id)
+            $baseQuery = JournalEntryDetail::where('account_id', $acc->id)
                 ->whereHas('journal', function ($q) use ($asOf) {
                     $q->whereIn('status', ['posted', 'reversed'])
                       ->whereDate('journal_date', '<=', $asOf);
-                })
-                ->selectRaw('COALESCE(SUM(debit - credit), 0) as balance')
-                ->value('balance');
+                });
+
+            $sum = (float) (clone $baseQuery)->selectRaw('COALESCE(SUM(debit - credit), 0) as balance')->value('balance');
+            $txCount = (int) (clone $baseQuery)->count();
 
             $amount = round($sum, 2);
             $totalAssets += $amount;
 
-            $assetItems[] = [
+            $item = [
                 'account_id' => $acc->id,
                 'account_code' => $acc->account_code,
                 'account_name' => $acc->account_name,
                 'amount' => $amount,
+                'balance' => $amount,
+                'transaction_count' => $txCount,
             ];
+
+            $assetItems[] = $item;
+
+            // Pengelompokan: Akun 1100-1199 = Aset Lancar, Akun >= 1200 = Aset Tetap
+            if ((int) $acc->account_code < 1200) {
+                $currentAssetItems[] = $item;
+                $totalCurrentAssets += $amount;
+            } else {
+                $fixedAssetItems[] = $item;
+                $totalFixedAssets += $amount;
+            }
         }
 
         // 2. Kewajiban (Liabilities)
         $liabilityAccounts = ChartOfAccount::where('account_type', 'liabilities')
+            ->where('is_active', true)
             ->orderBy('account_code')
             ->get();
 
@@ -149,13 +182,14 @@ class FinancialReportService
         $totalLiabilities = 0.0;
 
         foreach ($liabilityAccounts as $acc) {
-            $sum = (float) JournalEntryDetail::where('account_id', $acc->id)
+            $baseQuery = JournalEntryDetail::where('account_id', $acc->id)
                 ->whereHas('journal', function ($q) use ($asOf) {
                     $q->whereIn('status', ['posted', 'reversed'])
                       ->whereDate('journal_date', '<=', $asOf);
-                })
-                ->selectRaw('COALESCE(SUM(credit - debit), 0) as balance')
-                ->value('balance');
+                });
+
+            $sum = (float) (clone $baseQuery)->selectRaw('COALESCE(SUM(credit - debit), 0) as balance')->value('balance');
+            $txCount = (int) (clone $baseQuery)->count();
 
             $amount = round($sum, 2);
             $totalLiabilities += $amount;
@@ -165,11 +199,14 @@ class FinancialReportService
                 'account_code' => $acc->account_code,
                 'account_name' => $acc->account_name,
                 'amount' => $amount,
+                'balance' => $amount,
+                'transaction_count' => $txCount,
             ];
         }
 
         // 3. Ekuitas / Modal (Equity)
         $equityAccounts = ChartOfAccount::where('account_type', 'equity')
+            ->where('is_active', true)
             ->orderBy('account_code')
             ->get();
 
@@ -177,13 +214,14 @@ class FinancialReportService
         $baseEquityTotal = 0.0;
 
         foreach ($equityAccounts as $acc) {
-            $sum = (float) JournalEntryDetail::where('account_id', $acc->id)
+            $baseQuery = JournalEntryDetail::where('account_id', $acc->id)
                 ->whereHas('journal', function ($q) use ($asOf) {
                     $q->whereIn('status', ['posted', 'reversed'])
                       ->whereDate('journal_date', '<=', $asOf);
-                })
-                ->selectRaw('COALESCE(SUM(credit - debit), 0) as balance')
-                ->value('balance');
+                });
+
+            $sum = (float) (clone $baseQuery)->selectRaw('COALESCE(SUM(credit - debit), 0) as balance')->value('balance');
+            $txCount = (int) (clone $baseQuery)->count();
 
             $amount = round($sum, 2);
             $baseEquityTotal += $amount;
@@ -193,6 +231,8 @@ class FinancialReportService
                 'account_code' => $acc->account_code,
                 'account_name' => $acc->account_name,
                 'amount' => $amount,
+                'balance' => $amount,
+                'transaction_count' => $txCount,
             ];
         }
 
@@ -208,6 +248,8 @@ class FinancialReportService
         $currentEarnings = round($currentEarnings, 2);
         $totalEquity = round($baseEquityTotal + $currentEarnings, 2);
 
+        $totalCurrentAssets = round($totalCurrentAssets, 2);
+        $totalFixedAssets = round($totalFixedAssets, 2);
         $totalAssets = round($totalAssets, 2);
         $totalLiabilities = round($totalLiabilities, 2);
         $totalLiabilitiesAndEquity = round($totalLiabilities + $totalEquity, 2);
@@ -219,14 +261,32 @@ class FinancialReportService
             'formatted_as_of' => Carbon::parse($asOf)->translatedFormat('d F Y'),
             'assets' => [
                 'items' => $assetItems,
+                'accounts' => $assetItems,
+                'current' => [
+                    'items' => $currentAssetItems,
+                    'accounts' => $currentAssetItems,
+                    'total' => $totalCurrentAssets,
+                ],
+                'fixed' => [
+                    'items' => $fixedAssetItems,
+                    'accounts' => $fixedAssetItems,
+                    'total' => $totalFixedAssets,
+                ],
                 'total' => $totalAssets,
             ],
             'liabilities' => [
                 'items' => $liabilityItems,
+                'accounts' => $liabilityItems,
+                'current' => [
+                    'items' => $liabilityItems,
+                    'accounts' => $liabilityItems,
+                    'total' => $totalLiabilities,
+                ],
                 'total' => $totalLiabilities,
             ],
             'equity' => [
                 'items' => $equityItems,
+                'accounts' => $equityItems,
                 'base_equity_total' => round($baseEquityTotal, 2),
                 'current_earnings' => $currentEarnings,
                 'total' => $totalEquity,
@@ -235,10 +295,10 @@ class FinancialReportService
             'total_liabilities' => $totalLiabilities,
             'total_equity' => $totalEquity,
             'total_liabilities_and_equity' => $totalLiabilitiesAndEquity,
+            'liabilities_and_equity_total' => $totalLiabilitiesAndEquity,
             'difference' => $difference,
             'is_balanced' => $isBalanced,
             'generated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ];
     }
 }
-

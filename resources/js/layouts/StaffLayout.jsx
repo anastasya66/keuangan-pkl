@@ -5,12 +5,8 @@ import {
   LayoutDashboard,
   ShoppingCart,
   Package,
-  Tag,
-  Ruler,
   Layers,
   ClipboardList,
-  Coins,
-  ArrowLeftRight,
   User,
   LogOut,
   Menu,
@@ -48,21 +44,23 @@ export function StaffLayout({ children }) {
 
   const navSections = [
     {
-      group: 'MENU UTAMA',
+      group: 'DASHBOARD',
       items: [
-        { to: '/staff/dashboard', label: 'Dashboard Staf', icon: LayoutDashboard },
+        { to: '/staff/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      ],
+    },
+    {
+      group: 'TRANSAKSI',
+      items: [
         { to: '/staff/pos', label: 'Penjualan (Kasir POS)', icon: ShoppingCart },
       ],
     },
     {
-      group: 'PRODUK & INVENTARIS',
+      group: 'INVENTARIS',
       items: [
         { to: '/staff/products', label: 'Katalog Produk', icon: Package },
-        { to: '/staff/categories', label: 'Kategori Produk', icon: Tag },
-        { to: '/staff/units', label: 'Satuan Ukuran', icon: Ruler },
         { to: '/staff/reports/inventory', label: 'Stok Barang', icon: Layers },
         { to: '/staff/inventory/stock-card', label: 'Kartu Stok', icon: ClipboardList },
-        { to: '/staff/inventory/valuation', label: 'Nilai Persediaan', icon: Coins },
       ],
     },
   ];
@@ -98,7 +96,7 @@ export function StaffLayout({ children }) {
                     FinToko
                   </span>
                   <span className="text-[10px] font-bold text-[#55BFD8] uppercase tracking-wider">
-                    Staff Kasir
+                    Staff Operasional
                   </span>
                 </div>
               )}
@@ -125,11 +123,11 @@ export function StaffLayout({ children }) {
           </div>
 
           {/* Navigation Links Scrollable */}
-          <div className="p-3 space-y-5 overflow-y-auto max-h-[calc(100vh-145px)] no-scrollbar">
+          <div className="p-3 pt-5 space-y-5 overflow-y-auto max-h-[calc(100vh-145px)] no-scrollbar">
             {navSections.map((sec, sIdx) => (
               <div key={sIdx} className="space-y-1">
                 {(isSidebarOpen || isMobileMenuOpen) && (
-                  <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#A6AFB3] mb-1">
+                  <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#A6AFB3] mb-1.5 pt-1">
                     {sec.group}
                   </div>
                 )}
@@ -157,7 +155,7 @@ export function StaffLayout({ children }) {
           </div>
         </div>
 
-        {/* Sidebar Footer */}
+        {/* Sidebar Footer: User Info & Logout */}
         <div className="p-3 border-t border-[#E7ECEE] bg-[#F8FAFA]">
           {(isSidebarOpen || isMobileMenuOpen) ? (
             <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white border border-[#E7ECEE] shadow-2xs">
@@ -170,14 +168,14 @@ export function StaffLayout({ children }) {
                     {user?.name || 'Staff Toko'}
                   </div>
                   <div className="text-[10px] font-semibold text-[#879197] truncate">
-                    {user?.email || 'staff@fintoko.com'}
+                    {user?.email || 'staff@fintoko.test'}
                   </div>
                 </div>
               </Link>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="p-1.5 rounded-lg text-[#879197] hover:text-[#E47777] hover:bg-[#FDF3F3] transition-colors"
+                className="p-1.5 rounded-lg text-[#879197] hover:text-[#E47777] hover:bg-[#FDF3F3] transition-colors cursor-pointer"
                 title="Keluar"
               >
                 <LogOut className="w-4 h-4" />
@@ -191,7 +189,7 @@ export function StaffLayout({ children }) {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="p-2 rounded-xl text-[#879197] hover:text-[#E47777] hover:bg-[#FDF3F3] transition-colors"
+                className="p-2 rounded-xl text-[#879197] hover:text-[#E47777] hover:bg-[#FDF3F3] transition-colors cursor-pointer"
                 title="Keluar"
               >
                 <LogOut className="w-4 h-4" />
@@ -246,9 +244,14 @@ export function StaffLayout({ children }) {
                 <div className="w-8 h-8 rounded-full bg-[#E5F6FA] text-[#55BFD8] font-bold text-xs flex items-center justify-center border border-[#D5E3E7] shadow-2xs">
                   {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
                 </div>
-                <span className="hidden sm:inline text-xs font-bold text-[#20282D]">
-                  {user?.name?.split(' ')[0] || 'Staff'}
-                </span>
+                <div className="hidden sm:flex flex-col text-left">
+                  <span className="text-xs font-bold text-[#20282D] leading-tight">
+                    {user?.name?.split(' ')[0] || 'Staff'}
+                  </span>
+                  <span className="text-[9px] font-semibold text-[#167A93] uppercase tracking-wider">
+                    Staff
+                  </span>
+                </div>
                 <ChevronDown className="w-3.5 h-3.5 text-[#879197]" />
               </button>
 

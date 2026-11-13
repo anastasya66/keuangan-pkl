@@ -72,6 +72,14 @@ class ChartOfAccountSeeder extends Seeder
                 'description' => 'Kewajiban beban operasional yang belum dibayarkan',
                 'is_active' => true,
             ],
+            [
+                'account_code' => '2130',
+                'account_name' => 'Utang Bagi Hasil Konsinyor',
+                'account_type' => 'liabilities',
+                'normal_balance' => 'credit',
+                'description' => 'Kewajiban setoran bagi hasil titip jual kepada mitra konsinyor yang belum dibayarkan',
+                'is_active' => true,
+            ],
 
             // EQUITY (3000 - 3999)
             [
@@ -98,6 +106,14 @@ class ChartOfAccountSeeder extends Seeder
                 'account_type' => 'revenue',
                 'normal_balance' => 'credit',
                 'description' => 'Penerimaan utama dari hasil penjualan barang dagangan',
+                'is_active' => true,
+            ],
+            [
+                'account_code' => '4110',
+                'account_name' => 'Pendapatan Komisi Konsinyasi',
+                'account_type' => 'revenue',
+                'normal_balance' => 'credit',
+                'description' => 'Pendapatan selisih komisi bagi hasil produk konsinyasi mitra',
                 'is_active' => true,
             ],
             [

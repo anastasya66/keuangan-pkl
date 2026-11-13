@@ -60,6 +60,11 @@ export default function BalanceSheetPage() {
   };
 
   const isBalanced = data?.is_balanced;
+  const currentAssets = data?.assets?.current?.accounts || data?.assets?.current?.items || [];
+  const fixedAssets = data?.assets?.fixed?.accounts || data?.assets?.fixed?.items || [];
+  const liabilities = data?.liabilities?.current?.accounts || data?.liabilities?.current?.items || data?.liabilities?.items || [];
+  const equities = data?.equity?.accounts || data?.equity?.items || [];
+  const totalPasiva = data?.liabilities_and_equity_total ?? data?.total_liabilities_and_equity ?? ((Number(data?.total_liabilities) || 0) + (Number(data?.total_equity) || 0));
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -157,24 +162,35 @@ export default function BalanceSheetPage() {
                   {/* Aset Lancar */}
                   <div className="mt-3">
                     <h4 className="text-xs font-semibold text-[#20282D] mb-2">Aset Lancar</h4>
-                    <div className="space-y-1">
-                      {data?.assets?.current?.accounts?.map((acc) => (
-                        <div
-                          key={acc.account_id}
-                          className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-xl hover:bg-[#F8FAFA] transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[#879197] text-[11px] font-semibold">{acc.account_code}</span>
-                            <span className="text-[#20282D] font-medium">{acc.account_name}</span>
+                    {currentAssets.length === 0 ? (
+                      <p className="text-xs text-[#879197] italic py-1.5 px-2.5">
+                        Tidak ada pos aset lancar.
+                      </p>
+                    ) : (
+                      <div className="space-y-1">
+                        {currentAssets.map((acc) => (
+                          <div
+                            key={acc.account_id}
+                            className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-xl hover:bg-[#F8FAFA] transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[#879197] text-[11px] font-semibold">{acc.account_code}</span>
+                              <span className="text-[#20282D] font-medium">{acc.account_name}</span>
+                              {acc.transaction_count > 0 && (
+                                <span className="text-[10px] bg-[#F1F4F5] text-[#879197] px-1.5 py-0.5 rounded-full font-semibold">
+                                  {acc.transaction_count} tx
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-mono font-bold text-[#20282D]">{formatRupiah(acc.balance ?? acc.amount ?? 0)}</span>
                           </div>
-                          <span className="font-mono font-bold text-[#20282D]">{formatRupiah(acc.balance)}</span>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center justify-between pt-2.5 mt-1 border-t border-[#F1F4F5] text-xs font-semibold">
                       <span className="text-[#879197]">Total Aset Lancar</span>
                       <span className="font-mono font-bold text-[#37AFCB]">
-                        {formatRupiah(data?.assets?.current?.total || 0)}
+                        {formatRupiah(data?.assets?.current?.total ?? 0)}
                       </span>
                     </div>
                   </div>
@@ -182,24 +198,35 @@ export default function BalanceSheetPage() {
                   {/* Aset Tetap */}
                   <div className="mt-5">
                     <h4 className="text-xs font-semibold text-[#20282D] mb-2">Aset Tetap</h4>
-                    <div className="space-y-1">
-                      {data?.assets?.fixed?.accounts?.map((acc) => (
-                        <div
-                          key={acc.account_id}
-                          className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-xl hover:bg-[#F8FAFA] transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[#879197] text-[11px] font-semibold">{acc.account_code}</span>
-                            <span className="text-[#20282D] font-medium">{acc.account_name}</span>
+                    {fixedAssets.length === 0 ? (
+                      <p className="text-xs text-[#879197] italic py-1.5 px-2.5">
+                        Tidak ada pos aset tetap.
+                      </p>
+                    ) : (
+                      <div className="space-y-1">
+                        {fixedAssets.map((acc) => (
+                          <div
+                            key={acc.account_id}
+                            className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-xl hover:bg-[#F8FAFA] transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[#879197] text-[11px] font-semibold">{acc.account_code}</span>
+                              <span className="text-[#20282D] font-medium">{acc.account_name}</span>
+                              {acc.transaction_count > 0 && (
+                                <span className="text-[10px] bg-[#F1F4F5] text-[#879197] px-1.5 py-0.5 rounded-full font-semibold">
+                                  {acc.transaction_count} tx
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-mono font-bold text-[#20282D]">{formatRupiah(acc.balance ?? acc.amount ?? 0)}</span>
                           </div>
-                          <span className="font-mono font-bold text-[#20282D]">{formatRupiah(acc.balance)}</span>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center justify-between pt-2.5 mt-1 border-t border-[#F1F4F5] text-xs font-semibold">
                       <span className="text-[#879197]">Total Aset Tetap</span>
                       <span className="font-mono font-bold text-[#37AFCB]">
-                        {formatRupiah(data?.assets?.fixed?.total || 0)}
+                        {formatRupiah(data?.assets?.fixed?.total ?? 0)}
                       </span>
                     </div>
                   </div>
@@ -209,7 +236,7 @@ export default function BalanceSheetPage() {
                 <div className="p-4 rounded-2xl bg-[#E5F6FA] border border-[#55BFD8]/30 flex items-center justify-between font-bold text-xs">
                   <span className="text-[#20282D]">TOTAL ASET (AKTIVA)</span>
                   <span className="font-mono text-base font-black text-[#20282D]">
-                    {formatRupiah(data?.assets?.total || 0)}
+                    {formatRupiah(data?.assets?.total ?? data?.total_assets ?? 0)}
                   </span>
                 </div>
               </div>
@@ -224,24 +251,35 @@ export default function BalanceSheetPage() {
                   {/* Kewajiban Lancar */}
                   <div className="mt-3">
                     <h4 className="text-xs font-semibold text-[#20282D] mb-2">Kewajiban / Hutang</h4>
-                    <div className="space-y-1">
-                      {data?.liabilities?.current?.accounts?.map((acc) => (
-                        <div
-                          key={acc.account_id}
-                          className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-xl hover:bg-[#F8FAFA] transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[#879197] text-[11px] font-semibold">{acc.account_code}</span>
-                            <span className="text-[#20282D] font-medium">{acc.account_name}</span>
+                    {liabilities.length === 0 ? (
+                      <p className="text-xs text-[#879197] italic py-1.5 px-2.5">
+                        Tidak ada kewajiban pada posisi ini.
+                      </p>
+                    ) : (
+                      <div className="space-y-1">
+                        {liabilities.map((acc) => (
+                          <div
+                            key={acc.account_id}
+                            className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-xl hover:bg-[#F8FAFA] transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[#879197] text-[11px] font-semibold">{acc.account_code}</span>
+                              <span className="text-[#20282D] font-medium">{acc.account_name}</span>
+                              {acc.transaction_count > 0 && (
+                                <span className="text-[10px] bg-[#F1F4F5] text-[#879197] px-1.5 py-0.5 rounded-full font-semibold">
+                                  {acc.transaction_count} tx
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-mono font-bold text-[#20282D]">{formatRupiah(acc.balance ?? acc.amount ?? 0)}</span>
                           </div>
-                          <span className="font-mono font-bold text-[#20282D]">{formatRupiah(acc.balance)}</span>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center justify-between pt-2.5 mt-1 border-t border-[#F1F4F5] text-xs font-semibold">
                       <span className="text-[#879197]">Total Kewajiban</span>
                       <span className="font-mono font-bold text-[#E9B45D]">
-                        {formatRupiah(data?.liabilities?.total || 0)}
+                        {formatRupiah(data?.liabilities?.total ?? data?.total_liabilities ?? 0)}
                       </span>
                     </div>
                   </div>
@@ -250,7 +288,7 @@ export default function BalanceSheetPage() {
                   <div className="mt-5">
                     <h4 className="text-xs font-semibold text-[#20282D] mb-2">Modal &amp; Ekuitas</h4>
                     <div className="space-y-1">
-                      {data?.equity?.accounts?.map((acc) => (
+                      {equities.map((acc) => (
                         <div
                           key={acc.account_id}
                           className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-xl hover:bg-[#F8FAFA] transition-colors"
@@ -258,8 +296,13 @@ export default function BalanceSheetPage() {
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-[#879197] text-[11px] font-semibold">{acc.account_code}</span>
                             <span className="text-[#20282D] font-medium">{acc.account_name}</span>
+                            {acc.transaction_count > 0 && (
+                              <span className="text-[10px] bg-[#F1F4F5] text-[#879197] px-1.5 py-0.5 rounded-full font-semibold">
+                                {acc.transaction_count} tx
+                              </span>
+                            )}
                           </div>
-                          <span className="font-mono font-bold text-[#20282D]">{formatRupiah(acc.balance)}</span>
+                          <span className="font-mono font-bold text-[#20282D]">{formatRupiah(acc.balance ?? acc.amount ?? 0)}</span>
                         </div>
                       ))}
                       {/* Laba Bersih Periode Berjalan */}
@@ -273,7 +316,7 @@ export default function BalanceSheetPage() {
                     <div className="flex items-center justify-between pt-2.5 mt-1 border-t border-[#F1F4F5] text-xs font-semibold">
                       <span className="text-[#879197]">Total Ekuitas</span>
                       <span className="font-mono font-bold text-[#37AFCB]">
-                        {formatRupiah(data?.equity?.total || 0)}
+                        {formatRupiah(data?.equity?.total ?? data?.total_equity ?? 0)}
                       </span>
                     </div>
                   </div>
@@ -283,7 +326,7 @@ export default function BalanceSheetPage() {
                 <div className="p-4 rounded-2xl bg-[#FEF7EB] border border-[#E9B45D]/30 flex items-center justify-between font-bold text-xs">
                   <span className="text-[#20282D]">TOTAL PASIVA (HUTANG + EKUITAS)</span>
                   <span className="font-mono text-base font-black text-[#20282D]">
-                    {formatRupiah(data?.liabilities_and_equity_total || 0)}
+                    {formatRupiah(totalPasiva)}
                   </span>
                 </div>
               </div>

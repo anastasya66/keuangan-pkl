@@ -300,12 +300,14 @@ export function StockCardPage() {
 
             {/* Financial Parameters & Current Stock Pill */}
             <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
-              <div className="bg-[#F8FAFA] border border-[#E7ECEE] px-3.5 py-2 rounded-xl">
-                <span className="text-[#879197] text-[10px] block uppercase font-semibold">HPP Rata-rata</span>
-                <span className="font-mono font-bold text-[#20282D]">
-                  {formatRupiah(stockCardData.product.average_cost)}
-                </span>
-              </div>
+              {isAdmin && (
+                <div className="bg-[#F8FAFA] border border-[#E7ECEE] px-3.5 py-2 rounded-xl">
+                  <span className="text-[#879197] text-[10px] block uppercase font-semibold">HPP Rata-rata</span>
+                  <span className="font-mono font-bold text-[#20282D]">
+                    {formatRupiah(stockCardData.product.average_cost)}
+                  </span>
+                </div>
+              )}
 
               <div className="bg-[#F8FAFA] border border-[#E7ECEE] px-3.5 py-2 rounded-xl">
                 <span className="text-[#879197] text-[10px] block uppercase font-semibold">Harga Jual</span>

@@ -20,15 +20,21 @@ class Product extends Model
     protected $fillable = [
         'category_id',
         'unit_id',
+        'is_consignment',
+        'consignor_id',
         'sku',
         'barcode',
         'name',
         'description',
         'image',
         'purchase_price',
+        'consignment_cost_price',
         'selling_price',
+        'commission_rate',
+        'commission_amount',
         'average_cost',
         'stock',
+        'initial_consignment_stock',
         'min_stock',
         'is_active',
     ];
@@ -51,10 +57,15 @@ class Product extends Model
     {
         return [
             'is_active' => 'boolean',
+            'is_consignment' => 'boolean',
             'purchase_price' => 'decimal:2',
+            'consignment_cost_price' => 'decimal:2',
             'selling_price' => 'decimal:2',
+            'commission_rate' => 'decimal:2',
+            'commission_amount' => 'decimal:2',
             'average_cost' => 'decimal:2',
             'stock' => 'decimal:2',
+            'initial_consignment_stock' => 'decimal:2',
             'min_stock' => 'decimal:2',
         ];
     }
@@ -73,6 +84,14 @@ class Product extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    /**
+     * Mitra konsinyor pemilik produk (jika produk konsinyasi).
+     */
+    public function consignor(): BelongsTo
+    {
+        return $this->belongsTo(Consignor::class);
     }
 
     /**

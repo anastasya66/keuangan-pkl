@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ChartOfAccountController;
+use App\Http\Controllers\Api\ConsignmentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DocumentSequenceController;
 use App\Http\Controllers\Api\FinancialTransactionController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\Reports\BalanceSheetController;
 use App\Http\Controllers\Api\Reports\IncomeStatementController;
 use App\Http\Controllers\Api\Reports\InventoryReportController;
+use App\Http\Controllers\Api\Reports\SalesReportController;
 use App\Http\Controllers\Api\RolePermissionController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\StockCardController;
@@ -122,6 +124,24 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::post('payments/{orderId}/simulate-pay', [PosController::class, 'simulatePayment']);
         Route::post('payments/{orderId}/cancel', [PosController::class, 'cancelPayment']);
         Route::get('bank-accounts', [PosController::class, 'bankAccounts']);
+    });
+
+    // Modul Konsinyasi (Barang Titipan Mitra & Bagi Hasil)
+    Route::prefix('consignments')->group(function () {
+        Route::get('summary', [ConsignmentController::class, 'summary']);
+        Route::get('sales', [ConsignmentController::class, 'sales']);
+        Route::get('products', [ConsignmentController::class, 'products']);
+        Route::get('consignors', [ConsignmentController::class, 'consignors']);
+        Route::get('consignors/active', [ConsignmentController::class, 'activeConsignors']);
+        Route::post('consignors', [ConsignmentController::class, 'storeConsignor']);
+        Route::put('consignors/{consignor}', [ConsignmentController::class, 'updateConsignor']);
+        Route::delete('consignors/{consignor}', [ConsignmentController::class, 'destroyConsignor']);
+        Route::post('products', [ConsignmentController::class, 'storeProduct']);
+        Route::put('products/{product}', [ConsignmentController::class, 'updateProduct']);
+        Route::post('products/{product}/adjust-stock', [ConsignmentController::class, 'adjustStock']);
+        Route::post('settle', [ConsignmentController::class, 'settle']);
+        Route::get('export/pdf', [ConsignmentController::class, 'exportPdf']);
+        Route::get('export/excel', [ConsignmentController::class, 'exportExcel']);
     });
 
     // Financial Management: Transaction Categories
@@ -238,6 +258,11 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::get('inventory-valuation', [InventoryValuationController::class, 'index']);
         Route::get('inventory-valuation/export/pdf', [InventoryValuationController::class, 'exportPdf']);
         Route::get('inventory-valuation/export/excel', [InventoryValuationController::class, 'exportExcel']);
+
+        // Sales Report (Analisis Penjualan, Laba & Margin Harian/Bulanan)
+        Route::get('sales', [SalesReportController::class, 'index']);
+        Route::get('sales/export/pdf', [SalesReportController::class, 'exportPdf']);
+        Route::get('sales/export/excel', [SalesReportController::class, 'exportExcel']);
     });
 });
 

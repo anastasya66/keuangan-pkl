@@ -72,7 +72,9 @@ export default function IncomeStatementPage() {
     }
   };
 
-  const isProfitable = (data?.net_profit || 0) >= 0;
+  const isProfitable = (data?.net_profit ?? 0) >= 0;
+  const revenueAccounts = data?.revenues?.accounts || data?.revenues?.items || [];
+  const expenseAccounts = data?.expenses?.accounts || data?.expenses?.items || [];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -168,13 +170,13 @@ export default function IncomeStatementPage() {
                 </h3>
               </div>
 
-              {data?.revenues?.accounts?.length === 0 ? (
+              {revenueAccounts.length === 0 ? (
                 <p className="text-xs text-[#879197] italic py-2">
                   Tidak ada pendapatan pada periode ini.
                 </p>
               ) : (
                 <div className="space-y-1">
-                  {data?.revenues?.accounts?.map((acc) => (
+                  {revenueAccounts.map((acc) => (
                     <div
                       key={acc.account_id}
                       className="flex items-center justify-between text-xs py-2 px-3 rounded-xl hover:bg-[#F8FAFA] transition-colors"
@@ -182,9 +184,14 @@ export default function IncomeStatementPage() {
                       <div className="flex items-center gap-3">
                         <span className="font-mono text-[#879197] font-semibold">{acc.account_code}</span>
                         <span className="text-[#20282D] font-medium">{acc.account_name}</span>
+                        {acc.transaction_count > 0 && (
+                          <span className="text-[10px] bg-[#F1F4F5] text-[#879197] px-2 py-0.5 rounded-full font-semibold">
+                            {acc.transaction_count} transaksi
+                          </span>
+                        )}
                       </div>
                       <span className="font-mono font-bold text-[#20282D]">
-                        {formatRupiah(acc.amount)}
+                        {formatRupiah(acc.amount ?? acc.balance ?? 0)}
                       </span>
                     </div>
                   ))}
@@ -207,13 +214,13 @@ export default function IncomeStatementPage() {
                 </h3>
               </div>
 
-              {data?.expenses?.accounts?.length === 0 ? (
+              {expenseAccounts.length === 0 ? (
                 <p className="text-xs text-[#879197] italic py-2">
                   Tidak ada beban pada periode ini.
                 </p>
               ) : (
                 <div className="space-y-1">
-                  {data?.expenses?.accounts?.map((acc) => (
+                  {expenseAccounts.map((acc) => (
                     <div
                       key={acc.account_id}
                       className="flex items-center justify-between text-xs py-2 px-3 rounded-xl hover:bg-[#F8FAFA] transition-colors"
@@ -221,9 +228,14 @@ export default function IncomeStatementPage() {
                       <div className="flex items-center gap-3">
                         <span className="font-mono text-[#879197] font-semibold">{acc.account_code}</span>
                         <span className="text-[#20282D] font-medium">{acc.account_name}</span>
+                        {acc.transaction_count > 0 && (
+                          <span className="text-[10px] bg-[#F1F4F5] text-[#879197] px-2 py-0.5 rounded-full font-semibold">
+                            {acc.transaction_count} transaksi
+                          </span>
+                        )}
                       </div>
                       <span className="font-mono font-bold text-[#20282D]">
-                        {formatRupiah(acc.amount)}
+                        {formatRupiah(acc.amount ?? acc.balance ?? 0)}
                       </span>
                     </div>
                   ))}
@@ -256,7 +268,7 @@ export default function IncomeStatementPage() {
                       isProfitable ? 'text-[#48B58B]' : 'text-[#E47777]'
                     }`}
                   >
-                    {data?.is_profitable ? 'LABA BERSIH PERIODE BERJALAN' : 'RUGI BERSIH PERIODE BERJALAN'}
+                    {data?.profit_label || (isProfitable ? 'LABA BERSIH PERIODE BERJALAN' : 'RUGI BERSIH PERIODE BERJALAN')}
                   </div>
                 </div>
 

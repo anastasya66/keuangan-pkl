@@ -30,6 +30,20 @@ class ProductResource extends JsonResource
             'average_cost' => (float) $this->average_cost,
             'min_stock' => (float) $this->min_stock,
             'is_active' => (bool) $this->is_active,
+            'is_consignment' => (bool) $this->is_consignment,
+            'consignor_id' => $this->consignor_id,
+            'consignor' => $this->whenLoaded('consignor', function () {
+                return [
+                    'id' => $this->consignor->id,
+                    'code' => $this->consignor->code,
+                    'name' => $this->consignor->name,
+                    'phone' => $this->consignor->phone,
+                ];
+            }),
+            'consignment_cost_price' => (float) $this->consignment_cost_price,
+            'commission_rate' => (float) $this->commission_rate,
+            'commission_amount' => (float) $this->commission_amount,
+            'initial_consignment_stock' => (float) $this->initial_consignment_stock,
             'category' => $this->whenLoaded('category', function () {
                 return [
                     'id' => $this->category->id,

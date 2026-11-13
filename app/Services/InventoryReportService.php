@@ -16,7 +16,7 @@ class InventoryReportService
      */
     public function getInventoryReport(array $filters = []): array
     {
-        $query = Product::with(['category', 'unit'])->where('is_active', true);
+        $query = Product::with(['category', 'unit', 'consignor'])->where('is_active', true);
 
         // Filter kategori
         if (!empty($filters['category_id'])) {
@@ -134,6 +134,8 @@ class InventoryReportService
                 'stock_status' => $status,
                 'status_label' => $statusLabel,
                 'stock_status_label' => $statusLabel,
+                'is_consignment' => (bool) $p->is_consignment,
+                'consignor_name' => $p->consignor?->name ?? null,
             ];
         }
 

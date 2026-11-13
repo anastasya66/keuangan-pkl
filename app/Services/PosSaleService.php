@@ -24,7 +24,7 @@ class PosSaleService
     public function searchProducts(string $query = '', int $limit = 250): Collection
     {
         $q = Product::query()
-            ->with(['category', 'unit'])
+            ->with(['category', 'unit', 'consignor'])
             ->where('is_active', true);
 
         if (!empty($query)) {
@@ -44,7 +44,7 @@ class PosSaleService
      */
     public function findByBarcode(string $barcode): ?Product
     {
-        return Product::with(['category', 'unit'])
+        return Product::with(['category', 'unit', 'consignor'])
             ->where('barcode', trim($barcode))
             ->where('is_active', true)
             ->first();
@@ -113,9 +113,22 @@ class PosSaleService
                 $itemDiscount = (float) ($item['discount_amount'] ?? 0);
                 $itemSubtotal = max(0.00, round(($qty * $unitPrice) - $itemDiscount, 2));
 
-                // Snapshot HPP per unit (Moving Average Cost, fallback purchase_price)
-                $costPrice = (float) $product->effective_cost;
-                $itemCogs = round($qty * $costPrice, 2);
+                $isConsignment = (bool) $product->is_consignment;
+                $consignorId = $product->consignor_id;
+
+                if ($isConsignment) {
+                    $consignmentCost = (float) $product->consignment_cost_price;
+                    $commissionPerUnit = max(0.00, round($unitPrice - $consignmentCost, 2));
+                    $costPrice = $consignmentCost;
+                    // HPP toko sendiri TIDAK dibebani barang konsinyasi
+                    $itemCogs = 0.00;
+                } else {
+                    $consignmentCost = 0.00;
+                    $commissionPerUnit = 0.00;
+                    // Snapshot HPP per unit (Moving Average Cost, fallback purchase_price)
+                    $costPrice = (float) $product->effective_cost;
+                    $itemCogs = round($qty * $costPrice, 2);
+                }
 
                 $subtotal += $itemSubtotal;
                 $totalCogs += $itemCogs;
@@ -125,10 +138,14 @@ class PosSaleService
                 $preparedItems[] = [
                     'product' => $product,
                     'product_id' => $product->id,
+                    'is_consignment' => $isConsignment,
+                    'consignor_id' => $consignorId,
                     'quantity' => $qty,
                     'unit_price' => $unitPrice,
                     'cost_price' => $costPrice,
+                    'consignment_cost' => round($qty * $consignmentCost, 2),
                     'discount_amount' => $itemDiscount,
+                    'commission_amount' => round($qty * $commissionPerUnit, 2),
                     'subtotal' => $itemSubtotal,
                     'cogs_total' => $itemCogs,
                     'stock_before' => $currentStock,
@@ -185,12 +202,17 @@ class PosSaleService
             foreach ($preparedItems as $prep) {
                 $sale->items()->create([
                     'product_id' => $prep['product_id'],
+                    'is_consignment' => $prep['is_consignment'],
+                    'consignor_id' => $prep['consignor_id'],
                     'quantity' => $prep['quantity'],
                     'unit_price' => $prep['unit_price'],
                     'cost_price' => $prep['cost_price'],
+                    'consignment_cost' => $prep['consignment_cost'],
                     'discount_amount' => $prep['discount_amount'],
+                    'commission_amount' => $prep['commission_amount'],
                     'subtotal' => $prep['subtotal'],
                     'cogs_total' => $prep['cogs_total'],
+                    'settlement_status' => 'unsettled',
                 ]);
 
                 // Update saldo stok produk

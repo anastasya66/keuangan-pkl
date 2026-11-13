@@ -40,6 +40,22 @@ export const reportService = {
     return response.data;
   },
 
+  // === LAPORAN PENJUALAN (SALES & PROFIT REPORT) ===
+  getSalesReport: async (params = {}) => {
+    const response = await api.get('/reports/sales', { params });
+    return response.data;
+  },
+
+  downloadSalesReportPdf: async (params = {}) => {
+    const mode = params.mode || 'daily';
+    return await downloadFromApi('/reports/sales/export/pdf', params, `laporan-penjualan-${mode}.pdf`);
+  },
+
+  downloadSalesReportExcel: async (params = {}) => {
+    const mode = params.mode || 'daily';
+    return await downloadFromApi('/reports/sales/export/excel', params, `laporan-penjualan-${mode}.xlsx`);
+  },
+
   // === LAPORAN LABA RUGI (INCOME STATEMENT) ===
   getIncomeStatement: async (params = {}) => {
     const response = await api.get('/reports/income-statement', { params });

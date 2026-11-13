@@ -33,6 +33,7 @@ function formatDate(dateStr) {
 export function PurchasePage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const basePath = isAdmin ? '/admin/purchases' : '/staff/purchases';
   const navigate = useNavigate();
 
   const [purchases, setPurchases] = useState([]);
@@ -161,7 +162,7 @@ export function PurchasePage() {
       setIsModalOpen(false);
       fetchPurchases(1, search, statusFilter, paymentMethodFilter, paymentStatusFilter, supplierFilter, startDate, endDate);
       if (response.data?.id) {
-        navigate(`/admin/purchases/${response.data.id}`);
+        navigate(`${basePath}/${response.data.id}`);
       }
     } catch (err) {
       showToast(err.response?.data?.message || 'Gagal membuat transaksi pembelian', 'error');
@@ -179,7 +180,7 @@ export function PurchasePage() {
       render: (item) => (
         <div className="space-y-0.5 text-left">
           <Link
-            to={`/admin/purchases/${item.id}`}
+            to={`${basePath}/${item.id}`}
             className="font-mono text-xs font-bold text-[#37AFCB] hover:underline block"
           >
             {item.invoice_number}
@@ -303,7 +304,7 @@ export function PurchasePage() {
       render: (item) => (
         <div className="flex justify-center">
           <Link
-            to={`/admin/purchases/${item.id}`}
+            to={`${basePath}/${item.id}`}
             className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#20282D] bg-[#F1F4F5] hover:bg-[#E7ECEE] rounded-full transition"
           >
             <span>Detail</span>

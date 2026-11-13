@@ -173,7 +173,7 @@ export function ProductPage() {
     { header: 'Kode / SKU', className: 'whitespace-nowrap' },
     { header: 'Nama Barang', className: 'min-w-[200px]' },
     { header: 'Satuan', className: 'text-center whitespace-nowrap' },
-    { header: 'Harga Beli', className: 'text-right whitespace-nowrap' },
+    ...(isAdmin ? [{ header: 'Harga Beli', className: 'text-right whitespace-nowrap' }] : []),
     { header: 'Harga Jual', className: 'text-right whitespace-nowrap' },
     { header: 'Status', className: 'text-center whitespace-nowrap' },
     ...(isAdmin ? [{ header: 'Aksi', className: 'text-right whitespace-nowrap min-w-[210px]' }] : []),
@@ -346,10 +346,15 @@ export function ProductPage() {
                   <div className="font-bold text-xs sm:text-[13px] text-[#10262E] leading-snug">
                     {prod.name}
                   </div>
-                  <div className="inline-flex items-center gap-1.5 mt-1">
+                  <div className="inline-flex items-center gap-1.5 mt-1 flex-wrap">
                     <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#F3FBFC] text-[#577782] border border-[#D7EBEF] font-medium whitespace-nowrap shrink-0">
                       {prod.category?.name || 'Tanpa Kategori'}
                     </span>
+                    {Boolean(prod.is_consignment) && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 font-bold whitespace-nowrap shrink-0">
+                        Konsinyasi (Titip Jual)
+                      </span>
+                    )}
                     {prod.description && (
                       <span
                         className="text-[11px] text-[#8EA6AF] truncate max-w-[180px]"
@@ -370,10 +375,12 @@ export function ProductPage() {
               </span>
             </td>
 
-            {/* Purchase Price */}
-            <td className="px-4 py-3.5 text-right font-mono text-xs text-[#577782] whitespace-nowrap">
-              {formatRupiah(prod.purchase_price_numeric)}
-            </td>
+            {/* Purchase Price (Admin Only) */}
+            {isAdmin && (
+              <td className="px-4 py-3.5 text-right font-mono text-xs text-[#577782] whitespace-nowrap">
+                {formatRupiah(prod.purchase_price_numeric)}
+              </td>
+            )}
 
             {/* Selling Price */}
             <td className="px-4 py-3.5 text-right font-mono text-xs font-bold text-[#167A93] whitespace-nowrap">

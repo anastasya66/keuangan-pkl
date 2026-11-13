@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Exports\BalanceSheetExport;
+use App\Exports\ConsignmentExport;
 use App\Exports\IncomeStatementExport;
 use App\Exports\InventoryReportExport;
 use App\Exports\InventoryValuationExport;
+use App\Exports\SalesReportExport;
 use App\Exports\StockMovementExport;
 use App\Models\SystemSetting;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -180,6 +182,60 @@ class ReportExportService
         $filename = $filename ?: 'nilai-persediaan-' . date('Ymd-His') . '.xlsx';
 
         $exporter = new InventoryValuationExport($data);
+        return $exporter->download($filename);
+    }
+
+    /**
+     * Export Laporan Konsinyasi ke PDF (A4 Landscape).
+     */
+    public function exportConsignmentPdf(array $data, ?string $filename = null): Response
+    {
+        $filename = $filename ?: 'laporan-konsinyasi-' . date('Ymd-His') . '.pdf';
+
+        $pdf = Pdf::loadView('reports.pdf.consignment-report', [
+            'data' => $data,
+            'settings' => $this->getStoreSettings(),
+        ])->setPaper('a4', 'landscape');
+
+        return $this->streamPdf($pdf, $filename);
+    }
+
+    /**
+     * Export Laporan Konsinyasi ke Excel (.xlsx).
+     */
+    public function exportConsignmentExcel(array $data, ?string $filename = null): Response
+    {
+        $filename = $filename ?: 'laporan-konsinyasi-' . date('Ymd-His') . '.xlsx';
+
+        $exporter = new ConsignmentExport($data);
+        return $exporter->download($filename);
+    }
+
+    /**
+     * Export Laporan Penjualan (Harian/Bulanan) ke PDF (A4 Portrait).
+     */
+    public function exportSalesReportPdf(array $data, ?string $filename = null): Response
+    {
+        $mode = $data['mode'] ?? 'daily';
+        $filename = $filename ?: 'laporan-penjualan-' . $mode . '-' . date('Ymd-His') . '.pdf';
+
+        $pdf = Pdf::loadView('reports.pdf.sales-report', [
+            'data' => $data,
+            'settings' => $this->getStoreSettings(),
+        ])->setPaper('a4', 'portrait');
+
+        return $this->streamPdf($pdf, $filename);
+    }
+
+    /**
+     * Export Laporan Penjualan (Harian/Bulanan) ke Excel (.xlsx).
+     */
+    public function exportSalesReportExcel(array $data, ?string $filename = null): Response
+    {
+        $mode = $data['mode'] ?? 'daily';
+        $filename = $filename ?: 'laporan-penjualan-' . $mode . '-' . date('Ymd-His') . '.xlsx';
+
+        $exporter = new SalesReportExport($data);
         return $exporter->download($filename);
     }
 }

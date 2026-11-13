@@ -438,8 +438,13 @@ export function InventoryValuationPage() {
 
                 {/* Daftar Produk */}
                 <td className="px-5 py-3.5 text-left min-w-[220px] align-middle">
-                  <div className="font-bold text-xs sm:text-sm text-[#20282D]">
-                    {item.name}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-xs sm:text-sm text-[#20282D]">{item.name}</span>
+                    {Boolean(item.is_consignment) && (
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200 whitespace-nowrap">
+                        Konsinyasi (Titip Jual)
+                      </span>
+                    )}
                   </div>
                   <div className="text-[11px] text-[#879197] mt-0.5 whitespace-nowrap">
                     {item.category?.name || '-'}

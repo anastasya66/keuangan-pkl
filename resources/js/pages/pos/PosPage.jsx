@@ -606,6 +606,12 @@ export function PosPage() {
                       <div className="relative overflow-hidden">
                         <ProductThumbnail product={p} aspect="aspect-[4/3]" />
 
+                        {Boolean(p.is_consignment) && (
+                          <span className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-amber-500 text-white font-bold text-[10px] rounded-md shadow-xs">
+                            Konsinyasi (Titip Jual)
+                          </span>
+                        )}
+
                         {isOutOfStock && (
                           <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center">
                             <span className="px-2.5 py-1 bg-rose-600 text-white font-bold text-[10px] rounded-md uppercase tracking-wider shadow-sm">
@@ -768,10 +774,17 @@ export function PosPage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-1">
-                        <div>
-                          <h4 className="text-xs font-bold text-[#20282D] truncate leading-tight">
-                            {item.product.name}
-                          </h4>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="text-xs font-bold text-[#20282D] truncate leading-tight">
+                              {item.product.name}
+                            </h4>
+                            {Boolean(item.product.is_consignment) && (
+                              <span className="shrink-0 px-1.5 py-0.5 bg-amber-100 text-amber-800 font-bold text-[9px] rounded">
+                                Konsinyasi (Titip Jual)
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[10px] font-mono text-[#879197]">
                             SKU: {item.product.sku || '-'}
                           </span>

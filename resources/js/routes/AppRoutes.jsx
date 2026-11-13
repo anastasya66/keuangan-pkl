@@ -18,6 +18,7 @@ import ProductPage from '../pages/products/ProductPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import BalanceSheetPage from '../pages/reports/BalanceSheetPage';
 import IncomeStatementPage from '../pages/reports/IncomeStatementPage';
+import SalesReportPage from '../pages/reports/SalesReportPage';
 import InventoryReportPage from '../pages/reports/InventoryReportPage';
 import StockMovementReportPage from '../pages/reports/StockMovementReportPage';
 import StaffDashboardPage from '../pages/staff/StaffDashboardPage';
@@ -29,6 +30,7 @@ import PurchaseDetailPage from '../pages/purchases/PurchaseDetailPage';
 import StockCardPage from '../pages/inventory/StockCardPage';
 import InventoryValuationPage from '../pages/inventory/InventoryValuationPage';
 import SettingsPage from '../pages/settings/SettingsPage';
+import ConsignmentPage from '../pages/consignments/ConsignmentPage';
 
 // Wrapper for Profile page to render with the user's role layout
 function ProfileWrapper() {
@@ -96,6 +98,9 @@ export function AppRoutes() {
         <Route path="pos" element={<PosPage />} />
         <Route path="penjualan" element={<PosPage />} />
         <Route path="pos/sales" element={<Navigate to="/admin/pos" replace />} />
+        {/* Konsinyasi (Admin) */}
+        <Route path="consignments" element={<ConsignmentPage />} />
+        <Route path="konsinyasi" element={<ConsignmentPage />} />
         {/* Purchases & Suppliers (Admin) */}
         <Route path="suppliers" element={<SupplierPage />} />
         <Route path="purchases" element={<PurchasePage />} />
@@ -112,13 +117,17 @@ export function AppRoutes() {
         <Route path="accounting/ledger" element={<GeneralLedgerPage />} />
         <Route path="accounting/trial-balance" element={<TrialBalancePage />} />
         {/* Reports Routes (Admin) */}
+        <Route path="reports/sales" element={<SalesReportPage />} />
+        <Route path="reports/sales-report" element={<SalesReportPage />} />
+        <Route path="laporan-penjualan" element={<SalesReportPage />} />
         <Route path="reports/income-statement" element={<IncomeStatementPage />} />
         <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
         <Route path="reports/inventory" element={<InventoryReportPage />} />
         <Route path="inventory/stock" element={<InventoryReportPage />} />
         <Route path="inventory/stocks" element={<InventoryReportPage />} />
         <Route path="sisa-stok" element={<InventoryReportPage />} />
-        <Route path="reports/stock-movements" element={<StockMovementReportPage />} />
+        {/* Route Mutasi Persediaan dinonaktifkan sesuai permintaan */}
+        {/* <Route path="reports/stock-movements" element={<StockMovementReportPage />} /> */}
       </Route>
 
       {/* Staff Protected Routes */}
@@ -132,32 +141,41 @@ export function AppRoutes() {
       >
         <Route index element={<Navigate to="/staff/dashboard" replace />} />
         <Route path="dashboard" element={<StaffDashboardPage />} />
-        <Route path="products" element={<ProductPage />} />
-        <Route path="categories" element={<CategoryPage />} />
-        <Route path="units" element={<UnitPage />} />
-        {/* POS & Kasir Routes (Staff) */}
+
+        {/* Transaksi Operasional (Staff: Hanya Penjualan POS) */}
         <Route path="pos" element={<PosPage />} />
         <Route path="penjualan" element={<PosPage />} />
         <Route path="pos/sales" element={<Navigate to="/staff/pos" replace />} />
-        {/* Inventory Stock Card & Valuation (Staff) */}
-        <Route path="inventory/stock-card" element={<StockCardPage />} />
-        <Route path="kartu-stok" element={<StockCardPage />} />
-        <Route path="inventory/valuation" element={<InventoryValuationPage />} />
-        <Route path="nilai-persediaan" element={<InventoryValuationPage />} />
-        {/* Accounting Routes (Staff) */}
-        <Route path="accounting/accounts" element={<ChartOfAccountsPage />} />
-        <Route path="accounting/journals" element={<GeneralJournalPage />} />
-        <Route path="accounting/journals/:id" element={<JournalDetailPage />} />
-        <Route path="accounting/ledger" element={<GeneralLedgerPage />} />
-        <Route path="accounting/trial-balance" element={<TrialBalancePage />} />
-        {/* Reports Routes (Staff) */}
-        <Route path="reports/income-statement" element={<IncomeStatementPage />} />
-        <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
+
+        {/* Inventaris Operasional (Staff: Katalog Produk, Stok Barang, Kartu Stok) */}
+        <Route path="products" element={<ProductPage />} />
         <Route path="reports/inventory" element={<InventoryReportPage />} />
         <Route path="inventory/stock" element={<InventoryReportPage />} />
         <Route path="inventory/stocks" element={<InventoryReportPage />} />
         <Route path="sisa-stok" element={<InventoryReportPage />} />
-        <Route path="reports/stock-movements" element={<StockMovementReportPage />} />
+        <Route path="inventory/stock-card" element={<StockCardPage />} />
+        <Route path="kartu-stok" element={<StockCardPage />} />
+
+        {/* Route Guard / Redirect untuk Menu Master & Transaksi Sensitif (Bukan untuk Staff) */}
+        <Route path="consignments/*" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="konsinyasi/*" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="purchases/*" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="suppliers/*" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="categories/*" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="units/*" element={<Navigate to="/staff/dashboard" replace />} />
+
+        {/* Route Guard / Redirect untuk Menu Finansial & Sensitif Admin */}
+        <Route path="inventory/valuation" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="nilai-persediaan" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="accounting/*" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="reports/income-statement" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="reports/balance-sheet" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="reports/sales" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="reports/sales-report" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="laporan-penjualan" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="users/*" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="settings/*" element={<Navigate to="/staff/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/staff/dashboard" replace />} />
       </Route>
 
       {/* Profile Route (Shared by both roles) */}

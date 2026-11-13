@@ -465,17 +465,73 @@ class AccountingService
             ]);
         }
 
+        $sale->loadMissing('items');
+        $hasConsignment = $sale->items->contains('is_consignment', true);
+
+        $regularSubtotal = 0.0;
+        $consignmentCommission = 0.0;
+        $consignmentDebt = 0.0;
+
+        foreach ($sale->items as $item) {
+            if ($item->is_consignment) {
+                $consignmentCommission += (float) $item->commission_amount;
+                $consignmentDebt += (float) $item->consignment_cost;
+            } else {
+                $regularSubtotal += (float) $item->subtotal;
+            }
+        }
+
+        $consignmentCommission = round($consignmentCommission, 2);
+        $consignmentDebt = round($consignmentDebt, 2);
+
+        if (!$hasConsignment) {
+            $regularRevenue = $grandTotal;
+            $consignmentCommission = 0.00;
+            $consignmentDebt = 0.00;
+        } else {
+            $consignmentTotal = round($consignmentCommission + $consignmentDebt, 2);
+            $regularRevenue = max(0.00, round($grandTotal - $consignmentTotal, 2));
+        }
+
         $cashAccount = $this->resolveAccount('cash_default', 'assets', '1110');
         $bankAccount = $this->resolveAccount('bank_default', 'assets', '1120');
         $revenueAccount = $this->resolveAccount('revenue_default', 'revenue', '4100');
         $cogsAccount = $this->resolveAccount('cogs_default', 'expenses', '5110');
         $inventoryAssetAccount = $this->resolveAccount('inventory_asset', 'assets', '1130');
 
+        $consignmentRevenueAccount = null;
+        $consignmentDebtAccount = null;
+
+        if ($consignmentCommission > 0) {
+            try {
+                $consignmentRevenueAccount = $this->resolveAccount('consignment_revenue', 'revenue', '4110');
+            } catch (\Throwable $e) {
+                $consignmentRevenueAccount = $revenueAccount;
+            }
+        }
+
+        if ($consignmentDebt > 0) {
+            try {
+                $consignmentDebtAccount = $this->resolveAccount('consignment_payable', 'liabilities', '2130');
+            } catch (\Throwable $e) {
+                $consignmentDebtAccount = ChartOfAccount::where('account_type', 'liabilities')->where('is_active', true)->first();
+                if (!$consignmentDebtAccount) {
+                    $regularRevenue = round($regularRevenue + $consignmentDebt, 2);
+                    $consignmentDebt = 0.00;
+                }
+            }
+        }
+
         $paymentAcc = in_array($sale->payment_method, ['transfer', 'bank_transfer', 'qris', 'bank', 'digital']) ? $bankAccount : $cashAccount;
 
         $totalBalance = round($grandTotal + $cogsTotal, 2);
 
-        return DB::transaction(function () use ($sale, $userId, $autoPost, $grandTotal, $cogsTotal, $totalBalance, $paymentAcc, $revenueAccount, $cogsAccount, $inventoryAssetAccount) {
+        return DB::transaction(function () use (
+            $sale, $userId, $autoPost, $grandTotal, $cogsTotal, $totalBalance,
+            $paymentAcc, $revenueAccount, $consignmentRevenueAccount, $consignmentDebtAccount,
+            $regularRevenue, $consignmentCommission, $consignmentDebt,
+            $cogsAccount, $inventoryAssetAccount
+        ) {
             $journalNumber = JournalEntry::generateJournalNumber($sale->sale_date->format('Y-m-d'));
             $desc = "Penjualan Kasir POS: {$sale->transaction_number}" . ($sale->customer_name ? " ({$sale->customer_name})" : '');
 
@@ -503,16 +559,40 @@ class AccountingService
                 'credit' => 0.00,
             ]);
 
-            // 2. Kredit: Pendapatan Penjualan Toko
-            JournalEntryDetail::create([
-                'journal_id' => $journal->id,
-                'account_id' => $revenueAccount->id,
-                'description' => $desc,
-                'debit' => 0.00,
-                'credit' => $grandTotal,
-            ]);
+            // 2. Kredit: Pendapatan Penjualan Toko (Reguler)
+            if ($regularRevenue > 0) {
+                JournalEntryDetail::create([
+                    'journal_id' => $journal->id,
+                    'account_id' => $revenueAccount->id,
+                    'description' => $desc,
+                    'debit' => 0.00,
+                    'credit' => $regularRevenue,
+                ]);
+            }
 
-            // 3. Debit: Beban Pokok Penjualan (HPP) (jika ada HPP)
+            // 3. Kredit: Pendapatan Komisi Konsinyasi Toko
+            if ($consignmentCommission > 0) {
+                JournalEntryDetail::create([
+                    'journal_id' => $journal->id,
+                    'account_id' => $consignmentRevenueAccount->id,
+                    'description' => "Komisi Penjualan Konsinyasi POS: {$sale->transaction_number}",
+                    'debit' => 0.00,
+                    'credit' => $consignmentCommission,
+                ]);
+            }
+
+            // 4. Kredit: Utang Bagi Hasil Konsinyor (Tagihan belum disetor)
+            if ($consignmentDebt > 0) {
+                JournalEntryDetail::create([
+                    'journal_id' => $journal->id,
+                    'account_id' => $consignmentDebtAccount->id,
+                    'description' => "Utang Bagi Hasil Konsinyasi POS: {$sale->transaction_number}",
+                    'debit' => 0.00,
+                    'credit' => $consignmentDebt,
+                ]);
+            }
+
+            // 5. Debit: Beban Pokok Penjualan (HPP) (jika ada HPP toko reguler)
             if ($cogsTotal > 0) {
                 JournalEntryDetail::create([
                     'journal_id' => $journal->id,
@@ -522,7 +602,7 @@ class AccountingService
                     'credit' => 0.00,
                 ]);
 
-                // 4. Kredit: Persediaan Barang Dagang
+                // 6. Kredit: Persediaan Barang Dagang
                 JournalEntryDetail::create([
                     'journal_id' => $journal->id,
                     'account_id' => $inventoryAssetAccount->id,
@@ -531,6 +611,90 @@ class AccountingService
                     'credit' => $cogsTotal,
                 ]);
             }
+
+            return $journal->load(['details.account', 'creator']);
+        });
+    }
+
+    /**
+     * Catat jurnal akuntansi otomatis untuk penyetoran/pembayaran hak mitra konsinyor (Settlement).
+     *
+     * @param \App\Models\ConsignmentSettlement $settlement
+     * @param int $userId
+     * @param bool $autoPost
+     * @return JournalEntry
+     */
+    public function createJournalForConsignmentSettlement(\App\Models\ConsignmentSettlement $settlement, int $userId, bool $autoPost = true): ?JournalEntry
+    {
+        $existing = JournalEntry::where('source_type', 'consignment_settlement')
+            ->where('source_id', $settlement->id)
+            ->where('status', '!=', 'reversed')
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $amount = (float) $settlement->total_consignor_amount;
+        if ($amount <= 0) {
+            throw ValidationException::withMessages([
+                'amount' => 'Nominal penyetoran konsinyasi harus lebih besar dari 0.',
+            ]);
+        }
+
+        $cashAccount = $this->resolveAccount('cash_default', 'assets', '1110');
+        $bankAccount = $this->resolveAccount('bank_default', 'assets', '1120');
+
+        try {
+            $consignmentDebtAccount = $this->resolveAccount('consignment_payable', 'liabilities', '2130');
+        } catch (\Throwable $e) {
+            $consignmentDebtAccount = ChartOfAccount::where('account_type', 'liabilities')->where('is_active', true)->first();
+        }
+
+        if (!$consignmentDebtAccount) {
+            return null;
+        }
+
+        $paymentAcc = in_array($settlement->payment_method, ['transfer', 'bank_transfer', 'qris', 'bank', 'digital']) ? $bankAccount : $cashAccount;
+
+        $settlementDate = $settlement->settlement_date ? \Carbon\Carbon::parse($settlement->settlement_date)->format('Y-m-d') : now()->toDateString();
+        $journalNumber = JournalEntry::generateJournalNumber($settlementDate);
+        $consignorName = $settlement->consignor?->name ?? 'Mitra Konsinyor';
+        $desc = "Penyetoran Bagi Hasil Konsinyasi #{$settlement->settlement_number} ({$consignorName})";
+
+        return DB::transaction(function () use ($settlement, $userId, $autoPost, $amount, $paymentAcc, $consignmentDebtAccount, $settlementDate, $journalNumber, $desc) {
+            $journal = JournalEntry::create([
+                'journal_number' => $journalNumber,
+                'journal_date' => $settlementDate,
+                'description' => $desc,
+                'reference_number' => $settlement->settlement_number,
+                'source_type' => 'consignment_settlement',
+                'source_id' => $settlement->id,
+                'status' => $autoPost ? 'posted' : 'draft',
+                'total_debit' => $amount,
+                'total_credit' => $amount,
+                'created_by' => $userId,
+                'posted_by' => $autoPost ? $userId : null,
+                'posted_at' => $autoPost ? now() : null,
+            ]);
+
+            // 1. Debit: Utang Bagi Hasil Konsinyor (Hutang titipan lunas/berkurang)
+            JournalEntryDetail::create([
+                'journal_id' => $journal->id,
+                'account_id' => $consignmentDebtAccount->id,
+                'description' => $desc,
+                'debit' => $amount,
+                'credit' => 0.00,
+            ]);
+
+            // 2. Kredit: Kas / Bank (Pengeluaran kas toko ke mitra)
+            JournalEntryDetail::create([
+                'journal_id' => $journal->id,
+                'account_id' => $paymentAcc->id,
+                'description' => $desc,
+                'debit' => 0.00,
+                'credit' => $amount,
+            ]);
 
             return $journal->load(['details.account', 'creator']);
         });

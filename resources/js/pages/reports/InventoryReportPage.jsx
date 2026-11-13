@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { RefreshCw, FileText, FileSpreadsheet } from 'lucide-react';
+import useAuth from '../../hooks/useAuth';
 import categoryService from '../../services/categoryService';
 import reportService from '../../services/reportService';
 import { formatRupiah } from '../../utils/currency';
@@ -7,6 +8,9 @@ import PageHeader from '../../components/ui/PageHeader';
 import StatusBadge from '../../components/ui/StatusBadge';
 
 export default function InventoryReportPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -360,7 +364,9 @@ export default function InventoryReportPage() {
                   <th className="py-3 px-3 w-32 whitespace-nowrap">Kode / SKU</th>
                   <th className="py-3 px-3 min-w-[220px]">Nama Produk</th>
                   <th className="py-3 px-3 w-32 whitespace-nowrap">Kategori</th>
-                  <th className="py-3 px-3 text-right w-36 whitespace-nowrap">Harga Beli (HPP)</th>
+                  {isAdmin && (
+                    <th className="py-3 px-3 text-right w-36 whitespace-nowrap">Harga Beli (HPP)</th>
+                  )}
                   <th className="py-3 px-3 text-right w-36 whitespace-nowrap">Harga Jual</th>
                   <th className="py-3 px-3 text-right w-28 whitespace-nowrap bg-emerald-50/50 text-emerald-800">
                     Masuk (+)
@@ -377,7 +383,7 @@ export default function InventoryReportPage() {
               <tbody className="divide-y divide-[#D7EBEF]/60">
                 {filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan="10" className="py-12 text-center text-[#577782]">
+                    <td colSpan={isAdmin ? '10' : '9'} className="py-12 text-center text-[#577782]">
                       <svg className="w-10 h-10 mx-auto text-[#8EA6AF]/60 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                       </svg>
@@ -406,7 +412,14 @@ export default function InventoryReportPage() {
 
                         {/* Nama Produk */}
                         <td className="py-3 px-3 min-w-[220px]">
-                          <div className="font-semibold text-[#16323B]">{item.name}</div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-[#16323B]">{item.name}</span>
+                            {Boolean(item.is_consignment) && (
+                              <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                Konsinyasi (Titip Jual)
+                              </span>
+                            )}
+                          </div>
                           {item.barcode && (
                             <div className="text-[10px] text-[#8EA6AF] font-mono mt-0.5">
                               Barcode: {item.barcode}
@@ -421,10 +434,12 @@ export default function InventoryReportPage() {
                           </span>
                         </td>
 
-                        {/* Harga Beli Rata-rata (HPP) */}
-                        <td className="py-3 px-3 text-right font-mono tabular-nums text-[#577782] whitespace-nowrap">
-                          {formatRupiah(item.purchase_price || item.average_cost || 0)}
-                        </td>
+                        {/* Harga Beli Rata-rata (HPP - Admin Only) */}
+                        {isAdmin && (
+                          <td className="py-3 px-3 text-right font-mono tabular-nums text-[#577782] whitespace-nowrap">
+                            {formatRupiah(item.purchase_price || item.average_cost || 0)}
+                          </td>
+                        )}
 
                         {/* Harga Jual */}
                         <td className="py-3 px-3 text-right font-mono tabular-nums font-semibold text-[#16323B] whitespace-nowrap">
@@ -473,7 +488,7 @@ export default function InventoryReportPage() {
               {filteredProducts.length > 0 && (
                 <tfoot className="bg-[#F8FDFE] border-t-2 border-[#D7EBEF] font-semibold text-xs text-[#16323B]">
                   <tr>
-                    <td colSpan="6" className="py-3 px-3 text-right uppercase tracking-wider text-[11px] text-[#577782]">
+                    <td colSpan={isAdmin ? 6 : 5} className="py-3 px-3 text-right uppercase tracking-wider text-[11px] text-[#577782]">
                       Total ({filteredProducts.length} Produk Ditampilkan):
                     </td>
                     <td className="py-3 px-3 text-right font-mono tabular-nums font-bold text-emerald-700 bg-emerald-50/60 whitespace-nowrap">

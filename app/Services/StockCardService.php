@@ -30,9 +30,12 @@ class StockCardService
         $openingBalance = 0.0;
         foreach ($priorMovements as $mov) {
             $type = $mov->movement_type;
-            $qty = (float) $mov->quantity;
+            $qty = abs((float) $mov->quantity);
+            $isIn = in_array($type, ['stock_in', 'purchase', 'adjustment_in', 'initial_stock', 'sale_return'])
+                || in_array($mov->reference_type, ['consignment_initial', 'consignment_stock_in'])
+                || ($type === 'adjustment' && (float) $mov->quantity > 0 && $mov->reference_type !== 'consignment_return');
 
-            if (in_array($type, ['stock_in', 'purchase', 'adjustment_in', 'initial_stock', 'sale_return'])) {
+            if ($isIn) {
                 $openingBalance += $qty;
             } else {
                 $openingBalance -= $qty;
@@ -55,8 +58,10 @@ class StockCardService
         $rows = [];
         foreach ($periodMovements as $mov) {
             $type = $mov->movement_type;
-            $qty = (float) $mov->quantity;
-            $isIn = in_array($type, ['stock_in', 'purchase', 'adjustment_in', 'initial_stock', 'sale_return']);
+            $qty = abs((float) $mov->quantity);
+            $isIn = in_array($type, ['stock_in', 'purchase', 'adjustment_in', 'initial_stock', 'sale_return'])
+                || in_array($mov->reference_type, ['consignment_initial', 'consignment_stock_in'])
+                || ($type === 'adjustment' && (float) $mov->quantity > 0 && $mov->reference_type !== 'consignment_return');
 
             $qtyIn = $isIn ? $qty : 0.0;
             $qtyOut = $isIn ? 0.0 : $qty;
@@ -74,7 +79,7 @@ class StockCardService
                 'movement_code' => $mov->movement_code,
                 'movement_date' => $mov->movement_date->format('Y-m-d'),
                 'movement_type' => $type,
-                'movement_type_label' => $this->getMovementTypeLabel($type),
+                'movement_type_label' => $this->getMovementTypeLabel($type, $mov->reference_type),
                 'reference_number' => $mov->reference_number,
                 'reference_type' => $mov->reference_type,
                 'reference_id' => $mov->reference_id,
@@ -117,8 +122,18 @@ class StockCardService
     /**
      * Label manusiawi untuk jenis mutasi barang.
      */
-    protected function getMovementTypeLabel(string $type): string
+    protected function getMovementTypeLabel(string $type, ?string $referenceType = null): string
     {
+        if ($referenceType === 'consignment_initial') {
+            return 'Penerimaan Stok Konsinyasi Awal';
+        }
+        if ($referenceType === 'consignment_stock_in') {
+            return 'Tambah Titipan Konsinyasi';
+        }
+        if ($referenceType === 'consignment_return') {
+            return 'Retur Barang Konsinyasi ke Mitra';
+        }
+
         return match ($type) {
             'purchase' => 'Pembelian Masuk',
             'stock_in' => 'Barang Masuk',
